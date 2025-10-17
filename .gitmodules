@@ -1,0 +1,12 @@
+[submodule "solver/hgs"]
+	path = solver/hgs
+	url = git@github.com:cvrp-challenge/solver-hgs.git
+[submodule "solver/filo1"]
+	path = solver/filo1
+	url = git@github.com:cvrp-challenge/solver-filo1.git
+[submodule "solver/filo2"]
+	path = solver/filo2
+	url = git@github.com:cvrp-challenge/solver-filo2.git
+[submodule "solver/pyvrp"]
+	path = solver/pyvrp
+	url = git@github.com:cvrp-challenge/solver-pyvrp.git
