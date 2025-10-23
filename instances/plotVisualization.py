@@ -40,13 +40,24 @@ def plot_instance(filepath):
     customers = coords[1:]
 
     plt.figure(figsize=(10, 10))
-    plt.scatter([c[0] for c in customers], [c[1] for c in customers],
-                color='blue', s=30, label='Customers')
-    plt.scatter(depot[0], depot[1],
-                color='yellow', edgecolor='black', s=150, marker='s', label='Depot')
+    plt.scatter(
+        [c[0] for c in customers],
+        [c[1] for c in customers],
+        color='blue',
+        s=30,
+        label=f'Customers (n={len(customers)})'  # 👈 added node count
+    )
+    plt.scatter(
+        depot[0],
+        depot[1],
+        color='yellow',
+        edgecolor='black',
+        s=150,
+        marker='s',
+        label='Depot'
+    )
 
     plt.title(os.path.basename(filepath))
-    plt.xticks([]); plt.yticks([])
     plt.legend(loc="upper right")
     plt.tight_layout()
 
@@ -74,5 +85,7 @@ if __name__ == "__main__":
 
     for filename in vrp_files:
         plot_instance(os.path.join(instance_folder, filename))
+    # plot_instance(os.path.join(instance_folder, "XLTEST-n4951-k225.vrp"))   # single Instance visualization
+
 
     print("\n🎉 All available instance visualizations created!")
