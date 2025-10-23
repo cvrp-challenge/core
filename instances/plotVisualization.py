@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 # Automatically find the "xl" folder inside "test-instances"
 BASE_DIR = os.path.dirname(__file__)
-instance_folder = os.path.join(BASE_DIR, "test-instances", "xl")
+instance_folderXL = os.path.join(BASE_DIR, "test-instances", "xl")
 
 def read_instance_coords(filepath):
     """
@@ -73,18 +73,18 @@ def plot_instance(filepath):
 
 # ---- Main execution ----
 if __name__ == "__main__":
-    print(f"📂 Reading instances from: {instance_folder}")
-    if not os.path.exists(instance_folder):
+    print(f"📂 Reading instances from: {instance_folderXL}")
+    if not os.path.exists(instance_folderXL):
         print("❌ Error: instance folder not found!")
         exit(1)
 
-    vrp_files = [f for f in os.listdir(instance_folder) if f.endswith(".vrp")]
+    vrp_files = [f for f in os.listdir(instance_folderXL) if f.endswith(".vrp")]
     if not vrp_files:
         print("❌ No .vrp files found in folder.")
         exit(0)
 
     for filename in vrp_files:
-        plot_instance(os.path.join(instance_folder, filename))
+        plot_instance(os.path.join(instance_folderXL, filename))
     # plot_instance(os.path.join(instance_folder, "XLTEST-n4951-k225.vrp"))   # single Instance visualization
 
 
