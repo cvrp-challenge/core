@@ -10,3 +10,6 @@
 [submodule "solver/pyvrp"]
 	path = solver/pyvrp
 	url = git@github.com:cvrp-challenge/solver-pyvrp.git
+[submodule "solver/cobra"]
+	path = solver/cobra
+	url = https://github.com/acco93/cobra.git

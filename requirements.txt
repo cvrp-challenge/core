@@ -5,6 +5,7 @@ pyyaml>=6.0
 
 # VRP-specific libraries
 vrplib>=1.4.0
+pyvrp>=0.6.0
 
 # Progress bars and utilities
 tqdm>=4.64.1

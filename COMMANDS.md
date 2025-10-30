@@ -65,29 +65,70 @@ python generatorLarge.py 1000 2 1 3 4 42
 
 ## Building C++ Solvers
 
-### FILO1
+### Build All Solvers (WSL)
 ```bash
+# Build COBRA library (required for FILO1)
+cd solver/cobra
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/dev/core/solver/cobra/install
+make -j4 && make install
+cd ../../..
+
+# Build FILO1 (with COBRA)
 cd solver/filo1
 mkdir -p build && cd build
-cmake ..
-make
-./main ../../instances/test-instances/x/X-n101-k25.vrp
+cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_VERBOSE=ON -DCMAKE_PREFIX_PATH=~/dev/core/solver/cobra/install
+make -j4
+cd ../../..
+
+# Build FILO2
+cd solver/filo2
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j4
+cd ../../..
+
+# Build HGS
+cd solver/hgs
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j4
+cd ../../..
 ```
 
-### FILO2
+### Individual Solver Builds
+
+#### FILO1
+```bash
+# First build COBRA library (if not already built)
+cd solver/cobra
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/dev/core/solver/cobra/install
+make -j4 && make install
+cd ../..
+
+# Then build FILO1
+cd filo1
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_VERBOSE=ON -DCMAKE_PREFIX_PATH=~/dev/core/solver/cobra/install
+make
+./filo ../../instances/test-instances/x/X-n101-k25.vrp
+```
+
+#### FILO2
 ```bash
 cd solver/filo2
 mkdir -p build && cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 make
-./main ../../instances/test-instances/x/X-n101-k25.vrp
+./filo2 ../../instances/test-instances/x/X-n101-k25.vrp
 ```
 
-### HGS (Hybrid Genetic Search)
+#### HGS (Hybrid Genetic Search)
 ```bash
 cd solver/hgs
 mkdir -p build && cd build
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 ./hgs ../Instances/CVRP/X-n101-k25.vrp
 ```
@@ -149,6 +190,49 @@ git submodule update --init --recursive
 # Pull latest changes including submodules
 git pull --recurse-submodules
 ```
+
+## Unified Solver Runner
+
+The repository includes a unified runner that makes it easy to run any configured solver.
+
+### List Available Solvers
+```bash
+# Using Python directly
+python3 run_solver.py --list
+
+# Using the shell wrapper
+./run.sh --list
+```
+
+### Run a Solver
+
+```bash
+# Run HGS on an instance
+python3 run_solver.py hgs instances/test-instances/x/X-n101-k25.vrp
+
+# Run FILO2 on an instance
+python3 run_solver.py filo2 instances/test-instances/x/X-n101-k25.vrp
+
+# Using the shell wrapper (shorter)
+./run.sh hgs instances/test-instances/x/X-n101-k25.vrp
+./run.sh filo2 instances/test-instances/x/X-n101-k25.vrp
+
+# Run PyVRP with custom parameters
+./run.sh pyvrp instances/test-instances/x/X-n101-k25.vrp --seed 42 --max_runtime 60
+
+# Run on XL instances
+./run.sh hgs instances/test-instances/xl/XLTEST-n2541-k62.vrp
+```
+
+### Runner Features
+- Automatic path resolution (works from any directory)
+- Validation of solver availability and instance files
+- Unified interface for all solvers
+- Configuration-based (see `config/solvers.yaml`)
+- Virtual environment auto-activation (if exists)
+
+### Adding New Solvers
+Edit `config/solvers.yaml` to add new solver configurations.
 
 ## Benchmarking
 

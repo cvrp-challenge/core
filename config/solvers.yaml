@@ -1,0 +1,51 @@
+# Solver Configuration
+# Define all available solvers and their execution parameters
+
+solvers:
+  filo2:
+    name: "FILO2"
+    description: "FILO2 - Fast Iterative Local Optimization (version 2)"
+    type: "compiled"
+    executable: "solver/filo2/build/filo2"
+    enabled: true
+    command_template: "{executable} {instance}"
+    default_args: {}
+    supported_formats: [".vrp"]
+    notes: "A more scalable version of FILO with improved performance on large instances"
+    
+  hgs:
+    name: "HGS-CVRP"
+    description: "Hybrid Genetic Search for CVRP"
+    type: "compiled"
+    executable: "solver/hgs/build/hgs"
+    enabled: true
+    command_template: "{executable} {instance} {seed}"
+    default_args: 
+      seed: 1
+    supported_formats: [".vrp"]
+    notes: "State-of-the-art hybrid genetic search algorithm"
+    
+  pyvrp:
+    name: "PyVRP"
+    description: "Python-based VRP solver using HGS"
+    type: "python"
+    executable: "pyvrp"
+    enabled: true
+    command_template: "pyvrp {instance} --seed {seed} --max_runtime {max_runtime}"
+    default_args:
+      seed: 1
+      max_runtime: 30
+    supported_formats: [".vrp", ".txt"]
+    notes: "Requires: pip install pyvrp"
+    
+  filo1:
+    name: "FILO1"
+    description: "FILO - Fast Iterative Local Optimization (version 1)"
+    type: "compiled"
+    executable: "solver/filo1/build/filo"
+    enabled: true
+    command_template: "{executable} {instance}"
+    default_args: {}
+    supported_formats: [".vrp"]
+    notes: "Original FILO implementation using COBRA library. Built and ready to use."
+
