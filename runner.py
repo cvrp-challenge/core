@@ -82,8 +82,8 @@ class SolverRunner:
                 print()
         
         print("="*70)
-        print(f"\nTo run a solver: python run_solver.py <solver_id> <instance_path>")
-        print(f"Example: python run_solver.py hgs instances/test-instances/x/X-n101-k25.vrp\n")
+        print(f"\nTo run a solver: python runner.py <solver_id> <instance_path>")
+        print(f"Example: python runner.py hgs instances/test-instances/x/X-n101-k25.vrp\n")
     
     def validate_solver(self, solver_id: str) -> Dict[str, Any]:
         """Validate and return solver configuration."""
@@ -237,16 +237,16 @@ def parse_args():
         epilog="""
 Examples:
   # List all available solvers
-  python run_solver.py --list
+  python runner.py --list
   
   # Run HGS on an instance
-  python run_solver.py hgs instances/test-instances/x/X-n101-k25.vrp
+  python runner.py hgs instances/test-instances/x/X-n101-k25.vrp
   
   # Run FILO2 on an instance
-  python run_solver.py filo2 instances/test-instances/x/X-n101-k25.vrp
+  python runner.py filo2 instances/test-instances/x/X-n101-k25.vrp
   
   # Run PyVRP with custom seed and runtime
-  python run_solver.py pyvrp instances/test-instances/x/X-n101-k25.vrp --seed 42 --max_runtime 60
+  python runner.py pyvrp instances/test-instances/x/X-n101-k25.vrp --seed 42 --max_runtime 60
         """
     )
     
