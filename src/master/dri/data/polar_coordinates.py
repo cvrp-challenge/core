@@ -1,45 +1,57 @@
-# cvrp_dri/dissimilarity/spatial_dissimilarity.py
+# cvrp_dri/data/polar_coordinates.py
 
+import os
 import math
 import vrplib
-from typing import Dict, Tuple
-from cvrp_dri.data.polar_coordinates import compute_polar_angle
+from typing import Dict
 
-
-def compute_lambda(coords: Dict[int, Tuple[float, float]]) -> float:
-    n = len(coords)
-    return sum(x + y for x, y in coords.values()) / (2 * n)
-
-
-def spatial_dissimilarity(instance_name: str) -> Dict[Tuple[int, int], float]:
+def compute_polar_angle(instance_name: str) -> Dict[int, float]:
     """
-    Computes spatial dissimilarity S^s_ij for all customer pairs in a VRP instance:
-        S^s_ij = sqrt((x_j - x_i)^2 + (y_j - y_i)^2 + λ * (θ_j - θ_i)^2)
+    Loads a VRP instance via vrplib and computes the polar angles θ_i
+    of all customer nodes relative to the depot.
+
+    Automatically searches both 'x' and 'xl' in:
+        core/instances/test-instances/
     """
-    instance = vrplib.read_instance("instances/" + instance_name)
-    coords_full = instance["node_coord"]
-    coords = {i: coords_full[i] for i in range(1, len(coords_full))}  # exclude depot
 
-    angles = compute_polar_angle(instance_name)
-    lam = compute_lambda(coords)
-    S = {}
+    # Find base directory dynamically (this file → up to /core/)
+    base_dir = os.path.dirname(__file__)
+    core_root = os.path.abspath(os.path.join(base_dir, "../../../../"))  # go up 4 levels
+    instances_root = os.path.join(core_root, "instances", "test-instances")
 
-    nodes = list(coords.keys())
-    for idx_i, i in enumerate(nodes):
+    # Try both subfolders
+    possible_paths = [
+        os.path.join(instances_root, "x", instance_name),
+        os.path.join(instances_root, "xl", instance_name),
+    ]
+
+    instance_path = next((p for p in possible_paths if os.path.exists(p)), None)
+    if instance_path is None:
+        raise FileNotFoundError(
+            f"Instance '{instance_name}' not found in: {possible_paths}"
+        )
+
+    print(f"→ Loading instance from: {instance_path}")
+
+    # Load instance and compute polar angles
+    instance = vrplib.read_instance(instance_path)
+    coords = instance["node_coord"]
+    depot = coords[0]  # depot is index 0 in vrplib format
+
+    x0, y0 = depot
+    angles = {}
+
+    for i in range(1, len(coords)):  # customers only
         x_i, y_i = coords[i]
-        theta_i = angles[i]
-        for j in nodes[idx_i + 1:]:
-            x_j, y_j = coords[j]
-            theta_j = angles[j]
-            dist = math.sqrt((x_j - x_i)**2 + (y_j - y_i)**2 + lam * (theta_j - theta_i)**2)
-            S[(i, j)] = S[(j, i)] = dist
+        theta_i = math.atan2(y_i - y0, x_i - x0)
+        angles[i] = theta_i
 
-    return S
+    return angles
 
 
 if __name__ == "__main__":
-    S = spatial_dissimilarity("X-n101-k25.vrp")
-    print("First 3 spatial dissimilarities:", list(S.items())[:3])
+    angles = compute_polar_angle("X-n101-k25.vrp")
+    print("First 3 polar angles:", list(angles.items())[:3])
 
 
 
