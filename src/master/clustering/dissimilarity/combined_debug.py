@@ -3,7 +3,7 @@
 import os
 import vrplib
 from typing import Dict, Tuple
-from .spatial import spatial_dissimilarity, get_spatial_dissim  # adjust name if your file is 'spatial.py'
+from spatial import spatial_dissimilarity, get_spatial_dissim  # adjust name if your file is 'spatial.py'
 
 def combined_dissimilarity(instance_name: str) -> Dict[Tuple[int, int], float]:
     """
