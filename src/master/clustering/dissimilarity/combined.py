@@ -27,9 +27,7 @@ def combined_dissimilarity(instance_name: str) -> Dict[Tuple[int, int], float]:
     S_sd: Dict[Tuple[int, int], float] = {}
 
     for idx_i, i in enumerate(nodes):
-        d_i = demands[i]
         for j in nodes[idx_i + 1:]:
-            d_j = demands[j]
             S_s_ij = get_symmetric_value(S_s, i, j)
             S_d_ij = get_symmetric_value(S_d, i, j)
             S_sd[(i, j)] = S_s_ij * (1 + S_d_ij)
