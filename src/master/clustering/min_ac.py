@@ -1,13 +1,12 @@
-# max agglomerative clustering
-
-# clustering/max_ac.py
+# clustering/min_ac.py
 """
-Agglomerative Clustering (Complete Linkage) for the DRI framework.
+Agglomerative Clustering (Single Linkage / Minimum Linkage) for the DRI framework.
 Implements Algorithm 3 from Kerscher & Minner (2025),
 adapted for CVRP without time windows.
 
 Each customer starts as its own cluster, and clusters are iteratively merged
-based on the minimum maximum pairwise dissimilarity (Eq. 23 using complete linkage).
+based on the *minimum* pairwise dissimilarity between clusters (Eq. 24).
+Supports both combined (spatial + demand) and spatial-only dissimilarity matrices.
 """
 
 import math
@@ -19,31 +18,35 @@ from clustering.dissimilarity.combined import combined_dissimilarity
 from clustering.dissimilarity.spatial import spatial_dissimilarity
 
 
-def complete_linkage_distance(
+# ============================================================
+# --- Linkage Computation ------------------------------------
+# ============================================================
+
+def min_linkage_distance(
     cluster_a: List[int],
     cluster_b: List[int],
     S: Dict[Tuple[int, int], float],
 ) -> float:
     """
-    Computes complete-linkage dissimilarity between two clusters:
-        S̄_p,θ = max_{i∈V_p, j∈V_θ} S_ij
-    (Eq. 25)
+    Computes minimum pairwise dissimilarity between two clusters.
+    Eq. (24):
+        S̄_p,θ = min_{i∈V_p, j∈V_θ} S_ij
     """
-    max_dist = -math.inf
+    min_val = math.inf
     for i in cluster_a:
         for j in cluster_b:
             val = get_symmetric_value(S, i, j)
-            if val > max_dist:
-                max_dist = val
-    return max_dist
+            if val < min_val:
+                min_val = val
+    return min_val
 
 
 def find_closest_clusters(
     clusters: Dict[int, List[int]],
     S: Dict[Tuple[int, int], float],
-) -> Tuple[int, int]:
+) -> Optional[Tuple[int, int]]:
     """
-    Selects the cluster pair (P, Θ)' with minimum complete-linkage dissimilarity.
+    Selects the cluster pair (P, Θ)' with minimum dissimilarity (single linkage).
     Randomly breaks ties (equal minimum).
     """
     best_pair = None
@@ -52,7 +55,7 @@ def find_closest_clusters(
 
     for idx_a, a in enumerate(cluster_ids):
         for b in cluster_ids[idx_a + 1:]:
-            dist = complete_linkage_distance(clusters[a], clusters[b], S)
+            dist = min_linkage_distance(clusters[a], clusters[b], S)
             if dist < best_dist:
                 best_dist = dist
                 best_pair = (a, b)
@@ -81,14 +84,25 @@ def compute_cluster_medoids(
     return medoids
 
 
-def agglomerative_clustering_complete(
+# ============================================================
+# --- Main Agglomerative Algorithm ----------------------------
+# ============================================================
+
+def agglomerative_clustering_min(
     instance_name: str,
     k: int,
     instance: Optional[dict] = None,
     use_combined: bool = False,
 ) -> Tuple[Dict[int, List[int]], Dict[int, int]]:
     """
-    Executes Agglomerative Clustering (complete linkage) for a CVRP instance.
+    Executes Agglomerative Clustering (single linkage) for a CVRP instance.
+
+    Args:
+        instance_name: name of the .vrp instance
+        k: desired number of clusters
+        instance: optional preloaded instance dictionary
+        use_combined: if True, use combined (spatial+demand) dissimilarity.
+                      if False, use spatial dissimilarity only.
 
     Returns:
         clusters: {cluster_id: [node_ids]}
@@ -96,6 +110,8 @@ def agglomerative_clustering_complete(
     """
     if instance is None:
         instance = load_instance(instance_name)
+
+    # --- Choose dissimilarity matrix ---
     if use_combined:
         S = combined_dissimilarity(instance_name)
     else:
@@ -112,24 +128,28 @@ def agglomerative_clustering_complete(
             break
         a, b = pair
 
+        # Merge clusters
         merged = clusters[a] + clusters[b]
         new_id = min(a, b)
         clusters[new_id] = merged
-        for old in [a, b]:
-            if old in clusters and old != new_id:
-                del clusters[old]
+        del clusters[a], clusters[b]
 
     # Step 3: compute medoids
     medoids = compute_cluster_medoids(clusters, S)
     return clusters, medoids
 
 
+# ============================================================
+# --- Standalone Test ----------------------------------------
+# ============================================================
+
 if __name__ == "__main__":
     instance_name = "X-n101-k25.vrp"
     k = 5
-    clusters, medoids = agglomerative_clustering_complete(instance_name, k)
 
-    print(f"✅ Agglomerative Clustering (Complete Linkage) complete for {instance_name}")
+    clusters, medoids = agglomerative_clustering_min(instance_name, k, use_combined=False)
+
+    print(f"\n✅ Agglomerative Clustering (Single Linkage) complete for {instance_name}")
     print(f"Number of clusters: {len(clusters)}\n")
 
     for idx, (cid, members) in enumerate(clusters.items(), start=1):

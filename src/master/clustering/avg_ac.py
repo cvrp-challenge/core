@@ -14,6 +14,7 @@ from typing import Dict, List, Tuple, Optional
 from utils.loader import load_instance
 from utils.symmetric_matrix_read import get_symmetric_value
 from clustering.dissimilarity.combined import combined_dissimilarity
+from clustering.dissimilarity.spatial import spatial_dissimilarity
 
 
 def average_linkage_distance(
@@ -82,6 +83,7 @@ def agglomerative_clustering_average(
     instance_name: str,
     k: int,
     instance: Optional[dict] = None,
+    use_combined: bool = False,
 ) -> Tuple[Dict[int, List[int]], Dict[int, int]]:
     """
     Executes Agglomerative Clustering (average linkage) for a CVRP instance.
@@ -96,8 +98,10 @@ def agglomerative_clustering_average(
 
     # --- compute dissimilarity (without modifying combined_dissimilarity) ---
     # only pass instance_name to keep compatibility with all other code
-    S = combined_dissimilarity(instance_name)
-
+    if use_combined:
+        S = combined_dissimilarity(instance_name)
+    else:
+        S = spatial_dissimilarity(instance_name)
     # Step 1: start with each customer as its own cluster
     nodes = sorted({n for pair in S.keys() for n in pair})
     clusters: Dict[int, List[int]] = {i: [i] for i in nodes}

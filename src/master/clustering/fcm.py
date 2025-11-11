@@ -17,6 +17,7 @@ from utils.loader import load_instance
 from utils.symmetric_matrix_read import get_symmetric_value
 from clustering.dissimilarity.polar_coordinates import compute_polar_angle
 from clustering.dissimilarity.combined import combined_dissimilarity
+from clustering.dissimilarity.spatial import spatial_dissimilarity
 
 
 # ============================================================
@@ -141,6 +142,7 @@ def fuzzy_c_medoids(
     epsilon: float = 1e-4,
     max_iter: int = 100,
     instance: Optional[dict] = None,
+    use_combined: bool = False,
 ) -> Tuple[Dict[int, Dict[int, float]], List[int], Dict[int, List[float]]]:
     """
     Executes the Fuzzy C-Medoids algorithm (FCM) adapted for CVRP.
@@ -161,7 +163,10 @@ def fuzzy_c_medoids(
         instance = load_instance(instance_name)
 
     # --- Precompute all necessary data ---
-    S = combined_dissimilarity(instance_name)
+    if use_combined:
+        S = combined_dissimilarity(instance_name)
+    else:
+        S = spatial_dissimilarity(instance_name)
     features = compute_customer_features(instance_name, instance)
     nodes = sorted({n for pair in S.keys() for n in pair})
 

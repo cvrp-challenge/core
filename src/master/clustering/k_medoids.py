@@ -12,6 +12,7 @@ from typing import Dict, List, Tuple, Optional
 from utils.symmetric_matrix_read import get_symmetric_value
 from utils.loader import load_instance
 from clustering.dissimilarity.combined import combined_dissimilarity
+from clustering.dissimilarity.spatial import spatial_dissimilarity
 
 
 def initialize_medoids(nodes: List[int], S: Dict[Tuple[int, int], float], k: int) -> List[int]:
@@ -51,14 +52,19 @@ def update_medoids(clusters: Dict[int, List[int]], S: Dict[Tuple[int, int], floa
     return new_medoids
 
 
-def k_medoids(instance_name: str, k: int, instance: Optional[dict] = None) -> Dict[int, List[int]]:
+def k_medoids(instance_name: str, k: int, instance: Optional[dict] = None, use_combined: bool = False,
+) -> Dict[int, List[int]]:
     """
     Performs k-medoids clustering using the combined dissimilarity matrix.
     """
     if instance is None:
         instance = load_instance(instance_name)
 
-    S = combined_dissimilarity(instance_name)
+    if use_combined:
+        S = combined_dissimilarity(instance_name)
+    else:
+        S = spatial_dissimilarity(instance_name)    
+    
     nodes = sorted({n for pair in S.keys() for n in pair})
 
     # --- Initialization (Eq. 16) ---
