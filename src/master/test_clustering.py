@@ -1,147 +1,164 @@
-# D:\PS_CVRP\core\src\master\test_clustering.py
-
 import os, sys
 
-# --- Make sure Python finds all subpackages like utils, clustering, etc. ---
+# Ensure module paths
 CURRENT_DIR = os.path.dirname(__file__)
 if CURRENT_DIR not in sys.path:
     sys.path.append(CURRENT_DIR)
 
+# ---- Custom clustering imports ----
 from clustering.k_medoids import k_medoids
 from clustering.fcm import fuzzy_c_medoids
-# from clustering.avg_ac import agglomerative_clustering_average
-# from clustering.max_ac import agglomerative_clustering_complete
+from clustering.ac_custom.avg_ac import agglomerative_clustering_average
+from clustering.ac_custom.max_ac import agglomerative_clustering_complete
+from clustering.ac_custom.min_ac import agglomerative_clustering_min
+
+# ---- Sklearn clustering imports ----
+from clustering.scikit_clustering import (
+    run_sklearn_ac,
+    run_sklearn_kmeans
+)
+
+from clustering.k_medoids_pyclustering import k_medoids_pyclustering
+
+
+# ---- Scikit-fuzzy FCM ----
+from clustering.fcm_scikit_fuzzy import run_sklearn_fcm
+
+# ---- Silhouette ----
 from clustering.silhouette_coefficient import silhouette_coefficient
 
 
+# ===================================================================
+#                         TEST CONFIGURATION
+# ===================================================================
+
+instance_name = "X-n101-k25.vrp"     # small instance
+k = 5                                 # number of clusters
+
+
+# ===================================================================
+#                       HELPER PRINT FUNCTION
+# ===================================================================
+
+def print_clusters(title, clusters, medoids):
+    print(f"\n=== {title} ===")
+    print(f"Clusters: {len(clusters)}")
+    for cid, members in clusters.items():
+        print(f"  Cluster {cid}: size={len(members)}, medoid={medoids[cid]}")
+
+
+# ===================================================================
+#                         RUN ALL METHODS
+# ===================================================================
+
 if __name__ == "__main__":
-    # # Choose a small benchmark instance for testing
-    # instance_name = "X-n101-k25.vrp"   # or e.g. "XLTEST-n1094-k6.vrp"
-    # k = 5  # number of clusters
 
-    # # --------------------------------------------------
-    # # 1️⃣ K-MEDOIDS
-    # # --------------------------------------------------
-    # print(f"→ Running K-Medoids clustering on instance '{instance_name}' with k={k}")
-    # clusters_kmedoids = k_medoids(instance_name, k)
+    # =========================
+    # 1. K-MEDOIDS (CUSTOM)
+    # =========================
+    print("Running custom K-Medoids...")
 
-    # print("\n✅ K-Medoids complete!")
-    # print(f"Number of clusters: {len(clusters_kmedoids)}\n")
+    clusters_km, medoids_km = k_medoids(instance_name, k)
 
-    # for idx, (medoid, members) in enumerate(clusters_kmedoids.items(), start=1):
-    #     print(f"Cluster {idx}:")
-    #     print(f"  Medoid: {medoid}")
-    #     print(f"  Members: {len(members)} customers")
-    #     print(f"  All members: {members}\n")
+    print("\n=== K-Medoids ===")
+    print(f"Clusters: {len(clusters_km)}")
+    for cid, members in clusters_km.items():
+        print(f"  Cluster {cid}: size={len(members)}, medoid={medoids_km[cid]}")
 
-    # # --------------------------------------------------
-    # # 2️⃣ FUZZY C-MEDOIDS
-    # # --------------------------------------------------
-    # print(f"→ Running Fuzzy C-Medoids clustering on instance '{instance_name}' with k={k}")
-    # U, medoids_fcm, τ_P = fuzzy_c_medoids(instance_name, k)
+    ζ_km = silhouette_coefficient(instance_name, clusters_km, medoids_km)
+    print(f"Silhouette: {ζ_km:.4f}")
 
-    # print("\n✅ Fuzzy C-Medoids complete!")
-    # print(f"Number of clusters: {len(medoids_fcm)}\n")
 
-    # for p, m in enumerate(medoids_fcm):
-    #     assigned = [i for i in U.keys() if max(U[i], key=U[i].get) == p]
-    #     avg_membership = sum(U[i][p] for i in U.keys()) / len(U)
-    #     top5 = sorted(U.items(), key=lambda x: x[1][p], reverse=True)[:5]
 
-    #     τ = τ_P[p]
-    #     print(f"Cluster {p+1}:")
-    #     print(f"  Medoid: {m}")
-    #     print(f"  Size (argmax-membership customers): {len(assigned)}")
-    #     print(f"  Avg membership μ̄: {avg_membership:.3f}")
-    #     print(f"  τ_P = (x̄={τ[0]:.2f}, ȳ={τ[1]:.2f}, θ̄={τ[2]:.3f}, q̄={τ[3]:.2f})")
-    #     print(f"  Top 5 strongest members: {[(i, round(U[i][p],3)) for i,_ in top5]}\n")
+    # =========================
+    # 2. FCM (CUSTOM)
+    # =========================
+    print("Running custom Fuzzy C-Medoids...")
 
-    # # --------------------------------------------------
-    # # 3️⃣ AGGLOMERATIVE CLUSTERING (AVERAGE LINKAGE)
-    # # --------------------------------------------------
-    # print(f"→ Running Agglomerative Clustering (Average Linkage) on instance '{instance_name}' with k={k}\n")
-    # clusters_avgac, medoids_avgac = agglomerative_clustering_average(instance_name, k)
+    clusters_fcm, medoids_fcm, tau_fcm = fuzzy_c_medoids(instance_name, k)
 
-    # print("✅ Agglomerative Clustering (Average Linkage) complete!")
-    # print(f"Number of clusters: {len(clusters_avgac)}\n")
+    print("\n=== Fuzzy C-Medoids ===")
+    print(f"Clusters: {len(clusters_fcm)}")
 
-    # for idx, (cid, members) in enumerate(clusters_avgac.items(), start=1):
-    #     m = medoids_avgac[cid]
-    #     print(f"Cluster {idx}:")
-    #     print(f"  Medoid: {m}")
-    #     print(f"  Size: {len(members)} customers")
-    #     if len(members) > 10:
-    #         preview = members[:10]
-    #         print(f"  Example members: {preview} ...\n")
-    #     else:
-    #         print(f"  Members: {members}\n")
+    for cid, members in clusters_fcm.items():
+        print(f"  Cluster {cid}: size={len(members)}, medoid={medoids_fcm[cid]}")
 
-    # # --------------------------------------------------
-    # # 4️⃣ AGGLOMERATIVE CLUSTERING (COMPLETE LINKAGE)
-    # # --------------------------------------------------
-    # print(f"→ Running Agglomerative Clustering (Complete Linkage) on instance '{instance_name}' with k={k}\n")
-    # clusters_maxac, medoids_maxac = agglomerative_clustering_complete(instance_name, k)
+    ζ_fcm = silhouette_coefficient(instance_name, clusters_fcm, medoids_fcm)
+    print(f"Silhouette: {ζ_fcm:.4f}")
 
-    # print("✅ Agglomerative Clustering (Complete Linkage) complete!")
-    # print(f"Number of clusters: {len(clusters_maxac)}\n")
 
-    # for idx, (cid, members) in enumerate(clusters_maxac.items(), start=1):
-    #     m = medoids_maxac[cid]
-    #     print(f"Cluster {idx}:")
-    #     print(f"  Medoid: {m}")
-    #     print(f"  Size: {len(members)} customers")
-    #     if len(members) > 10:
-    #         print(f"  Example members: {members[:10]} ...\n")
-    #     else:
-    #         print(f"  Members: {members}\n")
+    # =========================
+    # 3. Agglomerative (CUSTOM)
+    # =========================
+    print("\nRunning custom Average AC...")
+    clusters_avg, medoids_avg = agglomerative_clustering_average(instance_name, k)
+    print_clusters("Custom AC - Average", clusters_avg, medoids_avg)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_avg, medoids_avg):.4f}")
 
-    # # --------------------------------------------------
-    # # 📊 SILHOUETTE COEFFICIENT COMPARISON
-    # # --------------------------------------------------
-    # print("\n=== Silhouette Coefficient Comparison ===")
+    print("\nRunning custom Complete AC...")
+    clusters_comp, medoids_comp = agglomerative_clustering_complete(instance_name, k)
+    print_clusters("Custom AC - Complete", clusters_comp, medoids_comp)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_comp, medoids_comp):.4f}")
 
-    # # --- K-Medoids ---
-    # clusters_dict_k = {}
-    # medoids_dict_k = {}
-    # for idx, (m, members) in enumerate(clusters_kmedoids.items(), start=1):
-    #     clusters_dict_k[idx] = members
-    #     medoids_dict_k[idx] = m
-    # ζ_kmedoids = silhouette_coefficient(instance_name, clusters_dict_k, medoids_dict_k)
-    # print(f"K-Medoids: ζ = {ζ_kmedoids:.4f}")
+    print("\nRunning custom Min AC...")
+    clusters_min, medoids_min = agglomerative_clustering_min(instance_name, k)
+    print_clusters("Custom AC - Min", clusters_min, medoids_min)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_min, medoids_min):.4f}")
 
-    # # --- Fuzzy C-Medoids ---
-    # clusters_dict_fcm = {p + 1: [] for p in range(len(medoids_fcm))}
-    # for i in U.keys():
-    #     assigned_cluster = max(U[i], key=U[i].get)
-    #     clusters_dict_fcm[assigned_cluster + 1].append(i)
-    # medoids_dict_fcm = {p + 1: medoids_fcm[p] for p in range(len(medoids_fcm))}
-    # ζ_fcm = silhouette_coefficient(instance_name, clusters_dict_fcm, medoids_dict_fcm)
-    # print(f"Fuzzy C-Medoids: ζ = {ζ_fcm:.4f}")
 
-    # # --- Agglomerative (Average Linkage) ---
-    # ζ_avgac = silhouette_coefficient(instance_name, clusters_avgac, medoids_avgac)
-    # print(f"Agglomerative (Average): ζ = {ζ_avgac:.4f}")
+    # =========================
+    # 4. Agglomerative (SKLEARN)
+    # =========================
+    print("\nRunning sklearn AC - Average...")
+    clusters_savg, medoids_savg = run_sklearn_ac(instance_name, k, linkage="average")
+    print_clusters("Sklearn AC - Average", clusters_savg, medoids_savg)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_savg, medoids_savg):.4f}")
 
-    # # --- Agglomerative (Complete Linkage) ---
-    # ζ_maxac = silhouette_coefficient(instance_name, clusters_maxac, medoids_maxac)
-    # print(f"Agglomerative (Complete): ζ = {ζ_maxac:.4f}")
+    print("\nRunning sklearn AC - Complete...")
+    clusters_scomp, medoids_scomp = run_sklearn_ac(instance_name, k, linkage="complete")
+    print_clusters("Sklearn AC - Complete", clusters_scomp, medoids_scomp)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_scomp, medoids_scomp):.4f}")
 
-    # print("\n✅ Silhouette Coefficient comparison complete.")
-    from clustering.fcm_scikit_fuzzy import run_sklearn_fcm
+    print("\nRunning sklearn AC - Single...")
+    clusters_ssing, medoids_ssing = run_sklearn_ac(instance_name, k, linkage="single")
+    print_clusters("Sklearn AC - Single", clusters_ssing, medoids_ssing)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_ssing, medoids_ssing):.4f}")
 
-    instance_name = "X-n101-k25.vrp"
-    k = 5
 
-    clusters, medoids, memberships, centroids = run_sklearn_fcm(
-        instance_name,
-        k,
-        use_polar=True,
-        use_demand=True
-    )
+    # =========================
+    # 5. K-MEANS (SKLEARN)
+    # =========================
+    print("\nRunning sklearn K-Means...")
+    clusters_kmeans, medoids_kmeans, centroids = run_sklearn_kmeans(instance_name, k)
+    print_clusters("Sklearn K-Means", clusters_kmeans, medoids_kmeans)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_kmeans, medoids_kmeans):.4f}")
 
-    print("Clusters:", clusters)
-    print("Medoids:", medoids)
 
-    # Example: print membership of node 10
-    print("Membership of node 10:", memberships[10])
+    # =========================
+    # 6. FCM (SCIKIT FUZZY)
+    # =========================
+    print("\nRunning scikit-fuzzy FCM...")
+    clusters_fcm_sf, medoids_fcm_sf, memberships_sf, centroids_sf = run_sklearn_fcm(instance_name, k)
+    print_clusters("Scikit-Fuzzy FCM", clusters_fcm_sf, medoids_fcm_sf)
+    print(f"Silhouette: {silhouette_coefficient(instance_name, clusters_fcm_sf, medoids_fcm_sf):.4f}")
 
+
+    print("\n=== All clustering methods tested successfully ===")
+
+    # ---------------------------------------------------------
+    # 7. pyclustering K-Medoids (distance-matrix based)
+    # ---------------------------------------------------------
+    print("\nRunning pyclustering K-Medoids...")
+
+    clusters_km_py = k_medoids_pyclustering(instance_name, k, use_combined=False)
+
+    # convert {medoid: [members]} → {cluster_id: [members]}, {cluster_id: medoid}
+    clusters_py = {}
+    medoids_py = {}
+    for cid, (m, members) in enumerate(clusters_km_py.items(), start=1):
+        clusters_py[cid] = members
+        medoids_py[cid] = m
+
+    print_clusters("pyclustering K-Medoids", clusters_py, medoids_py)
+    sil_py = silhouette_coefficient(instance_name, clusters_py, medoids_py)
+    print(f"Silhouette: {sil_py:.4f}")

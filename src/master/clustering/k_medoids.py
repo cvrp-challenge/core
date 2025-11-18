@@ -1,10 +1,9 @@
-# clustering/k-medoids.py
+# clustering/k_medoids.py
 """
-K-Medoids clustering for the DRI framework
-------------------------------------------
-Implements Algorithm 1 from:
-Kerscher & Minner (2025), 'Decompose-route-improve framework for solving large-scale VRPTWs'.
-Customers are clustered based on a precomputed dissimilarity matrix, e.g., S^s_ij or S^sd_ij.
+Unified, normalized K-Medoids clustering for the DRI framework.
+Returns:
+    clusters : {cluster_id → [customer_ids]}
+    medoids  : {cluster_id → medoid_id}
 """
 
 import random
@@ -15,75 +14,104 @@ from clustering.dissimilarity.combined import combined_dissimilarity
 from clustering.dissimilarity.spatial import spatial_dissimilarity
 
 
+# -----------------------------------------------------------
+# Initialization (Eq. 16)
+# -----------------------------------------------------------
+
 def initialize_medoids(nodes: List[int], S: Dict[Tuple[int, int], float], k: int) -> List[int]:
-    """
-    Initialization as described in Eq. (16): select |P_I| most dissimilar vertices.
-    """
+    """Select k far-apart vertices as initial medoids."""
     scores = {}
+    denom = sum(S.get((i, j), S.get((j, i), 0)) for i in nodes for j in nodes if i != j)
+
     for i in nodes:
-        denom = sum(S.get((j, l), S.get((l, j), 0)) for j in nodes for l in nodes if j != l)
         scores[i] = sum(get_symmetric_value(S, i, j) for j in nodes) / denom
+
     sorted_nodes = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     return [n for n, _ in sorted_nodes[:k]]
 
 
-def assign_to_clusters(nodes: List[int], medoids: List[int], S: Dict[Tuple[int, int], float]) -> Dict[int, List[int]]:
-    """Assign each node to the closest medoid."""
-    clusters = {m: [] for m in medoids}
+# -----------------------------------------------------------
+# Assignment
+# -----------------------------------------------------------
+
+def assign_to_medoids(nodes: List[int], medoids: List[int], S) -> Dict[int, List[int]]:
+    """Assign each non-medoid node to its closest medoid."""
+    clusters_raw = {m: [] for m in medoids}
+
     for i in nodes:
         if i in medoids:
             continue
         closest = min(medoids, key=lambda m: get_symmetric_value(S, i, m))
-        clusters[closest].append(i)
-    return clusters
+        clusters_raw[closest].append(i)
+
+    return clusters_raw
 
 
-def update_medoids(clusters: Dict[int, List[int]], S: Dict[Tuple[int, int], float]) -> List[int]:
-    """
-    Update each cluster’s medoid following Eq. (17):
-    m_P = argmin_i∈V_P sum_j∈V_P S_ij.
-    """
+# -----------------------------------------------------------
+# Update
+# -----------------------------------------------------------
+
+def update_medoids(clusters_raw: Dict[int, List[int]], S) -> List[int]:
+    """Assign new medoid per cluster (Eq. 17)."""
     new_medoids = []
-    for old_medoid, members in clusters.items():
-        cluster_nodes = [old_medoid] + members
-        best = min(cluster_nodes,
-                   key=lambda i: sum(get_symmetric_value(S, i, j) for j in cluster_nodes if j != i))
+
+    for old_m, members in clusters_raw.items():
+        nodes = [old_m] + members
+        best = min(nodes, key=lambda i:
+                   sum(get_symmetric_value(S, i, j) for j in nodes if j != i))
         new_medoids.append(best)
+
     return new_medoids
 
 
-def k_medoids(instance_name: str, k: int, instance: Optional[dict] = None, use_combined: bool = False,
-) -> Dict[int, List[int]]:
+# -----------------------------------------------------------
+# Main Algorithm
+# -----------------------------------------------------------
+
+def k_medoids(
+    instance_name: str,
+    k: int,
+    instance: Optional[dict] = None,
+    use_combined: bool = False,
+) -> Tuple[Dict[int, List[int]], Dict[int, int]]:
     """
-    Performs k-medoids clustering using the combined dissimilarity matrix.
+    Normalized K-Medoids:
+      returns (clusters, medoids) with cluster IDs 1..k.
     """
     if instance is None:
         instance = load_instance(instance_name)
 
-    if use_combined:
-        S = combined_dissimilarity(instance_name)
-    else:
-        S = spatial_dissimilarity(instance_name)    
-    
-    nodes = sorted({n for pair in S.keys() for n in pair})
+    S = combined_dissimilarity(instance_name) if use_combined else spatial_dissimilarity(instance_name)
 
-    # --- Initialization (Eq. 16) ---
+    nodes = sorted({n for a, b in S.keys() for n in (a, b)})
+
+    # --- initialize ---
     medoids = initialize_medoids(nodes, S, k)
 
-    # --- Repeat until convergence (Algorithm 1) ---
+    # --- iterative refinement ---
     while True:
-        clusters = assign_to_clusters(nodes, medoids, S)
-        new_medoids = update_medoids(clusters, S)
+        clusters_raw = assign_to_medoids(nodes, medoids, S)
+        new_medoids = update_medoids(clusters_raw, S)
+
         if set(new_medoids) == set(medoids):
             break
+
         medoids = new_medoids
 
-    # Final cluster mapping: medoid → member list
-    final_clusters = assign_to_clusters(nodes, medoids, S)
-    return final_clusters
+    # -------------------------------------------------------
+    # Normalize output   (THIS WAS THE BUG YOU NEEDED FIXED)
+    # -------------------------------------------------------
+    clusters: Dict[int, List[int]] = {}
+    medoids_dict: Dict[int, int] = {}
+
+    for cid, (m, members) in enumerate(clusters_raw.items(), start=1):
+        clusters[cid] = members
+        medoids_dict[cid] = m
+
+    return clusters, medoids_dict
 
 
 if __name__ == "__main__":
-    clusters = k_medoids("X-n101-k25.vrp", k=5)
-    for i, (m, members) in enumerate(clusters.items(), 1):
-        print(f"Cluster {i}: medoid {m}, size {len(members) + 1}")
+    clusters, medoids = k_medoids("X-n101-k25.vrp", k=5)
+    print(clusters)
+    print(medoids)
