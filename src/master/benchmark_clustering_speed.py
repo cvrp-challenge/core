@@ -29,6 +29,8 @@ from clustering.ac_custom.min_ac import agglomerative_clustering_min
 from clustering.scikit_clustering import run_sklearn_ac, run_sklearn_kmeans
 from clustering.k_medoids_pyclustering import k_medoids_pyclustering
 from clustering.silhouette_coefficient import silhouette_coefficient
+from utils.loader import load_instance
+
 
 
 # ============================================================
@@ -59,7 +61,7 @@ def print_summary(name, clusters, medoids):
 # Benchmark Config
 # ============================================================
 
-INSTANCE = "XLTEST-n1421-k9.vrp"
+INSTANCE = "X-n101-k25.vrp"
 K = 9
 
 # For speed, silhouette is optional
@@ -167,7 +169,10 @@ if __name__ == "__main__":
     # 9) pyclustering K-Medoids (⚠ heavy: distance matrix)
     # --------------------------------------------------------
     # Safe for ~1000 nodes; for XL you can skip
-    if len(clusters) < 2000:  # simple guard
+
+    data = load_instance(INSTANCE)
+    num_nodes = len(data['node_coord']) - 1  # subtract depot if needed   
+    if num_nodes < 2000:  # simple guard
         clusters_py = None
         try:
             clusters_py, t = time_it("pyclustering K-Medoids",
