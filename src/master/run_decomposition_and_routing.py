@@ -26,8 +26,8 @@ from master.clustering.run_clustering import run_clustering
 from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
 
 # Simple configuration
-INSTANCE = "X-n101-k25.vrp"
-METHOD = "ac_avg"      # any: "fcm", "ac_min", "k_medoids", "sk_kmeans", "sk_kmeans", 
+INSTANCE = "XLTEST-n1141-k94.vrp"
+METHOD = "sk_ac_avg"      # any: "fcm", "ac_min", "k_medoids", "sk_kmeans", "sk_kmeans", 
                         #     "ac_max", "ac_avg", "sk_ac_avg", "sk_ac_complete", "sk_ac_min"
 K = 9
 
