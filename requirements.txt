@@ -7,6 +7,11 @@ pyyaml>=6.0
 vrplib>=1.4.0
 pyvrp>=0.6.0
 
+# Clustering libraries
+scikit-learn>=1.3.0
+scikit-fuzzy>=0.4.2
+pyclustering>=0.10.1.2
+
 # Progress bars and utilities
 tqdm>=4.64.1
 
