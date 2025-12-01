@@ -39,8 +39,6 @@ Dockerfile
 .dockerignore
 
 # Build artifacts for C++ solvers (not needed in Docker)
-solver/*/build/
-solver/*/install/
 *.o
 *.a
 *.so
@@ -55,6 +53,17 @@ instances/**/*.png
 *.out
 *.sol
 results/
+
+# Ignore all solvers by default
+solver/
+
+# But keep pyvrp (for building the Python extension)
+!solver/pyvrp/
+!solver/pyvrp/**
+
+# And still ignore build/install artefacts inside pyvrp
+solver/pyvrp/build/
+solver/pyvrp/install/
 
 # OS
 .DS_Store

@@ -22,9 +22,12 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy the entire project
 COPY . .
 
+# Build and install vendored PyVRP (so pyvrp._pyvrp exists)
+RUN pip install --no-cache-dir ./solver/pyvrp
+
 # Set Python path to include the project root and src directory
 ENV PYTHONPATH=/app:/app/src
 
 # Default entry point: src/master/main.py
-CMD ["python", "-m", "master.main"]
+ENTRYPOINT ["python", "-m", "master.benchmark"]
 
