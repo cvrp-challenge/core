@@ -61,8 +61,8 @@ def print_summary(name, clusters, medoids):
 # Benchmark Config
 # ============================================================
 
-INSTANCE = "X-n101-k25.vrp"
-K = 9
+INSTANCE = "X-n627-k43.vrp"
+K = 6
 
 # For speed, silhouette is optional
 COMPUTE_SILHOUETTE = False  # Set True if needed, but will be slow
