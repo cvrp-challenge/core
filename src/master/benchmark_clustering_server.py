@@ -1,0 +1,313 @@
+"""
+benchmark_clustering.py
+
+Benchmark clustering methods using the pipeline:
+    clustering → routing → objective
+
+Purposely excludes:
+    - Local Search (LS)
+    - Set Covering (SCP)
+    - RBD
+    - Duplicate removal
+    - DRSCI iterations
+
+This script compares clustering methods based purely on 
+the quality of the clusters for decomposition.
+
+Runs in parallel using ProcessPoolExecutor (TUM server compatible).
+
+Outputs:
+    - cost per method per instance
+    - .sol file containing resulting routes
+"""
+
+import argparse
+import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+from typing import Optional, List, Dict
+
+# ---------------------------------------------------------
+# Project path setup
+# ---------------------------------------------------------
+CURRENT = Path(__file__).parent
+PROJECT_ROOT = CURRENT.parent.parent   # core/
+
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+# ---------------------------------------------------------
+# Project imports
+# ---------------------------------------------------------
+from master.clustering.run_clustering import run_clustering
+from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
+from master.utils.loader import load_instance
+from master.utils.solution_helpers import _write_solution, find_existing_solution, calculate_gap
+
+
+# ---------------------------------------------------------
+# Clustering methods to benchmark
+# ---------------------------------------------------------
+CLUSTERING_METHODS = [
+    "sk_ac_avg",
+    "sk_ac_complete",
+    "sk_ac_min",
+    "sk_kmeans",
+    "fcm",
+    "k_medoids_pyclustering",
+]
+
+
+# ---------------------------------------------------------
+# Instances to benchmark
+# ---------------------------------------------------------
+INSTANCES = [
+    "X-n502-k39.vrp",
+    "X-n524-k153.vrp",
+    "X-n561-k42.vrp",
+    "X-n641-k35.vrp",
+    "X-n685-k75.vrp",
+    "X-n716-k35.vrp",
+    "X-n749-k98.vrp",
+    "X-n801-k40.vrp",
+    "X-n856-k95.vrp",
+    "X-n916-k207.vrp",
+    "XLTEST-n1048-k138.vrp",
+    "XLTEST-n1794-k408.vrp",
+    "XLTEST-n2541-k62.vrp",
+    "XLTEST-n3147-k210.vrp",
+    "XLTEST-n4153-k259.vrp",
+    "XLTEST-n6034-k1685.vrp",
+    "XLTEST-n6734-k1347.vrp",
+    "XLTEST-n8028-k691.vrp",
+    "XLTEST-n8766-k55.vrp",
+    "XLTEST-n10001-k798.vrp",
+]
+
+
+# ---------------------------------------------------------
+# Worker Initialization
+# ---------------------------------------------------------
+def _init_worker():
+    """Ensure subprocesses know the project root."""
+    import sys
+    from pathlib import Path
+
+    CURRENT = Path(__file__).parent
+    PROJECT_ROOT = CURRENT.parent.parent
+
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+
+
+# ---------------------------------------------------------
+# Single-instance & single-method evaluation
+# ---------------------------------------------------------
+def evaluate_method_on_instance(instance_name: str,
+                                method: str,
+                                output_dir: Path,
+                                k: Optional[int] = None) -> dict:
+    """
+    Run one clustering method on one instance and return cost + route list.
+
+    Returns:
+        dict containing cost, routes, feasible, runtime (routing),
+        and gap vs reference.
+    """
+    try:
+        # Load instance (for dimension / capacity)
+        inst = load_instance(instance_name)
+
+        # Automatic K if not provided:
+        # Use the known number of vehicles (lower bound)
+        if k is None:
+            k = int(instance_name.split("-k")[-1].split(".")[0])
+
+        # --- 1) Run clustering ---
+        clusters, _ = run_clustering(method, instance_name, k)
+
+        # --- 2) Routing for these clusters ---
+        routing = solve_clusters_with_pyvrp(
+            instance_name=instance_name,
+            clusters=clusters,
+            time_limit_per_cluster=5.0,
+            seed=0,
+        )
+
+        cost = routing["total_cost"]
+        routes = routing["routes"]
+
+        # --- 3) Gap vs reference ---
+        ref = find_existing_solution(instance_name)
+        reference_cost = ref[1] if ref else None
+        gap = calculate_gap(cost, reference_cost) if reference_cost else None
+
+        # --- 4) Write .sol file ---
+        sol_name = f"{Path(instance_name).stem}_{method}.sol"
+        stopping = f"ClusteringOnly(method={method})"
+
+        _write_solution(
+            where=output_dir,
+            instance_name=instance_name,
+            data=inst,
+            result=routes,
+            solver=f"Clustering({method})",
+            runtime=routing["total_runtime"],
+            stopping_criteria=stopping,
+            gap_percent=gap,
+            filename_override=sol_name,
+        )
+
+        return {
+            "instance": instance_name,
+            "method": method,
+            "cost": cost,
+            "routes": routes,
+            "runtime": routing["total_runtime"],
+            "feasible": True,
+            "gap_percent": gap,
+            "reference_cost": reference_cost,
+            "success": True,
+        }
+
+    except Exception as e:
+        return {
+            "instance": instance_name,
+            "method": method,
+            "error": str(e),
+            "success": False,
+        }
+
+
+# ---------------------------------------------------------
+# Benchmark runner
+# ---------------------------------------------------------
+def run_benchmark(output_path: str,
+                  max_workers: Optional[int],
+                  methods: List[str],
+                  k_override: Optional[int]):
+    """
+    Run all clustering methods on all instances in parallel.
+    """
+    output_dir = Path(output_path).resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"Running clustering benchmark on {len(INSTANCES)} instances")
+    print(f"Methods: {methods}")
+    print(f"Output directory: {output_dir}")
+    print(f"Parallel workers: {max_workers or 'auto'}")
+    print("-" * 80)
+
+    results = []
+
+    with ProcessPoolExecutor(max_workers=max_workers, initializer=_init_worker) as executor:
+
+        futures = {
+            executor.submit(
+                evaluate_method_on_instance,
+                inst,
+                method,
+                output_dir,
+                k_override,
+            ): (inst, method)
+            for inst in INSTANCES
+            for method in methods
+        }
+
+        for future in as_completed(futures):
+            inst, method = futures[future]
+
+            try:
+                r = future.result()
+                results.append(r)
+
+                if r["success"]:
+                    gap_str = (
+                        f" | Gap: {r['gap_percent']:+.2f}%"
+                        if r["gap_percent"] is not None else ""
+                    )
+
+                    print(
+                        f"✓ {inst} [{method}]  "
+                        f"Cost={r['cost']:.2f},  "
+                        f"Time={r['runtime']:.2f}s"
+                        f"{gap_str}"
+                    )
+                else:
+                    print(f"✗ {inst} [{method}]: ERROR - {r['error']}")
+
+            except Exception as e:
+                print(f"✗ {inst} [{method}]: EXCEPTION - {e}")
+                results.append({
+                    "instance": inst,
+                    "method": method,
+                    "error": str(e),
+                    "success": False,
+                })
+
+    # ---------------------- SUMMARY ----------------------
+    print("-" * 80)
+    print("\nSummary:")
+
+    # Build a per-instance table
+    table: Dict[str, Dict[str, float]] = {}
+
+    for r in results:
+        inst = r["instance"]
+        method = r["method"]
+
+        if inst not in table:
+            table[inst] = {}
+
+        table[inst][method] = r["cost"] if r["success"] else float("inf")
+
+    # Print as a clean table
+    print("\nObjective comparison table (lower is better):\n")
+
+    header = "Instance".ljust(22) + " ".join(m.ljust(20) for m in methods)
+    print(header)
+    print("-" * len(header))
+
+    for inst in INSTANCES:
+        row = inst.ljust(22)
+        for m in methods:
+            val = table.get(inst, {}).get(m, None)
+            row += (f"{val:.1f}".ljust(20) if val is not None else "n/a".ljust(20))
+        print(row)
+
+    print("\nBenchmark complete.\n")
+
+
+# ---------------------------------------------------------
+# CLI
+# ---------------------------------------------------------
+def main():
+    parser = argparse.ArgumentParser(
+        description="Benchmark clustering methods using clustering → routing → cost pipeline."
+    )
+
+    parser.add_argument("output_path", type=str,
+                        help="Directory to store .sol files")
+
+    parser.add_argument("--max_workers", type=int, default=None,
+                        help="Parallel workers (default auto)")
+
+    parser.add_argument("--methods", type=str, nargs="+",
+                        default=CLUSTERING_METHODS,
+                        help="Clustering methods to compare")
+
+    parser.add_argument("--k", type=int, default=None,
+                        help="Override number of clusters (default: from instance name)")
+
+    args = parser.parse_args()
+
+    run_benchmark(
+        output_path=args.output_path,
+        max_workers=args.max_workers,
+        methods=args.methods,
+        k_override=args.k,
+    )
+
+
+if __name__ == "__main__":
+    main()
