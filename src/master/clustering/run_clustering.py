@@ -1,23 +1,25 @@
-# run_clustering.py
 """
-Unified clustering runner.
-Standardizes all outputs to:
+Unified clustering runner with consistent naming.
 
+Standard output:
     clusters : Dict[int, List[int]]
     medoids  : Dict[int, int] | None
 
-Every clustering function from this project is wrapped so that downstream
-modules (routing, DRSCI iterations, SCP) can use a single interface.
+Naming conventions:
+    custom_*     → custom implementations (AC, K-Medoids)
+    sk_*         → sklearn-based (AC, KMeans)
+    fcm          → scikit-fuzzy
+    pyclust_*    → pyclustering-based
 """
 
 from typing import Dict, List, Tuple, Optional
 
-# --- Custom AC ---
+# --- Custom AC (slow, high-quality) ---
 from master.clustering.ac_custom.avg_ac import agglomerative_clustering_average
 from master.clustering.ac_custom.max_ac import agglomerative_clustering_complete
 from master.clustering.ac_custom.min_ac import agglomerative_clustering_min
 
-# --- K-Medoids ---
+# --- Custom K-Medoids ---
 from master.clustering.k_medoids import k_medoids
 from master.clustering.k_medoids_pyclustering import k_medoids_pyclustering
 
@@ -27,13 +29,13 @@ from master.clustering.scikit_clustering import (
     run_sklearn_kmeans,
 )
 
-# --- FCM (skit-fuzzy based) ---
+# --- scikit-fuzzy ---
 from master.clustering.fcm_scikit_fuzzy import run_sklearn_fcm
 
 
-# ============================================================
-# Unified Clustering Interface
-# ============================================================
+# =====================================================================
+# Unified Interface
+# =====================================================================
 
 def run_clustering(
     method: str,
@@ -42,38 +44,48 @@ def run_clustering(
     **kwargs,
 ) -> Tuple[Dict[int, List[int]], Optional[Dict[int, int]]]:
     """
-    Run any clustering algorithm in the project and normalize output.
+    Run any clustering algorithm with standardized naming.
 
-    Returns:
-        clusters : Dict[int, List[int]]
-        medoids  : Dict[int, int] | None
+    Parameters
+    ----------
+    method : str
+        One of:
+            custom_ac_avg
+            custom_ac_complete
+            custom_ac_min
+            custom_k_medoids
+            pyclust_k_medoids
+            sk_ac_avg
+            sk_ac_complete
+            sk_ac_min
+            sk_kmeans
+            fcm
+
+    Returns
+    -------
+    clusters : Dict[int, List[int]]
+    medoids  : Dict[int, int] | None
     """
     method = method.lower()
 
-    # ============================================
-    # CUSTOM AGGLOMERATIVE CLUSTERING
-    # ============================================
-    if method == "ac_avg":
-        clusters, medoids = agglomerative_clustering_average(instance_name, k, **kwargs)
-        return clusters, medoids
+    # ============================================================
+    # CUSTOM AC
+    # ============================================================
+    if method == "custom_ac_avg":
+        return agglomerative_clustering_average(instance_name, k, **kwargs)
+    if method == "custom_ac_complete":
+        return agglomerative_clustering_complete(instance_name, k, **kwargs)
+    if method == "custom_ac_min":
+        return agglomerative_clustering_min(instance_name, k, **kwargs)
 
-    if method == "ac_max":
-        clusters, medoids = agglomerative_clustering_complete(instance_name, k, **kwargs)
-        return clusters, medoids
-
-    if method == "ac_min":
-        clusters, medoids = agglomerative_clustering_min(instance_name, k, **kwargs)
-        return clusters, medoids
-
-    # ============================================
+    # ============================================================
     # CUSTOM K-MEDOIDS
-    # ============================================
-    if method == "k_medoids":
-        clusters, medoids = k_medoids(instance_name, k, **kwargs)
-        return clusters, medoids
+    # ============================================================
+    if method == "custom_k_medoids":
+        return k_medoids(instance_name, k, **kwargs)
 
-    if method == "k_medoids_pyclustering":
-        # returns {medoid_node_id: [members...]}
+    if method == "pyclust_k_medoids":
+        # pyclustering format is {medoid -> members}
         clust_by_medoid = k_medoids_pyclustering(instance_name, k, **kwargs)
         clusters = {}
         medoids = {}
@@ -82,37 +94,31 @@ def run_clustering(
             medoids[cid] = med
         return clusters, medoids
 
-    # ============================================
-    # SKLEARN-BASED AC
-    # ============================================
+    # ============================================================
+    # SKLEARN AC
+    # ============================================================
     if method == "sk_ac_avg":
-        clusters, medoids = run_sklearn_ac(instance_name, k, linkage="average", **kwargs)
-        return clusters, medoids
-
+        return run_sklearn_ac(instance_name, k, linkage="average", **kwargs)
     if method == "sk_ac_complete":
-        clusters, medoids = run_sklearn_ac(instance_name, k, linkage="complete", **kwargs)
-        return clusters, medoids
-    
+        return run_sklearn_ac(instance_name, k, linkage="complete", **kwargs)
     if method == "sk_ac_min":
-        clusters, medoids = run_sklearn_ac(instance_name, k, linkage="single", **kwargs)
-        return clusters, medoids
+        return run_sklearn_ac(instance_name, k, linkage="single", **kwargs)
 
-    # ============================================
+    # ============================================================
     # SKLEARN K-MEANS
-    # ============================================
+    # ============================================================
     if method == "sk_kmeans":
-        clusters, medoids, _centers = run_sklearn_kmeans(instance_name, k, **kwargs)
+        clusters, medoids, _ = run_sklearn_kmeans(instance_name, k, **kwargs)
         return clusters, medoids
 
-    # ============================================
+    # ============================================================
     # FCM (scikit-fuzzy)
-    # ============================================
+    # ============================================================
     if method == "fcm":
-        # returns: clusters, medoids, memberships, cntr
-        clusters, medoids, memberships, cntr = run_sklearn_fcm(instance_name, k, **kwargs)
+        clusters, medoids, _, _ = run_sklearn_fcm(instance_name, k, **kwargs)
         return clusters, medoids
 
-    # ============================================
-    # ERROR: unknown method
-    # ============================================
+    # ============================================================
+    # ERROR
+    # ============================================================
     raise ValueError(f"Unknown clustering method '{method}'.")

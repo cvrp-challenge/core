@@ -1,13 +1,23 @@
 """
 benchmark_drsci.py
 
-Benchmark script for running the DRSCI solver on multiple VRP instances.
+Benchmark script for running the FULL DRSCI solver on many VRP instances.
 
-This script:
-- Runs instances in parallel using DRSCI
-- Saves results in .sol files
-- Computes gap to reference solutions (if available)
-- Mirrors the structure of the PyVRP benchmark script used on TUM servers
+Pipeline of DRSCI:
+    - Vertex-based clustering (iter 0)
+    - Route-based decomposition (iter >= 1)
+    - Routing of subproblems
+    - Global LS
+    - Set Covering (SCP)
+    - Duplicate removal + LS repair
+    - Final LS refine
+    - Iterates until convergence or max_iters
+
+This benchmark:
+    ✓ Runs instances in parallel (TUM cluster friendly)
+    ✓ Saves final DRSCI routes to .sol
+    ✓ Computes gap vs reference solutions
+    ✓ Prints clean summary table like the PyVRP benchmark
 """
 
 import argparse
@@ -19,8 +29,8 @@ from typing import Optional
 # ---------------------------------------------------------
 # Project path setup
 # ---------------------------------------------------------
-CURRENT = Path(__file__).parent            # core/src/master
-PROJECT_ROOT = CURRENT.parent.parent       # core/
+CURRENT = Path(__file__).parent         # master/
+PROJECT_ROOT = CURRENT.parent.parent    # core/
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -32,9 +42,13 @@ from master.utils.solution_helpers import (
 )
 from master.utils.loader import load_instance
 
+# ---------------------------------------------------------
+# Imports inside worker will load run_drsci correctly
+# ---------------------------------------------------------
+
 
 # ---------------------------------------------------------
-# Instances for benchmarking
+# Instances to benchmark
 # ---------------------------------------------------------
 INSTANCES = [
     "X-n502-k39.vrp",
@@ -61,10 +75,10 @@ INSTANCES = [
 
 
 # ---------------------------------------------------------
-# Multiprocessing initialization
+# Worker initialization for multiprocessing
 # ---------------------------------------------------------
 def _init_worker():
-    """Ensure project root is known inside workers."""
+    """Ensure worker processes know project root."""
     import sys
     from pathlib import Path
 
@@ -78,89 +92,105 @@ def _init_worker():
 # ---------------------------------------------------------
 # Solve a single instance with DRSCI
 # ---------------------------------------------------------
-def solve_instance_drsci(instance_name: str,
-                         output_dir: Path,
-                         max_iters: int,
-                         seed: int = 0) -> dict:
+def solve_instance_drsci(
+    instance_name: str,
+    output_dir: Path,
+    max_iters: int,
+    seed: int = 0,
+) -> dict:
     """
-    Solve one instance using DRSCI and write its .sol file.
+    Executes full DRSCI on one VRP instance.
+    Returns dict with cost, runtime, iteration count, and feasibility.
     """
     try:
-        # Local import (important for ProcessPoolExecutor)
+        # Import inside worker so parallel jobs do not fail
         from master.run_drsci import drsci_solve
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Run DRSCI
+        # ----------------- RUN DRSCI -----------------
         result = drsci_solve(
             instance=instance_name,
             max_iters=max_iters,
             seed=seed,
         )
 
-        # Evaluate gap vs reference
-        existing_sol = find_existing_solution(instance_name)
-        reference_cost = existing_sol[1] if existing_sol else None
-        gap = calculate_gap(result["best_cost"], reference_cost) if reference_cost else None
+        best_cost = result["best_cost"]
+        routes = result["routes"]
+        runtime = result["runtime"]
+        iters = result["iterations"]
 
-        # Write .sol file
-        sol_path = output_dir / f"{Path(instance_name).stem}.sol"
+        # ----------------- GAP vs REF -----------------
+        ref = find_existing_solution(instance_name)
+        reference_cost = ref[1] if ref else None
+        gap = calculate_gap(best_cost, reference_cost) if reference_cost else None
+
+        # ----------------- WRITE .SOL -----------------
         inst = load_instance(instance_name)
+        sol_path = output_dir / f"{Path(instance_name).stem}_drsci.sol"
 
         _write_solution(
             where=output_dir,
             instance_name=instance_name,
             data=inst,
-            result=result["routes"],
+            result=routes,
             solver="DRSCI",
-            runtime=result["runtime"],
-            stopping_criteria=f"DRSCI(Iters={result['iterations']})",
+            runtime=runtime,
+            stopping_criteria=f"DRSCI(iters={iters})",
             gap_percent=gap,
+            filename_override=sol_path.name,
         )
 
         return {
             "instance": instance_name,
-            "cost": result["best_cost"],
-            "runtime": result["runtime"],
-            "iterations": result["iterations"],
-            "feasible": True,
+            "success": True,
+            "cost": best_cost,
+            "runtime": runtime,
+            "iterations": iters,
             "gap_percent": gap,
             "reference_cost": reference_cost,
             "sol_path": str(sol_path),
-            "success": True,
         }
 
     except Exception as e:
         return {
             "instance": instance_name,
-            "error": str(e),
             "success": False,
+            "error": str(e),
         }
 
 
 # ---------------------------------------------------------
-# Run benchmark on all instances
+# Run full benchmark for all instances
 # ---------------------------------------------------------
-def run_benchmark(output_path: str,
-                  max_workers: Optional[int],
-                  max_iters: int):
+def run_benchmark(
+    output_path: str,
+    max_workers: Optional[int],
+    max_iters: int,
+):
     """
-    Execute DRSCI on all benchmark instances in parallel.
+    Run DRSCI on all benchmark instances in parallel.
     """
     output_dir = Path(output_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Running DRSCI benchmark on {len(INSTANCES)} instances")
-    print(f"Output directory: {output_dir}")
-    print(f"DRSCI iterations per instance: {max_iters}")
-    print(f"Parallel workers: {max_workers or 'auto'}")
+    print(f"Running DRSCI benchmark on {len(INSTANCES)} instances.")
+    print(f"Max DRSCI iterations  : {max_iters}")
+    print(f"Parallel workers       : {max_workers or 'auto'}")
+    print(f"Output directory       : {output_dir}")
     print("-" * 80)
 
     results = []
 
     with ProcessPoolExecutor(max_workers=max_workers, initializer=_init_worker) as executor:
+
         futures = {
-            executor.submit(solve_instance_drsci, inst, output_dir, max_iters): inst
+            executor.submit(
+                solve_instance_drsci,
+                inst,
+                output_dir,
+                max_iters,
+            ): inst
             for inst in INSTANCES
         }
 
@@ -171,59 +201,63 @@ def run_benchmark(output_path: str,
                 results.append(r)
 
                 if r["success"]:
-                    gap_str = (
-                        f" | Gap: {r['gap_percent']:+.2f}% (ref: {r['reference_cost']:.2f})"
+                    gap_txt = (
+                        f" | Gap: {r['gap_percent']:+.2f}% (ref={r['reference_cost']:.1f})"
                         if r["gap_percent"] is not None
                         else ""
                     )
-
                     print(
-                        f"✓ {r['instance']}: "
-                        f"Cost={r['cost']:.2f}, "
-                        f"Time={r['runtime']:.2f}s, "
-                        f"Iters={r['iterations']}{gap_str}"
+                        f"✓ {instance:<20} "
+                        f"Cost={r['cost']:.2f} "
+                        f"Time={r['runtime']:.2f}s "
+                        f"Iters={r['iterations']}{gap_txt}"
                     )
                 else:
-                    print(f"✗ {instance}: ERROR - {r['error']}")
+                    print(f"✗ {instance} ERROR: {r['error']}")
 
             except Exception as e:
-                print(f"✗ {instance}: EXCEPTION - {e}")
-                results.append({"instance": instance, "error": str(e), "success": False})
+                print(f"✗ {instance} EXCEPTION: {e}")
+                results.append({
+                    "instance": instance,
+                    "success": False,
+                    "error": str(e),
+                })
 
-    # --------------- Summary ---------------
+    # ---------------------------------------------------------
+    # Summary
+    # ---------------------------------------------------------
     print("-" * 80)
-    print("\nSummary:")
+    print("\nSummary:\n")
 
-    successful = [r for r in results if r.get("success")]
-    failed = [r for r in results if not r.get("success")]
+    ok = [r for r in results if r["success"]]
+    bad = [r for r in results if not r["success"]]
 
-    print(f"Successful: {len(successful)}/{len(results)}")
-    print(f"Failed: {len(failed)}/{len(results)}")
+    print(f"Successful: {len(ok)}/{len(results)}")
+    print(f"Failed    : {len(bad)}/{len(results)}\n")
 
-    if successful:
-        avg_cost = sum(r["cost"] for r in successful) / len(successful)
-        avg_runtime = sum(r["runtime"] for r in successful) / len(successful)
-        print(f"Average cost: {avg_cost:.2f}")
-        print(f"Average runtime: {avg_runtime:.2f}s")
+    if ok:
+        avg_cost = sum(r["cost"] for r in ok) / len(ok)
+        avg_runtime = sum(r["runtime"] for r in ok) / len(ok)
+        print(f"Average final cost    : {avg_cost:.2f}")
+        print(f"Average runtime       : {avg_runtime:.2f}s")
 
-        gaps = [r["gap_percent"] for r in successful if r["gap_percent"] is not None]
+        gaps = [r["gap_percent"] for r in ok if r["gap_percent"] is not None]
         if gaps:
             avg_gap = sum(gaps) / len(gaps)
-            print(f"Average gap vs reference: {avg_gap:+.2f}%")
+            print(f"Average gap vs ref    : {avg_gap:+.2f}%")
 
-    if failed:
+    if bad:
         print("\nFailed instances:")
-        for r in failed:
+        for r in bad:
             print(f"  - {r['instance']}: {r['error']}")
 
 
 # ---------------------------------------------------------
-# CLI Entry Point
+# CLI
 # ---------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="Run DRSCI benchmark on multiple VRP instances",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="Benchmark the FULL DRSCI algorithm on multiple VRP instances."
     )
 
     parser.add_argument(
@@ -235,13 +269,13 @@ def main():
         "--max_iters",
         type=int,
         default=10,
-        help="Maximum DRSCI iterations per instance",
+        help="Maximum DRSCI outer iterations per instance",
     )
     parser.add_argument(
         "--max_workers",
         type=int,
         default=None,
-        help="Number of parallel worker processes",
+        help="Parallel worker processes (default auto)",
     )
 
     args = parser.parse_args()

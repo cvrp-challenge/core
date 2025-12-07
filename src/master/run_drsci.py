@@ -1,18 +1,11 @@
 """
 run_drsci.py
 
-Provides a single callable function:
+Unified DRSCI pipeline with consistent clustering method naming.
 
-    drsci_solve(instance, max_iters, seed)
-
-This runs the full DRSCI iterative pipeline including:
-- Customer-based decomposition (iteration 0)
-- Route-based decomposition (iteration >= 1)
-- PyVRP routing of clusters
-- Global LS
-- Set Covering (SCP)
-- Duplicate removal + LS repair
-- Final LS refine
+Supports:
+    - Any clustering method for customer-based CD (custom_* , sk_* , pyclust_* , fcm)
+    - Fast package-based clustering methods for RBD (sk_* , pyclust_* , fcm)
 """
 
 import sys
@@ -30,7 +23,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # ---------------------------------------------------------
-# Project imports
+# Imports
 # ---------------------------------------------------------
 from master.clustering.run_clustering import run_clustering
 from master.clustering.route_based import route_based_decomposition
@@ -44,25 +37,48 @@ from master.setcover.duplicate_removal import remove_duplicates
 # DRSCI CONFIGURATION
 # ==========================================================
 
-# Customer-based decomposition (iteration 0)
+# --- Customer-based decomposition ---
 K_CD = 9
-CD_METHOD = "sk_ac_avg"
+CD_METHOD = "sk_ac_avg"   # free choice: custom_*, sk_*, pyclust_*, fcm
 
-# Route-based decomposition (iteration >= 1)
+# --- Route-based decomposition (fast methods only) ---
 RBD_K = K_CD
-RBD_METHOD = "sk_ac_avg"
+RBD_METHOD = "sk_ac_avg"   # free choice: sk_*, pyclust_*, fcm
 RBD_USE_ANGLE = True
 RBD_USE_LOAD = True
 
-# Local Search settings
+# --- Local Search ---
 LS_NEIGHBOURHOOD = "dri_spatial"
 LS_MAX_NEIGHBOURS = 40
 
-# SCP settings
-SCP_TIME_LIMIT = 60.0  # seconds
+# --- SCP ---
+SCP_TIME_LIMIT = 60.0
 
-# Convergence condition
+# --- Convergence ---
 IMPROVEMENT_TOL_REL = 1e-3
+
+
+# ==========================================================
+# Validation of method names for RBD
+# ==========================================================
+
+FAST_RBD_METHODS = {
+    "sk_ac_avg",
+    "sk_ac_complete",
+    "sk_ac_min",
+    "sk_kmeans",
+    "fcm",
+    "pyclust_k_medoids",
+}
+
+def _validate_rbd_method(method: str):
+    if method not in FAST_RBD_METHODS:
+        raise ValueError(
+            f"RBD_METHOD '{method}' is not allowed.\n"
+            f"RBD must use FAST methods only:\n"
+            f"{FAST_RBD_METHODS}\n\n"
+            f"Your slow methods (custom_* , custom_k_medoids) can be used only for CD."
+        )
 
 
 # ==========================================================
@@ -71,27 +87,10 @@ IMPROVEMENT_TOL_REL = 1e-3
 
 def drsci_solve(instance: str, max_iters: int = 10, seed: int = 0):
     """
-    Run the full DRSCI algorithm on a single VRP instance.
-
-    Parameters
-    ----------
-    instance : str
-        VRPLIB instance filename (e.g., "X-n101-k25.vrp")
-
-    max_iters : int
-        Maximum number of DRSCI outer-iterations
-
-    seed : int
-        Random seed for LS and PyVRP
-
-    Returns
-    -------
-    dict with keys:
-        "best_cost"   : best solution cost
-        "routes"      : list of VRPLIB routes
-        "iterations"  : number of iterations executed
-        "runtime"     : total wall-clock time
+    Run the DRSCI algorithm with full control over clustering methods.
     """
+
+    _validate_rbd_method(RBD_METHOD)
 
     t0 = time.time()
 
@@ -106,8 +105,10 @@ def drsci_solve(instance: str, max_iters: int = 10, seed: int = 0):
         # 1) Decomposition step
         # -------------------------------------------------------------
         if it == 0:
+            # Customer-based decomposition
             clusters, _ = run_clustering(CD_METHOD, instance, K_CD)
         else:
+            # Route-based decomposition
             clusters = route_based_decomposition(
                 instance_name=instance,
                 global_routes=global_routes,
@@ -118,18 +119,18 @@ def drsci_solve(instance: str, max_iters: int = 10, seed: int = 0):
             )
 
         # -------------------------------------------------------------
-        # 2) Routing of all decomposed clusters
+        # 2) Routing of clusters
         # -------------------------------------------------------------
-        routing_result = solve_clusters_with_pyvrp(
+        routing = solve_clusters_with_pyvrp(
             instance_name=instance,
             clusters=clusters,
             time_limit_per_cluster=5.0,
             seed=seed,
         )
-        routes_routing = routing_result["routes"]
+        routes_routing = routing["routes"]
 
         # -------------------------------------------------------------
-        # 3) Global LS
+        # 3) Global Local Search
         # -------------------------------------------------------------
         ls1 = improve_with_local_search(
             instance_name=instance,
@@ -142,7 +143,7 @@ def drsci_solve(instance: str, max_iters: int = 10, seed: int = 0):
         cost_ls1 = ls1["improved_cost"]
 
         # -------------------------------------------------------------
-        # 4) Set Covering Problem (SCP)
+        # 4) SCP
         # -------------------------------------------------------------
         scp = solve_scp(
             instance_name=instance,
@@ -150,10 +151,7 @@ def drsci_solve(instance: str, max_iters: int = 10, seed: int = 0):
             time_limit=SCP_TIME_LIMIT,
             verbose=False,
         )
-        selected_routes = scp.get("selected_routes", None)
-
-        if not selected_routes:
-            selected_routes = routes_ls1
+        selected_routes = scp.get("selected_routes") or routes_ls1
 
         # -------------------------------------------------------------
         # 5) Duplicate removal + LS repair
@@ -167,14 +165,14 @@ def drsci_solve(instance: str, max_iters: int = 10, seed: int = 0):
             ls_max_neighbours_restricted=LS_MAX_NEIGHBOURS,
             seed=seed,
         )
-        routes_after_dup = dup["routes"]
+        routes_clean = dup["routes"]
 
         # -------------------------------------------------------------
-        # 6) Final LS refine for this iteration
+        # 6) Final LS
         # -------------------------------------------------------------
         ls2 = improve_with_local_search(
             instance_name=instance,
-            routes_vrplib=routes_after_dup,
+            routes_vrplib=routes_clean,
             neighbourhood=LS_NEIGHBOURHOOD,
             max_neighbours=LS_MAX_NEIGHBOURS,
             seed=seed,
@@ -183,15 +181,15 @@ def drsci_solve(instance: str, max_iters: int = 10, seed: int = 0):
         current_cost = ls2["improved_cost"]
 
         # -------------------------------------------------------------
-        # 7) Update best solution and check convergence
+        # 7) Convergence & best solution tracking
         # -------------------------------------------------------------
         if current_cost < best_cost:
             best_cost = current_cost
             best_routes = [list(r) for r in global_routes]
 
         if prev_cost < float("inf"):
-            rel_impr = (prev_cost - current_cost) / max(prev_cost, 1e-9)
-            if rel_impr < IMPROVEMENT_TOL_REL:
+            rel_improvement = (prev_cost - current_cost) / max(prev_cost, 1e-9)
+            if rel_improvement < IMPROVEMENT_TOL_REL:
                 break
 
         prev_cost = current_cost

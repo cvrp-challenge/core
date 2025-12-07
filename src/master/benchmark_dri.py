@@ -1,24 +1,25 @@
 """
-benchmark_dr.py
+benchmark_dri.py
 
-Benchmark clustering methods using the DR pipeline:
-    Decompose (clustering) → Route (PyVRP) → Evaluate cost
+Benchmark clustering methods using the pipeline:
+    clustering → routing → global LS → objective
 
-Purposely excludes:
-    - Local Search (LS)
+This corresponds to the "DRI" framework:
+    Decompose → Route → Improve
+
+Excluded:
     - Set Covering (SCP)
-    - Route-Based Decomposition (RBD)
+    - Route-based decomposition (RBD)
     - Duplicate removal
-    - DRSCI iterations
+    - DRSCI outer-iterations
 
-This benchmark compares clustering methods based purely on
-their decomposition quality after routing.
+Used for evaluating the effect of clustering + LS quality.
 
-Runs in parallel using ProcessPoolExecutor (TUM server compatible).
+Runs in parallel (TUM cluster compatible).
 
 Outputs:
     - cost per method per instance
-    - .sol file containing resulting routes
+    - .sol file containing the globally improved routes
 """
 
 import argparse
@@ -31,22 +32,20 @@ from typing import Optional, List, Dict
 # Project path setup
 # ---------------------------------------------------------
 CURRENT = Path(__file__).parent
-PROJECT_ROOT = CURRENT.parent.parent  # core/
+PROJECT_ROOT = CURRENT.parent.parent   # core/
 
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 # ---------------------------------------------------------
-# Project imports
+# Imports from project modules
 # ---------------------------------------------------------
 from master.clustering.run_clustering import run_clustering
 from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
+from master.improve.ls_controller import improve_with_local_search
 from master.utils.loader import load_instance
-from master.utils.solution_helpers import (
-    _write_solution,
-    find_existing_solution,
-    calculate_gap,
-)
+from master.utils.solution_helpers import _write_solution, find_existing_solution, calculate_gap
+
 
 # ---------------------------------------------------------
 # Clustering methods to benchmark
@@ -86,11 +85,12 @@ INSTANCES = [
     "XLTEST-n10001-k798.vrp",
 ]
 
+
 # ---------------------------------------------------------
-# Worker Initialization
+# Worker initialization
 # ---------------------------------------------------------
 def _init_worker():
-    """Ensure subprocesses know the project root."""
+    """Make project root visible to subprocesses."""
     import sys
     from pathlib import Path
 
@@ -102,29 +102,32 @@ def _init_worker():
 
 
 # ---------------------------------------------------------
-# Single-instance & single-method evaluation
+# Evaluate ONE method on ONE instance
 # ---------------------------------------------------------
 def evaluate_method_on_instance(
     instance_name: str,
     method: str,
     output_dir: Path,
     k: Optional[int] = None,
+    ls_neigh: str = "dri_spatial",
+    ls_max: int = 40,
 ) -> dict:
     """
-    Run clustering → routing for a single method on a single instance.
-    Returns cost, runtime, routes, feasibility, and gap vs reference.
+    Runs: clustering → routing → LS.
+    Writes a .sol file and returns result dict.
     """
+
     try:
         inst = load_instance(instance_name)
 
-        # Determine number of clusters (vehicles)
+        # Determine K if not specified
         if k is None:
             k = int(instance_name.split("-k")[-1].split(".")[0])
 
-        # 1) Clustering
+        # ------------------ 1) Clustering ------------------
         clusters, _ = run_clustering(method, instance_name, k)
 
-        # 2) Routing subproblems
+        # ------------------ 2) Routing ---------------------
         routing = solve_clusters_with_pyvrp(
             instance_name=instance_name,
             clusters=clusters,
@@ -132,25 +135,38 @@ def evaluate_method_on_instance(
             seed=0,
         )
 
-        cost = routing["total_cost"]
-        routes = routing["routes"]
+        routes_after_routing = routing["routes"]
+        routing_cost = routing["total_cost"]
 
-        # 3) Gap vs reference
+        # ------------------ 3) Global LS -------------------
+        ls_result = improve_with_local_search(
+            instance_name=instance_name,
+            routes_vrplib=routes_after_routing,
+            neighbourhood=ls_neigh,
+            max_neighbours=ls_max,
+            seed=0,
+        )
+
+        improved_routes = ls_result["routes_improved"]
+        improved_cost = ls_result["improved_cost"]
+        ls_runtime = ls_result["runtime"]
+
+        # ------------------ 4) Gap vs reference ------------
         ref = find_existing_solution(instance_name)
         reference_cost = ref[1] if ref else None
-        gap = calculate_gap(cost, reference_cost) if reference_cost else None
+        gap = calculate_gap(improved_cost, reference_cost) if reference_cost else None
 
-        # 4) Write solution
-        sol_name = f"{Path(instance_name).stem}_{method}.sol"
-        stopping = f"DR(method={method})"
+        # ------------------ 5) Write .sol output -----------
+        sol_name = f"{Path(instance_name).stem}_{method}_dri.sol"
+        stopping = f"DRI(method={method}, LS)"
 
         _write_solution(
             where=output_dir,
             instance_name=instance_name,
             data=inst,
-            result=routes,
-            solver=f"DR({method})",
-            runtime=routing["total_runtime"],
+            result=improved_routes,
+            solver=f"DRI({method})",
+            runtime=ls_runtime + routing["total_runtime"],
             stopping_criteria=stopping,
             gap_percent=gap,
             filename_override=sol_name,
@@ -159,10 +175,9 @@ def evaluate_method_on_instance(
         return {
             "instance": instance_name,
             "method": method,
-            "cost": cost,
-            "routes": routes,
-            "runtime": routing["total_runtime"],
-            "feasible": True,
+            "cost": improved_cost,
+            "runtime": ls_runtime + routing["total_runtime"],
+            "routes": improved_routes,
             "gap_percent": gap,
             "reference_cost": reference_cost,
             "success": True,
@@ -178,7 +193,7 @@ def evaluate_method_on_instance(
 
 
 # ---------------------------------------------------------
-# Benchmark runner
+# Benchmark across all instances & methods
 # ---------------------------------------------------------
 def run_benchmark(
     output_path: str,
@@ -187,12 +202,13 @@ def run_benchmark(
     k_override: Optional[int],
 ):
     """
-    Run all clustering methods on all instances in parallel.
+    Parallel benchmark of all clustering methods using the full DRI pipeline.
     """
+
     output_dir = Path(output_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Running DR benchmark on {len(INSTANCES)} instances")
+    print(f"Running DRI benchmark on {len(INSTANCES)} instances.")
     print(f"Methods: {methods}")
     print(f"Output directory: {output_dir}")
     print(f"Parallel workers: {max_workers or 'auto'}")
@@ -201,6 +217,7 @@ def run_benchmark(
     results = []
 
     with ProcessPoolExecutor(max_workers=max_workers, initializer=_init_worker) as executor:
+
         futures = {
             executor.submit(
                 evaluate_method_on_instance,
@@ -221,22 +238,19 @@ def run_benchmark(
                 results.append(r)
 
                 if r["success"]:
-                    gap_str = (
+                    gap_txt = (
                         f" | Gap: {r['gap_percent']:+.2f}%"
-                        if r["gap_percent"] is not None
-                        else ""
+                        if r["gap_percent"] is not None else ""
                     )
                     print(
                         f"✓ {inst} [{method}]  "
-                        f"Cost={r['cost']:.2f},  "
-                        f"Time={r['runtime']:.2f}s"
-                        f"{gap_str}"
+                        f"Cost={r['cost']:.2f}, Runtime={r['runtime']:.2f}s{gap_txt}"
                     )
                 else:
-                    print(f"✗ {inst} [{method}]: ERROR - {r['error']}")
+                    print(f"✗ {inst} [{method}] ERROR - {r['error']}")
 
             except Exception as e:
-                print(f"✗ {inst} [{method}]: EXCEPTION - {e}")
+                print(f"✗ {inst} [{method}] EXCEPTION - {e}")
                 results.append({
                     "instance": inst,
                     "method": method,
@@ -244,9 +258,9 @@ def run_benchmark(
                     "success": False,
                 })
 
-    # ---------------- Summary ----------------
-    print("-" * 80)
-    print("\nSummary:\n")
+    # ---------------- Summary Table ----------------
+    print("\n" + "-" * 80)
+    print("Summary Table (lower is better):\n")
 
     table: Dict[str, Dict[str, float]] = {}
 
@@ -280,21 +294,21 @@ def run_benchmark(
 # ---------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="Benchmark DR (Decompose → Route) across different clustering methods."
+        description="Benchmark DRI (Decompose → Route → Improve via LS)."
     )
 
     parser.add_argument("output_path", type=str,
                         help="Directory to store .sol files")
 
     parser.add_argument("--max_workers", type=int, default=None,
-                        help="Parallel workers (default auto)")
+                        help="Parallel workers")
 
     parser.add_argument("--methods", type=str, nargs="+",
                         default=CLUSTERING_METHODS,
                         help="Clustering methods to compare")
 
     parser.add_argument("--k", type=int, default=None,
-                        help="Override number of clusters (default: derive from instance name)")
+                        help="Override number of clusters (default: from instance name)")
 
     args = parser.parse_args()
 
