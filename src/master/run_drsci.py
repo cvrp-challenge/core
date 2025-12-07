@@ -50,7 +50,7 @@ CD_METHOD = "sk_ac_avg"
 
 # Route-based decomposition (iteration >= 1)
 RBD_K = K_CD
-RBD_METHOD = "ac_avg"
+RBD_METHOD = "sk_ac_avg"
 RBD_USE_ANGLE = True
 RBD_USE_LOAD = True
 
