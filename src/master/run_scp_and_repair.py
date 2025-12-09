@@ -47,14 +47,14 @@ def lazy_import_scp():
 # ---------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------
-INSTANCE = "X-n101-k25.vrp"
+INSTANCE = "X-n502-k39.vrp"
 
 # Customer-based decomposition parameters
 K = 3
 CLUSTER_METHOD = "sk_ac_avg"
 
 # Optional SCP (requires gurobi)
-RUN_SCP = False  # set True after Gurobi is installed
+RUN_SCP = True  # set True after Gurobi is installed
 
 # LS (Local Search) configuration
 SEED = 0
@@ -62,7 +62,7 @@ LS_NEIGHBOURHOOD = "dri_spatial"  # same used in your LS controller
 
 # Route-Based Decomposition (RBD) configuration
 RUN_RBD = True
-RBD_METHOD = "ac_avg"  # safe choice for now, until kmeans override is updated
+RBD_METHOD = "sk_ac_avg"  # safe choice for now, until kmeans override is updated
 RBD_K = K               # number of RBD clusters (usually same as K)
 
 
