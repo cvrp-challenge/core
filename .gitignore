@@ -89,3 +89,7 @@ tmp/
 .DS_Store
 Thumbs.db
 
+# Scripts
+run.sh
+runner.py
+setup.sh
