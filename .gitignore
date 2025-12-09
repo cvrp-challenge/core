@@ -77,7 +77,6 @@ compile_commands.json
 *.log
 *.csv
 results/
-output/
 
 # Temporary files
 *.tmp
