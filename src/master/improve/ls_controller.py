@@ -1,4 +1,3 @@
-# master/improve/ls_controller.py
 """
 Local search controller using PyVRP's LocalSearch.
 
@@ -114,7 +113,6 @@ def _build_dri_neighbours(
         for j in nodes:
             if j == i:
                 continue
-            key = (i, j) if i < j else (j, i)
             dij = get_symmetric_value(S, i, j)
             cand.append((dij, j))
 
@@ -129,6 +127,48 @@ def _build_dri_neighbours(
 
 
 # ======================================================================
+# Helpers: capacity feasibility check
+# ======================================================================
+
+def _check_capacity_feasibility(
+    inst: Dict[str, object],
+    routes_vrplib: List[List[int]],
+    label: str,
+) -> None:
+    """
+    Check that every route respects the vehicle capacity.
+
+    inst:
+        Output of load_instance(instance_name).
+    routes_vrplib:
+        List of VRPLIB routes (each starts/ends with depot = 1).
+    label:
+        Context string for error messages ("input routes", "routes after LS", ...).
+    """
+    cap = int(inst["capacity"])
+    demands = inst["demand"]
+
+    violating: List[Tuple[int, int]] = []
+
+    for r_idx, route in enumerate(routes_vrplib):
+        load = sum(int(demands[nid - 1]) for nid in route if nid != 1)
+        if load > cap:
+            violating.append((r_idx, load))
+
+    if violating:
+        # Show only first few in message to keep it readable.
+        preview = ", ".join(
+            f"route {idx} load={load}"
+            for idx, load in violating[:5]
+        )
+        raise ValueError(
+            f"[LS] {label} has capacity violations (cap={cap}). "
+            f"Examples: {preview}. "
+            f"Total violating routes: {len(violating)}."
+        )
+
+
+# ======================================================================
 # Conversion between VRPLIB routes and PyVRP Solution
 # ======================================================================
 
@@ -137,7 +177,7 @@ def _vrplib_routes_to_solution(data, routes_vrplib):
 
     for r in routes_vrplib:
         # convert VRPLIB nodes to location indices
-        clients = [(nid - 1) for nid in r if nid != 1]   # FIXED
+        clients = [(nid - 1) for nid in r if nid != 1]
         if clients:
             routes_clients.append(clients)
 
@@ -151,7 +191,7 @@ def _solution_to_vrplib_routes(sol):
         clients = list(route.visits())
         if not clients:
             continue
-        seq = [1] + [(idx + 1) for idx in clients] + [1]   # FIXED
+        seq = [1] + [(idx + 1) for idx in clients] + [1]
         vrp_routes.append(seq)
 
     return vrp_routes
@@ -168,7 +208,7 @@ def improve_with_local_search(
     neighbourhood: Literal["dri_spatial", "dri_combined"] = "dri_spatial",
     max_neighbours: int = 40,
     seed: int = 0,
-    load_penalty: int = 20,
+    load_penalty: int = 1_000_000,
     dist_penalty: int = 1,
 ) -> Dict[str, object]:
     """
@@ -188,6 +228,7 @@ def improve_with_local_search(
             Seed for PyVRP's RandomNumberGenerator.
         load_penalty:
             Penalty coefficient for capacity violations (PyVRP CostEvaluator).
+            Set very large by default to strongly discourage infeasible routes.
         dist_penalty:
             Distance scaling in the CostEvaluator.
 
@@ -199,6 +240,7 @@ def improve_with_local_search(
             - "routes_improved"
             - "ls_moves"
             - "ls_improving_moves"
+            - "ls_updates"
     """
     # --------------------------------------------------------------
     # 1) Read instance with PyVRP to get ProblemData
@@ -206,13 +248,16 @@ def improve_with_local_search(
     instance_path = _resolve_instance_path(instance_name)
     data = read(instance_path)  # single-depot CVRP
 
-    # Dimension check using vrplib loader (optional sanity)
+    # Dimension + capacity sanity via VRPLIB loader
     inst = load_instance(instance_name)
     dim = int(inst["dimension"])
     assert data.num_locations == dim, (
         f"PyVRP data.num_locations={data.num_locations} "
         f"!= VRPLIB DIMENSION={dim}"
     )
+
+    # Sanity: incoming routes must be capacity-feasible
+    _check_capacity_feasibility(inst, routes_vrplib, label="input routes to LS")
 
     # --------------------------------------------------------------
     # 2) Build CostEvaluator & RNG
@@ -256,6 +301,9 @@ def improve_with_local_search(
     improved_cost = cost_eval.penalised_cost(sol_improved)
 
     routes_improved = _solution_to_vrplib_routes(sol_improved)
+
+    # Enforce that LS did not create over-capacity routes
+    _check_capacity_feasibility(inst, routes_improved, label="routes after LS")
 
     stats = ls.statistics  # LocalSearchStatistics
 
