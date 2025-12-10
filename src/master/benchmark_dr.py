@@ -154,7 +154,7 @@ def evaluate_method_on_instance(
 
         _write_solution(
             where=output_dir,
-            instance_name=f"{Path(instance_name).stem}_{method}",
+            instance_name=f"{Path(instance_name).stem}_{method}_{dissimilarity}",
             data=inst,
             result=routes,
             solver=f"PyVRP (HGS)",
