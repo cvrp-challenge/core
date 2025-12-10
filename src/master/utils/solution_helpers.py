@@ -88,6 +88,8 @@ def _write_solution(
     runtime: float,
     stopping_criteria: str,
     gap_percent: Optional[float] = None,
+    clustering_method: Optional[str] = None,
+    dissimilarity: Optional[str] = None,
 ) -> None:
     """
     Write solution file in VRPLIB format with additional metadata.
@@ -95,7 +97,10 @@ def _write_solution(
     Format:
     1. Routes (standard VRPLIB format)
     2. Cost (standard VRPLIB format)
-    3. Gap line with: solver, time, stopping criteria, gap (or "n/a")
+    3. Empty row
+    4. Clustering Method, Dissimilarity, Solver
+    5. Empty row
+    6. Runtime, Stopping Criteria, Gap
     
     Args:
         where: Path where the .sol file should be written
@@ -106,6 +111,8 @@ def _write_solution(
         runtime: Time used to get the solution (in seconds)
         stopping_criteria: Description of the stopping criteria
         gap_percent: Gap percentage if reference solution exists, None otherwise
+        clustering_method: Clustering method used (e.g., "sk_ac_avg", "fcm")
+        dissimilarity: Dissimilarity matrix used ("spatial" or "combined")
     """
     # Ensure the instance_name is just the stem (no extension)
     instance_stem = Path(instance_name).stem
@@ -140,10 +147,21 @@ def _write_solution(
         # Write standard VRPLIB format: cost
         handle.write(f"Cost: {round(result.cost(), 2)}\n")
 
-        # Write metadata after a gap (blank line)
+        # Empty row
         handle.write("\n")
-        gap_str = f"{gap_percent:+.2f}%" if gap_percent is not None else "n/a"
+        
+        # Clustering Method, Dissimilarity, Solver
+        clustering_str = clustering_method if clustering_method is not None else "n/a"
+        dissimilarity_str = dissimilarity if dissimilarity is not None else "n/a"
+        handle.write(f"Clustering: {clustering_str}\n")
+        handle.write(f"Dissimilarity: {dissimilarity_str}\n")
         handle.write(f"Solver: {solver}\n")
+        
+        # Empty row
+        handle.write("\n")
+        
+        # Runtime, Stopping Criteria, Gap
+        gap_str = f"{gap_percent:+.2f}%" if gap_percent is not None else "n/a"
         handle.write(f"Runtime: {runtime:.2f}s\n")
-        handle.write(f"Stopping criteria: {stopping_criteria}\n")
+        handle.write(f"Stopping Criteria: {stopping_criteria}\n")
         handle.write(f"Gap: {gap_str}\n")

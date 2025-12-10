@@ -157,19 +157,21 @@ def evaluate_method_on_instance(
         gap = calculate_gap(improved_cost, reference_cost) if reference_cost else None
 
         # ------------------ 5) Write .sol output -----------
-        sol_name = f"{Path(instance_name).stem}_{method}_dri.sol"
+        # Use instance name with method suffix for unique filenames
+        sol_instance_name = f"{Path(instance_name).stem}_{method}_dri"
         stopping = f"DRI(method={method}, LS)"
 
         _write_solution(
             where=output_dir,
-            instance_name=instance_name,
+            instance_name=sol_instance_name,
             data=inst,
             result=improved_routes,
-            solver=f"DRI({method})",
+            solver="PyVRP (HGS)",
             runtime=ls_runtime + routing["total_runtime"],
             stopping_criteria=stopping,
             gap_percent=gap,
-            filename_override=sol_name,
+            clustering_method=method,
+            dissimilarity="spatial",
         )
 
         return {

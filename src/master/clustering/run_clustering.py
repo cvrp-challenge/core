@@ -41,6 +41,7 @@ def run_clustering(
     method: str,
     instance_name: str,
     k: int,
+    use_combined: bool = False,
     **kwargs,
 ) -> Tuple[Dict[int, List[int]], Optional[Dict[int, int]]]:
     """
@@ -50,11 +51,11 @@ def run_clustering(
     ----------
     method : str
         One of:
-            custom_ac_avg
-            custom_ac_complete
-            custom_ac_min
-            custom_k_medoids
-            pyclust_k_medoids
+            !custom_ac_avg
+            !custom_ac_complete
+            !custom_ac_min
+            !custom_k_medoids
+            k_medoids_pyclustering
             sk_ac_avg
             sk_ac_complete
             sk_ac_min
@@ -72,21 +73,21 @@ def run_clustering(
     # CUSTOM AC
     # ============================================================
     if method == "custom_ac_avg":
-        return agglomerative_clustering_average(instance_name, k, **kwargs)
+        return agglomerative_clustering_average(instance_name, k, use_combined=use_combined, **kwargs)
     if method == "custom_ac_complete":
-        return agglomerative_clustering_complete(instance_name, k, **kwargs)
+        return agglomerative_clustering_complete(instance_name, k, use_combined=use_combined, **kwargs)
     if method == "custom_ac_min":
-        return agglomerative_clustering_min(instance_name, k, **kwargs)
+        return agglomerative_clustering_min(instance_name, k, use_combined=use_combined, **kwargs)
 
     # ============================================================
     # CUSTOM K-MEDOIDS
     # ============================================================
     if method == "custom_k_medoids":
-        return k_medoids(instance_name, k, **kwargs)
+        return k_medoids(instance_name, k, use_combined=use_combined, **kwargs)
 
-    if method == "pyclust_k_medoids":
+    if method == "k_medoids_pyclustering":
         # pyclustering format is {medoid -> members}
-        clust_by_medoid = k_medoids_pyclustering(instance_name, k, **kwargs)
+        clust_by_medoid = k_medoids_pyclustering(instance_name, k, use_combined=use_combined, **kwargs)
         clusters = {}
         medoids = {}
         for cid, (med, members) in enumerate(clust_by_medoid.items(), start=1):
@@ -98,24 +99,24 @@ def run_clustering(
     # SKLEARN AC
     # ============================================================
     if method == "sk_ac_avg":
-        return run_sklearn_ac(instance_name, k, linkage="average", **kwargs)
+        return run_sklearn_ac(instance_name, k, linkage="average", use_combined=use_combined, **kwargs)
     if method == "sk_ac_complete":
-        return run_sklearn_ac(instance_name, k, linkage="complete", **kwargs)
+        return run_sklearn_ac(instance_name, k, linkage="complete", use_combined=use_combined, **kwargs)
     if method == "sk_ac_min":
-        return run_sklearn_ac(instance_name, k, linkage="single", **kwargs)
+        return run_sklearn_ac(instance_name, k, linkage="single", use_combined=use_combined, **kwargs)
 
     # ============================================================
     # SKLEARN K-MEANS
     # ============================================================
     if method == "sk_kmeans":
-        clusters, medoids, _ = run_sklearn_kmeans(instance_name, k, **kwargs)
+        clusters, medoids, _ = run_sklearn_kmeans(instance_name, k, use_combined=use_combined, **kwargs)
         return clusters, medoids
 
     # ============================================================
     # FCM (scikit-fuzzy)
     # ============================================================
     if method == "fcm":
-        clusters, medoids, _, _ = run_sklearn_fcm(instance_name, k, **kwargs)
+        clusters, medoids, _, _ = run_sklearn_fcm(instance_name, k, use_combined=use_combined, **kwargs)
         return clusters, medoids
 
     # ============================================================

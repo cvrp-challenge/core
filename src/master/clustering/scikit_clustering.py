@@ -120,7 +120,7 @@ def run_sklearn_ac(instance_name: str,
     Supported linkages:
         "average"      ← average linkage
         "complete"     ← max linkage
-        "single"       ← min linkage (your request)
+        "single"       ← min linkage
     """
     assert linkage in ("average", "complete", "single"), \
         f"Invalid linkage '{linkage}', must be one of: 'average', 'complete', 'single'"

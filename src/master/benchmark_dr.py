@@ -141,19 +141,19 @@ def evaluate_method_on_instance(
         gap = calculate_gap(cost, reference_cost) if reference_cost else None
 
         # 4) Write solution
-        sol_name = f"{Path(instance_name).stem}_{method}.sol"
         stopping = f"DR(method={method})"
 
         _write_solution(
             where=output_dir,
-            instance_name=instance_name,
+            instance_name=f"{Path(instance_name).stem}_{method}",
             data=inst,
             result=routes,
-            solver=f"DR({method})",
+            solver=f"PyVRP (HGS)",
             runtime=routing["total_runtime"],
             stopping_criteria=stopping,
             gap_percent=gap,
-            filename_override=sol_name,
+            clustering_method=method,
+            dissimilarity="spatial",
         )
 
         return {
