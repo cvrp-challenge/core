@@ -128,6 +128,13 @@ def run_sklearn_ac(instance_name: str,
     if instance is None:
         instance = load_instance(instance_name)
 
+    if use_combined:
+        use_polar = True
+        use_demand = True
+    else:
+        use_polar = True
+        use_demand = False
+
     # Build feature matrix
     X, node_ids = build_feature_matrix(
         instance_name, instance,
