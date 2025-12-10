@@ -107,6 +107,7 @@ def run_sklearn_fcm(
     m: float = 2.0,
     max_iter: int = 150,
     error: float = 1e-5,
+    use_combined: bool = False,
     use_polar: bool = True,
     use_demand: bool = False,
     instance: Optional[dict] = None
@@ -132,6 +133,12 @@ def run_sklearn_fcm(
     if instance is None:
         instance = load_instance(instance_name)
 
+    # If use_combined is True, add both polar and demand features
+    # If use_combined is False, use only polar features
+    if use_combined:
+        use_polar = True
+        use_demand = True
+        
     # Build feature matrix
     X, node_ids = build_fcm_feature_matrix(
         instance_name,
