@@ -140,7 +140,7 @@ def evaluate_method_on_instance(
         routing = solve_clusters_with_pyvrp(
             instance_name=instance_name,
             clusters=clusters,
-            time_limit_per_cluster=60.0,
+            time_limit_per_cluster=10.0,
             seed=0,
         )
 
