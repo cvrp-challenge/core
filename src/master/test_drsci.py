@@ -1,31 +1,19 @@
 """
 Iterative DRSCI-style pipeline for a single large instance.
 
-This script aims to match the DRSCI framework described by Kerscher (2025):
+This version uses a FIXED number of clusters |C| = 2 for all iterations.
+This improves stability and avoids extremely large clusters that can lead
+to infeasible SCP coverage (e.g., missing customers in route pool).
 
-  - Dynamic per-instance parameters:
-        * TOTAL_TIME_LIMIT = 10 * N   (N = #customers)
-        * K_MAX = number from '-kXX' in filename (fast), 
-          else fallback: ceil(total_demand / q)
-
-  - Systematic cluster sizes:
-        C_s = {1, 2, 4, ..., K_MAX}
-
-  - In each iteration:
-        * choose |C| from C_s in systematic order
-        * with prob 0.5: vertex-based clustering
-        * with prob 0.5: route-based clustering (if best solution available)
-        * solve all clusters with PyVRP
-        * add routes to global pool
-        * solve SCP on full pool
-        * duplicate removal + global LS repair
-        * update best solution
-
-  - Termination:
-        * total time >= TOTAL_TIME_LIMIT
-        * no improvement for MAX_NO_IMPROVE iterations
-
-Outputs only console text — no solution files written.
+DRSCI loop:
+  - choose decomposition method (vertex-based or route-based)
+  - cluster into |C| = 2 clusters
+  - solve cluster routing via PyVRP
+  - add routes to global pool
+  - run SCP
+  - duplicate removal + global LS
+  - update best solution
+  - stop after 10*N seconds or 30 no-improvement iterations
 """
 
 import sys
@@ -62,32 +50,11 @@ def lazy_import_scp():
 
 
 # ---------------------------------------------------------
-# Instance configuration
+# Configuration
 # ---------------------------------------------------------
 INSTANCE = "X-n502-k39.vrp"
 
-    # "X-n502-k39.vrp",
-    # "X-n524-k153.vrp",
-    # "X-n561-k42.vrp",
-    # "X-n641-k35.vrp",
-    # "X-n685-k75.vrp",
-    # "X-n716-k35.vrp",
-    # "X-n749-k98.vrp",
-    # "X-n801-k40.vrp",
-    # "X-n856-k95.vrp",
-    # "X-n916-k207.vrp",
-    # "XLTEST-n1048-k138.vrp",
-    # "XLTEST-n1794-k408.vrp",
-    # "XLTEST-n2541-k62.vrp",
-    # "XLTEST-n3147-k210.vrp",
-    # "XLTEST-n4153-k259.vrp",
-    # "XLTEST-n6034-k1685.vrp",
-    # "XLTEST-n6734-k1347.vrp",
-    # "XLTEST-n8028-k691.vrp",
-    # "XLTEST-n8766-k55.vrp",
-    # "XLTEST-n10001-k798.vrp"
-
-# Vertex-based clustering methods
+# Vertex-based clustering methods used for diversification
 VB_CLUSTER_METHODS = [
     "sk_ac_avg",
     "sk_kmeans",
@@ -100,12 +67,17 @@ VB_CLUSTER_METHODS = [
 SEED = 0
 random.seed(SEED)
 
-TIME_LIMIT_PER_CLUSTER = 20.0
+# Routing and LS parameters
+TIME_LIMIT_PER_CLUSTER = 40.0          # increased due to cluster size ~250
 LS_NEIGHBOURHOOD = "dri_spatial"
 MAX_NEIGHBOURS_LS = 40
 
+# DRSCI iteration stopping rules
 MAX_NO_IMPROVE = 30
-PROB_VERTEX_BASED = 0.5
+PROB_VERTEX_BASED = 0.5                # 50% chance for VB / RB
+
+# FIXED number of clusters per iteration
+FIXED_C = 2
 
 
 # =====================================================================
@@ -114,42 +86,23 @@ PROB_VERTEX_BASED = 0.5
 
 def extract_kmax_from_filename(filename: str):
     """
-    Extract the Kmax (#vehicles) from VRPLIB-style filenames: '-kXX'.
-    Returns int if found, else raises ValueError.
+    Extracts Kmax (#vehicles) from VRPLIB filename pattern '-kXX'.
     """
     match = re.search(r'-k(\d+)', filename)
     if not match:
-        raise ValueError(f"No '-kXX' found in filename {filename}")
+        raise ValueError(f"No '-kXX' part found in filename: {filename}")
     return int(match.group(1))
 
 
-def build_initial_cluster_set(K_max: int):
-    """
-    Systematic cluster candidate set:
-        C_s = {1, 2, 4, 8, ..., K_max}
-    """
-    cand = set()
-    value = 1
-    while value <= K_max:
-        cand.add(value)
-        value *= 2
-    cand.add(K_max)
-    return sorted(cand)
-
-
 def deduplicate_routes(route_pool):
-    """
-    Remove duplicate routes from route pool.
-    A route is a list[int], so we convert to tuple for hashing.
-    """
-    unique_routes = []
     seen = set()
+    unique = []
     for r in route_pool:
         tup = tuple(r)
         if tup not in seen:
             seen.add(tup)
-            unique_routes.append(r)
-    return unique_routes
+            unique.append(r)
+    return unique
 
 
 # =====================================================================
@@ -159,68 +112,59 @@ def deduplicate_routes(route_pool):
 def main():
     solve_scp = lazy_import_scp()
 
-    # ---------------------------------------------------------
-    # Step 1: Try to extract K_MAX from filename
-    # ---------------------------------------------------------
     print(f"\n=== DRSCI-STYLE ITERATIVE RUN on {INSTANCE} ===")
 
-    filename_kmax = None
+    # ---------------------------------------------------------
+    # Step 1: Try reading K_MAX from filename
+    # ---------------------------------------------------------
     try:
-        filename_kmax = extract_kmax_from_filename(INSTANCE)
-        print(f"Found K_MAX={filename_kmax} from filename.")
+        K_MAX_filename = extract_kmax_from_filename(INSTANCE)
+        print(f"K_MAX extracted from filename: {K_MAX_filename}")
     except ValueError:
-        print("Filename does not contain '-kXX'. Falling back to demand/capacity.")
+        K_MAX_filename = None
+        print("Filename does not contain -kXX.")
 
     # ---------------------------------------------------------
-    # Step 2: Load instance to compute N and fallback K_MAX
+    # Step 2: Load instance and compute N, q, total demand
     # ---------------------------------------------------------
     inst = load_instance(INSTANCE)
 
-    # --- Correct for VRPLIB structures used in your project ---
-    # inst["demand"]     = {node_id: demand}
+    # VRPLIB structure in your project:
+    # inst["demand"]     = dict {node_id: demand}
     # inst["capacity"]   = vehicle capacity
-    # depot is node 0
-
     demands = inst["demand"]
     q = inst["capacity"]
 
-    # number of customers (exclude depot 0)
+    # depot is node 0 → customers = all except 0
     N = len(demands) - 1
-
-    # total customer demand
     total_demand = sum(demands[i] for i in demands if i != 0)
 
     print(f"Number of customers N: {N}")
     print(f"Vehicle capacity q   : {q}")
     print(f"Total demand         : {total_demand}")
 
-
-
-    # If filename provided Kmax, use it; else compute
-    if filename_kmax is not None:
-        K_MAX = filename_kmax
+    # If filename gave us K_MAX, use it; otherwise fallback
+    if K_MAX_filename is not None:
+        K_MAX = K_MAX_filename
     else:
         K_MAX = math.ceil(total_demand / q)
 
-    print(f"Using K_MAX (upper bound on routes): {K_MAX}")
+    print(f"Using K_MAX = {K_MAX}")
 
     # ---------------------------------------------------------
-    # Step 3: Compute TOTAL_TIME_LIMIT = 10 * N
+    # Step 3: DRSCI global runtime limit = 10 * N
     # ---------------------------------------------------------
     TOTAL_TIME_LIMIT = 10.0 * N
     print(f"Total runtime limit (10*N): {TOTAL_TIME_LIMIT:.1f}s\n")
 
     # ---------------------------------------------------------
-    # Step 4: Build initial systematic cluster sizes
+    # FIXED cluster size per iteration
     # ---------------------------------------------------------
-    cluster_candidates = build_initial_cluster_set(K_MAX)
-    num_candidates = len(cluster_candidates)
-    cluster_idx = 0
-
-    print(f"Initial systematic cluster sizes C_s = {cluster_candidates}\n")
+    print(f"Using FIXED number of clusters per iteration: |C| = {FIXED_C}")
+    print("This avoids huge clusters and SCP failures.\n")
 
     # ---------------------------------------------------------
-    # Global DRSCI state
+    # DRSCI state
     # ---------------------------------------------------------
     global_route_pool = []
     best_routes = None
@@ -234,14 +178,12 @@ def main():
     # Main DRSCI Loop
     # ---------------------------------------------------------
     while True:
-        now = time.time()
-        elapsed = now - start_time
-
+        elapsed = time.time() - start_time
         if elapsed >= TOTAL_TIME_LIMIT:
             print("\n[STOP] Global time limit reached.")
             break
         if no_improve >= MAX_NO_IMPROVE:
-            print("\n[STOP] Max iterations without improvement reached.")
+            print("\n[STOP] No improvement for too long.")
             break
 
         iteration += 1
@@ -249,31 +191,15 @@ def main():
         print(f"=== Iteration {iteration} ===")
         print("=" * 70)
 
-        # ---------------- Step 1: select |C| ----------------
-        current_K = cluster_candidates[cluster_idx]
+        current_K = FIXED_C
         print(f"[Iter {iteration}] Using |C| = {current_K}")
 
-        cluster_idx = (cluster_idx + 1) % num_candidates
-
-        # ---------------- Step 2: VB vs RB ------------------
-        use_vertex_based = True
-        if best_routes is not None:
-            if random.random() >= PROB_VERTEX_BASED:
-                use_vertex_based = False
-
-        if use_vertex_based or best_routes is None:
-            # ----- VERTEX-BASED -----
-            method = random.choice(VB_CLUSTER_METHODS)
-            print(f"[Iter {iteration}] Decomposition: VERTEX-BASED ({method})")
-
-            clusters, medoids = run_clustering(
-                method,
-                INSTANCE,
-                current_K,
-            )
-        else:
-            # ----- ROUTE-BASED -----
-            print(f"[Iter {iteration}] Decomposition: ROUTE-BASED (sk_ac_avg on routes)")
+        # -----------------------------------------------------
+        # Step 1: Choose decomposition type
+        # -----------------------------------------------------
+        if best_routes is not None and random.random() >= PROB_VERTEX_BASED:
+            # ROUTE-BASED
+            print(f"[Iter {iteration}] Decomposition: ROUTE-BASED")
 
             clusters = route_based_decomposition(
                 instance_name=INSTANCE,
@@ -283,12 +209,24 @@ def main():
                 use_angle=True,
                 use_load=True,
             )
+        else:
+            # VERTEX-BASED
+            method = random.choice(VB_CLUSTER_METHODS)
+            print(f"[Iter {iteration}] Decomposition: VERTEX-BASED ({method})")
 
-        # report clusters
-        total_customers_assigned = sum(len(members) for members in clusters.values())
-        print(f"[Iter {iteration}] #clusters: {len(clusters)}, customers assigned: {total_customers_assigned}")
+            clusters, medoids = run_clustering(
+                method,
+                INSTANCE,
+                current_K,
+            )
 
-        # ---------------- Step 3: solve all clusters --------
+        # stats
+        total_assigned = sum(len(members) for members in clusters.values())
+        print(f"[Iter {iteration}] #clusters={len(clusters)}, customers assigned={total_assigned}")
+
+        # -----------------------------------------------------
+        # Step 2: Solve each cluster via PyVRP
+        # -----------------------------------------------------
         print(f"\n[Iter {iteration}] Stage 2: Routing subproblems")
 
         routing = solve_clusters_with_pyvrp(
@@ -299,16 +237,20 @@ def main():
         )
 
         routes = routing["routes"]
-        print(f"[Iter {iteration}] Cluster routes total : {len(routes)}")
-        print(f"[Iter {iteration}] Cluster routing cost : {routing['total_cost']}")
+        print(f"[Iter {iteration}] Cluster routes total: {len(routes)}")
+        print(f"[Iter {iteration}] Cluster routing cost: {routing['total_cost']}")
 
-        # ---------------- Step 4: add to route pool ---------
+        # -----------------------------------------------------
+        # Step 3: Add to global route pool
+        # -----------------------------------------------------
         global_route_pool.extend(routes)
         global_route_pool = deduplicate_routes(global_route_pool)
-        print(f"[Iter {iteration}] Global route pool size (unique): {len(global_route_pool)}")
+        print(f"[Iter {iteration}] Global route pool size = {len(global_route_pool)}")
 
-        # ---------------- Step 5: SCP on pooled routes ------
-        print(f"\n[Iter {iteration}] Stage 3: SCP on pooled routes")
+        # -----------------------------------------------------
+        # Step 4: SCP on pooled routes
+        # -----------------------------------------------------
+        print(f"\n[Iter {iteration}] Stage 3: SCP")
 
         scp = solve_scp(
             instance_name=INSTANCE,
@@ -316,70 +258,67 @@ def main():
             time_limit=600,
             verbose=False,
         )
+        selected = scp["selected_routes"]
+        print(f"[Iter {iteration}] SCP selected {len(selected)} routes")
 
-        selected_routes = scp["selected_routes"]
-        print(f"[Iter {iteration}] SCP selected {len(selected_routes)} routes.")
-
-        # ---------------- Step 6: duplicate removal + LS ----
+        # -----------------------------------------------------
+        # Step 5: Duplicate removal + LS repair
+        # -----------------------------------------------------
         print(f"\n[Iter {iteration}] Stage 4: Duplicate removal + LS repair")
 
-        dup = remove_duplicates(
+        repaired = remove_duplicates(
             instance_name=INSTANCE,
-            routes=selected_routes,
+            routes=selected,
             verbose=False,
             max_iters=50,
             ls_neighbourhood=LS_NEIGHBOURHOOD,
             ls_max_neighbours_restricted=MAX_NEIGHBOURS_LS,
             seed=SEED,
-        )
+        )["routes"]
 
-        repaired_routes = dup["routes"]
-        print(f"[Iter {iteration}] Repaired route count : {len(repaired_routes)}")
+        print(f"[Iter {iteration}] Repaired routes: {len(repaired)}")
 
-        # ---------------- Step 7: Global LS -----------------
+        # -----------------------------------------------------
+        # Step 6: Global LS
+        # -----------------------------------------------------
         print(f"\n[Iter {iteration}] Stage 5: Global LS")
 
         ls_res = improve_with_local_search(
             instance_name=INSTANCE,
-            routes_vrplib=repaired_routes,
+            routes_vrplib=repaired,
             neighbourhood=LS_NEIGHBOURHOOD,
             max_neighbours=MAX_NEIGHBOURS_LS,
             seed=SEED,
         )
 
-        iter_initial_cost = ls_res["initial_cost"]
-        iter_improved_cost = ls_res["improved_cost"]
-        iter_routes = ls_res["routes_improved"]
+        improved_cost = ls_res["improved_cost"]
+        improved_routes = ls_res["routes_improved"]
 
-        print(f"[Iter {iteration}] LS cost before: {iter_initial_cost}")
-        print(f"[Iter {iteration}] LS cost after : {iter_improved_cost}")
+        print(f"[Iter {iteration}] LS improved cost: {improved_cost}")
 
-        # ---------------- Step 8: update best ---------------
-        if iter_improved_cost < best_cost:
-            improvement = (best_cost - iter_improved_cost
-                           if best_cost < float("inf") else None)
-
-            best_cost = iter_improved_cost
-            best_routes = iter_routes
+        # -----------------------------------------------------
+        # Step 7: Update best solution
+        # -----------------------------------------------------
+        if improved_cost < best_cost:
+            delta = best_cost - improved_cost if best_cost < float("inf") else None
+            best_cost = improved_cost
+            best_routes = improved_routes
             no_improve = 0
 
-            if improvement is None:
-                print(f"[Iter {iteration}] New best solution: {best_cost:.2f}")
+            if delta is None:
+                print(f"[Iter {iteration}] New best solution = {best_cost}")
             else:
-                print(f"[Iter {iteration}] Improved by {improvement:.2f}, new best = {best_cost:.2f}")
+                print(f"[Iter {iteration}] Improved by {delta:.2f}, new best = {best_cost}")
         else:
             no_improve += 1
             print(f"[Iter {iteration}] No improvement ({no_improve}/{MAX_NO_IMPROVE})")
 
-        elapsed = time.time() - start_time
-        print(f"[Iter {iteration}] Elapsed time: {elapsed:.1f}s / {TOTAL_TIME_LIMIT:.1f}s")
-        print(f"[Iter {iteration}] Best cost so far: {best_cost:.2f}")
-        print(f"[Iter {iteration}] Best route count: "
-              f"{len(best_routes) if best_routes is not None else 'N/A'}")
+        print(f"[Iter {iteration}] Current best: {best_cost}, routes={len(best_routes) if best_routes else 0}")
+        print(f"[Iter {iteration}] Time elapsed: {time.time()-start_time:.1f}s\n")
 
-    # =================================================================
-    # Final summary
-    # =================================================================
+    # ---------------------------------------------------------
+    # FINAL OUTPUT
+    # ---------------------------------------------------------
     print("\n" + "=" * 70)
     print("=== FINAL SUMMARY ===")
     print("=" * 70)
@@ -387,9 +326,8 @@ def main():
     if best_routes is None:
         print("No feasible solution found.")
     else:
-        print(f"Best cost   : {best_cost:.2f}")
+        print(f"Best cost   : {best_cost}")
         print(f"Route count : {len(best_routes)}")
-        print("Routes:")
         for r in best_routes:
             print(" ", r)
 

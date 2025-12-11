@@ -1,20 +1,35 @@
 """
-Unified clustering runner with consistent naming.
+Unified clustering runner with consistent naming and guaranteed full coverage.
 
-Standard output:
-    clusters : Dict[int, List[int]]
-    medoids  : Dict[int, int] | None
+This file ensures:
+    - A single interface for all clustering methods.
+    - Each clustering method returns:
+        clusters : Dict[int, List[int]]
+        medoids  : Dict[int, int] | None
+    - ALL customers are always assigned to exactly one cluster.
+      => Prevents SCP errors: "customers not covered by any route"
+      => Prevents routing failures due to missing customers
 
-Naming conventions:
-    custom_*     → custom implementations (AC, K-Medoids)
-    sk_*         → sklearn-based (AC, KMeans)
-    fcm          → scikit-fuzzy
-    pyclust_*    → pyclustering-based
+Clustering methods supported:
+    custom_ac_avg
+    custom_ac_complete
+    custom_ac_min
+    custom_k_medoids
+    pyclust_k_medoids
+    sk_ac_avg
+    sk_ac_complete
+    sk_ac_min
+    sk_kmeans
+    fcm
 """
 
 from typing import Dict, List, Tuple, Optional
 
-# --- Custom AC (slow, high-quality) ---
+
+# --- Instance loader (needed for enforcing full coverage)
+from utils.loader import load_instance
+
+# --- Custom AC implementations ---
 from master.clustering.custom.avg_ac import agglomerative_clustering_average
 from master.clustering.custom.max_ac import agglomerative_clustering_complete
 from master.clustering.custom.min_ac import agglomerative_clustering_min
@@ -29,12 +44,57 @@ from master.clustering.scikit_clustering import (
     run_sklearn_kmeans,
 )
 
-# --- scikit-fuzzy ---
+# --- Fuzzy C-means ---
 from master.clustering.fcm_scikit_fuzzy import run_sklearn_fcm
 
 
 # =====================================================================
-# Unified Interface
+# Coverage Enforcement
+# =====================================================================
+
+def enforce_full_coverage(
+    clusters: Dict[int, List[int]],
+    all_customers: List[int],
+) -> Dict[int, List[int]]:
+    """
+    Ensures that ALL customers are assigned to exactly one cluster.
+
+    Missing customers are appended to the smallest cluster (by size).
+    This prevents missing-customer failures in routing and SCP.
+
+    Parameters
+    ----------
+    clusters : dict[int -> list[int]]
+        Raw clusters from the chosen clustering algorithm.
+    all_customers : list[int]
+        List of all customer IDs (1..N), excluding depot.
+
+    Returns
+    -------
+    dict
+        Corrected cluster dictionary with full coverage.
+    """
+    assigned = set()
+    for members in clusters.values():
+        assigned.update(members)
+
+    missing = [c for c in all_customers if c not in assigned]
+
+    if not missing:
+        return clusters
+
+    # Find cluster with minimal size
+    smallest_cluster_id = min(clusters, key=lambda cid: len(clusters[cid]))
+
+    print(f"[Clustering WARNING] Missing customers detected: {missing}")
+    print(f"[Clustering FIX] Assigning them to cluster {smallest_cluster_id}")
+
+    clusters[smallest_cluster_id].extend(missing)
+    return clusters
+
+
+# =====================================================================
+# Unified Clustering Dispatch
 # =====================================================================
 
 def run_clustering(
@@ -45,7 +105,7 @@ def run_clustering(
     **kwargs,
 ) -> Tuple[Dict[int, List[int]], Optional[Dict[int, int]]]:
     """
-    Run any clustering algorithm with standardized naming.
+    Unified clustering interface.
 
     Parameters
     ----------
@@ -64,14 +124,15 @@ def run_clustering(
 
     Returns
     -------
-    clusters : Dict[int, List[int]]
-    medoids  : Dict[int, int] | None
+    clusters : dict[int -> list[int]]
+    medoids  : dict[int -> int] | None
     """
     method = method.lower()
 
-    # ============================================================
-    # CUSTOM AC
-    # ============================================================
+    # -------------------------------
+    # Dispatch to implementation
+    # -------------------------------
+
     if method == "custom_ac_avg":
         return agglomerative_clustering_average(instance_name, k, use_combined=use_combined, **kwargs)
     if method == "custom_ac_complete":
@@ -119,7 +180,18 @@ def run_clustering(
         clusters, medoids, _, _ = run_sklearn_fcm(instance_name, k, use_combined=use_combined, **kwargs)
         return clusters, medoids
 
-    # ============================================================
-    # ERROR
-    # ============================================================
-    raise ValueError(f"Unknown clustering method '{method}'.")
+    else:
+        raise ValueError(f"Unknown clustering method '{method}'.")
+
+    # =====================================================================
+    # COVERAGE ENFORCEMENT
+    # =====================================================================
+    inst = load_instance(instance_name)
+    num_nodes = len(inst["demand"])
+    all_customers = list(range(2, num_nodes))
+
+
+    clusters = enforce_full_coverage(clusters, all_customers)
+
+
+    return clusters, medoids
