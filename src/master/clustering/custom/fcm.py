@@ -14,7 +14,7 @@ from utils.symmetric_matrix_read import get_symmetric_value
 from clustering.dissimilarity.polar_coordinates import compute_polar_angle
 from clustering.dissimilarity.combined import combined_dissimilarity
 from clustering.dissimilarity.spatial import spatial_dissimilarity
-from clustering.k_medoids import initialize_medoids
+from clustering.custom.k_medoids import initialize_medoids
 
 
 # ------------------------------------------------------------------

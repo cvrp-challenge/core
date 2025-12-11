@@ -13,13 +13,11 @@ Supports:
 from typing import Dict, List, Tuple, Optional
 
 import numpy as np
-from pyclustering.cluster.kmedoids import kmedoids
 
 from utils.loader import load_instance
 from utils.symmetric_matrix_read import get_symmetric_value
 from clustering.dissimilarity.spatial import spatial_dissimilarity
 from clustering.dissimilarity.combined import combined_dissimilarity
-from clustering.k_medoids import initialize_medoids  # reuse your far-apart init
 
 
 def _build_distance_matrix(

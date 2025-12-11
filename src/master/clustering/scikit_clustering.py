@@ -120,13 +120,20 @@ def run_sklearn_ac(instance_name: str,
     Supported linkages:
         "average"      ← average linkage
         "complete"     ← max linkage
-        "single"       ← min linkage (your request)
+        "single"       ← min linkage
     """
     assert linkage in ("average", "complete", "single"), \
         f"Invalid linkage '{linkage}', must be one of: 'average', 'complete', 'single'"
 
     if instance is None:
         instance = load_instance(instance_name)
+
+    if use_combined:
+        use_polar = True
+        use_demand = True
+    else:
+        use_polar = True
+        use_demand = False
 
     # Build feature matrix
     X, node_ids = build_feature_matrix(
@@ -194,6 +201,7 @@ def run_sklearn_ac(instance_name: str,
 
 def run_sklearn_kmeans(instance_name: str,
                        k: int,
+                       use_combined: bool = False,
                        use_polar: bool = True,
                        use_demand: bool = False,
                        instance: Optional[dict] = None
@@ -209,6 +217,12 @@ def run_sklearn_kmeans(instance_name: str,
 
     if instance is None:
         instance = load_instance(instance_name)
+
+    # If use_combined is True, add both polar and demand features
+    # If use_combined is False, use only polar features
+    if use_combined:
+        use_polar = True
+        use_demand = True
 
     X, node_ids = build_feature_matrix(
         instance_name, instance,

@@ -49,7 +49,7 @@ from master.utils.solution_helpers import (
 )
 
 # ---------------------------------------------------------
-# Clustering methods to benchmark
+# Clustering methods and dissimilarity types to benchmark
 # ---------------------------------------------------------
 CLUSTERING_METHODS = [
     "sk_ac_avg",
@@ -58,6 +58,11 @@ CLUSTERING_METHODS = [
     "sk_kmeans",
     "fcm",
     "k_medoids_pyclustering",
+]
+
+DISSIMILARITY_TYPES = [
+    "spatial",
+    "combined",
 ]
 
 # ---------------------------------------------------------
@@ -109,6 +114,7 @@ def evaluate_method_on_instance(
     method: str,
     output_dir: Path,
     k: Optional[int] = None,
+    dissimilarity: str = "spatial",
 ) -> dict:
     """
     Run clustering → routing for a single method on a single instance.
@@ -121,14 +127,20 @@ def evaluate_method_on_instance(
         if k is None:
             k = int(instance_name.split("-k")[-1].split(".")[0])
 
+        # Determine dissimilarity type
+        if dissimilarity == "combined":
+            use_combined = True
+        else:
+            use_combined = False
+        
         # 1) Clustering
-        clusters, _ = run_clustering(method, instance_name, k)
+        clusters, _ = run_clustering(method, instance_name, k, use_combined=use_combined)
 
         # 2) Routing subproblems
         routing = solve_clusters_with_pyvrp(
             instance_name=instance_name,
             clusters=clusters,
-            time_limit_per_cluster=5.0,
+            time_limit_per_cluster=60.0,
             seed=0,
         )
 
@@ -140,20 +152,17 @@ def evaluate_method_on_instance(
         reference_cost = ref[1] if ref else None
         gap = calculate_gap(cost, reference_cost) if reference_cost else None
 
-        # 4) Write solution
-        sol_name = f"{Path(instance_name).stem}_{method}.sol"
-        stopping = f"DR(method={method})"
-
         _write_solution(
             where=output_dir,
-            instance_name=instance_name,
+            instance_name=f"{Path(instance_name).stem}_{method}",
             data=inst,
             result=routes,
-            solver=f"DR({method})",
+            solver=f"PyVRP (HGS)",
             runtime=routing["total_runtime"],
-            stopping_criteria=stopping,
+            stopping_criteria="60s per cluster",
             gap_percent=gap,
-            filename_override=sol_name,
+            clustering_method=method,
+            dissimilarity=dissimilarity,
         )
 
         return {
@@ -208,9 +217,11 @@ def run_benchmark(
                 method,
                 output_dir,
                 k_override,
-            ): (inst, method)
+                dissimilarity,
+            ): (inst, method, dissimilarity)
             for inst in INSTANCES
             for method in methods
+            for dissimilarity in DISSIMILARITY_TYPES
         }
 
         for future in as_completed(futures):

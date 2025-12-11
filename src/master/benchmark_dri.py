@@ -24,6 +24,7 @@ Outputs:
 
 import argparse
 import sys
+import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Optional, List, Dict
@@ -48,7 +49,7 @@ from master.utils.solution_helpers import _write_solution, find_existing_solutio
 
 
 # ---------------------------------------------------------
-# Clustering methods to benchmark
+# Clustering methods and dissimilarity types to benchmark
 # ---------------------------------------------------------
 CLUSTERING_METHODS = [
     "sk_ac_avg",
@@ -57,6 +58,11 @@ CLUSTERING_METHODS = [
     "sk_kmeans",
     "fcm",
     "k_medoids_pyclustering",
+]
+
+DISSIMILARITY_TYPES = [
+    "spatial",
+    "combined",
 ]
 
 # ---------------------------------------------------------
@@ -109,7 +115,7 @@ def evaluate_method_on_instance(
     method: str,
     output_dir: Path,
     k: Optional[int] = None,
-    ls_neigh: str = "dri_spatial",
+    dissimilarity: str = "spatial",
     ls_max: int = 40,
 ) -> dict:
     """
@@ -124,14 +130,22 @@ def evaluate_method_on_instance(
         if k is None:
             k = int(instance_name.split("-k")[-1].split(".")[0])
 
+        # Determine dissimilarity type
+        if dissimilarity == "combined":
+            use_combined = True
+            ls_neigh = "dri_combined"
+        else:
+            use_combined = False
+            ls_neigh = "dri_spatial"
+
         # ------------------ 1) Clustering ------------------
-        clusters, _ = run_clustering(method, instance_name, k)
+        clusters, _ = run_clustering(method, instance_name, k, use_combined=use_combined)
 
         # ------------------ 2) Routing ---------------------
         routing = solve_clusters_with_pyvrp(
             instance_name=instance_name,
             clusters=clusters,
-            time_limit_per_cluster=5.0,
+            time_limit_per_cluster=60.0,
             seed=0,
         )
 
@@ -139,6 +153,7 @@ def evaluate_method_on_instance(
         routing_cost = routing["total_cost"]
 
         # ------------------ 3) Global LS -------------------
+        ls_start = time.time()
         ls_result = improve_with_local_search(
             instance_name=instance_name,
             routes_vrplib=routes_after_routing,
@@ -146,10 +161,10 @@ def evaluate_method_on_instance(
             max_neighbours=ls_max,
             seed=0,
         )
+        ls_runtime = time.time() - ls_start
 
         improved_routes = ls_result["routes_improved"]
         improved_cost = ls_result["improved_cost"]
-        ls_runtime = ls_result["runtime"]
 
         # ------------------ 4) Gap vs reference ------------
         ref = find_existing_solution(instance_name)
@@ -157,19 +172,21 @@ def evaluate_method_on_instance(
         gap = calculate_gap(improved_cost, reference_cost) if reference_cost else None
 
         # ------------------ 5) Write .sol output -----------
-        sol_name = f"{Path(instance_name).stem}_{method}_dri.sol"
-        stopping = f"DRI(method={method}, LS)"
+        # Use instance name with method suffix for unique filenames
+        sol_instance_name = f"{Path(instance_name).stem}_{method}_dri"
+        stopping = "60s per cluster"
 
         _write_solution(
             where=output_dir,
-            instance_name=instance_name,
+            instance_name=sol_instance_name,
             data=inst,
             result=improved_routes,
-            solver=f"DRI({method})",
+            solver="PyVRP (HGS)",
             runtime=ls_runtime + routing["total_runtime"],
             stopping_criteria=stopping,
             gap_percent=gap,
-            filename_override=sol_name,
+            clustering_method=method,
+            dissimilarity=dissimilarity,
         )
 
         return {
@@ -225,13 +242,15 @@ def run_benchmark(
                 method,
                 output_dir,
                 k_override,
-            ): (inst, method)
+                dissimilarity,
+            ): (inst, method, dissimilarity)
             for inst in INSTANCES
             for method in methods
+            for dissimilarity in DISSIMILARITY_TYPES
         }
 
         for future in as_completed(futures):
-            inst, method = futures[future]
+            inst, method, dissimilarity = futures[future]
 
             try:
                 r = future.result()

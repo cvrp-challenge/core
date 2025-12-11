@@ -100,6 +100,7 @@ def run_clustering(
     method: str,
     instance_name: str,
     k: int,
+    use_combined: bool = False,
     **kwargs,
 ) -> Tuple[Dict[int, List[int]], Optional[Dict[int, int]]]:
     """
@@ -108,11 +109,17 @@ def run_clustering(
     Parameters
     ----------
     method : str
-        Name of clustering algorithm.
-    instance_name : str
-        VRPLIB instance to load.
-    k : int
-        Number of clusters.
+        One of:
+            custom_ac_avg
+            custom_ac_complete
+            custom_ac_min
+            custom_k_medoids
+            pyclust_k_medoids
+            sk_ac_avg
+            sk_ac_complete
+            sk_ac_min
+            sk_kmeans
+            fcm
 
     Returns
     -------
@@ -126,38 +133,51 @@ def run_clustering(
     # -------------------------------
 
     if method == "custom_ac_avg":
-        clusters, medoids = agglomerative_clustering_average(instance_name, k, **kwargs)
+        return agglomerative_clustering_average(instance_name, k, **kwargs)
+    if method == "custom_ac_complete":
+        return agglomerative_clustering_complete(instance_name, k, **kwargs)
+    if method == "custom_ac_min":
+        return agglomerative_clustering_min(instance_name, k, **kwargs)
 
-    elif method == "custom_ac_complete":
-        clusters, medoids = agglomerative_clustering_complete(instance_name, k, **kwargs)
+    # ============================================================
+    # CUSTOM K-MEDOIDS
+    # ============================================================
+    if method == "custom_k_medoids":
+        return k_medoids(instance_name, k, **kwargs)
 
-    elif method == "custom_ac_min":
-        clusters, medoids = agglomerative_clustering_min(instance_name, k, **kwargs)
-
-    elif method == "custom_k_medoids":
-        clusters, medoids = k_medoids(instance_name, k, **kwargs)
-
-    elif method == "pyclust_k_medoids":
-        # Format returned by pyclustering: {medoid: members}
-        cl_raw = k_medoids_pyclustering(instance_name, k, **kwargs)
-        clusters, medoids = {}, {}
-        for cid, (med, members) in enumerate(cl_raw.items(), start=1):
+    if method == "pyclust_k_medoids":
+        # pyclustering format is {medoid -> members}
+        clust_by_medoid = k_medoids_pyclustering(instance_name, k, **kwargs)
+        clusters = {}
+        medoids = {}
+        for cid, (med, members) in enumerate(clust_by_medoid.items(), start=1):
             clusters[cid] = members
             medoids[cid] = med
+        return clusters, medoids
 
-    elif method in ("sk_ac_avg", "sk_ac_complete", "sk_ac_min"):
-        linkage = {
-            "sk_ac_avg": "average",
-            "sk_ac_complete": "complete",
-            "sk_ac_min": "single",
-        }[method]
-        clusters, medoids = run_sklearn_ac(instance_name, k, linkage=linkage, **kwargs)
+    # ============================================================
+    # SKLEARN AC
+    # ============================================================
+    if method == "sk_ac_avg":
+        return run_sklearn_ac(instance_name, k, linkage="average", **kwargs)
+    if method == "sk_ac_complete":
+        return run_sklearn_ac(instance_name, k, linkage="complete", **kwargs)
+    if method == "sk_ac_min":
+        return run_sklearn_ac(instance_name, k, linkage="single", **kwargs)
 
-    elif method == "sk_kmeans":
+    # ============================================================
+    # SKLEARN K-MEANS
+    # ============================================================
+    if method == "sk_kmeans":
         clusters, medoids, _ = run_sklearn_kmeans(instance_name, k, **kwargs)
+        return clusters, medoids
 
-    elif method == "fcm":
+    # ============================================================
+    # FCM (scikit-fuzzy)
+    # ============================================================
+    if method == "fcm":
         clusters, medoids, _, _ = run_sklearn_fcm(instance_name, k, **kwargs)
+        return clusters, medoids
 
     else:
         raise ValueError(f"Unknown clustering method '{method}'.")
