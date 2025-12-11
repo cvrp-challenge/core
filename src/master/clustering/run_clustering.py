@@ -29,12 +29,12 @@ from typing import Dict, List, Tuple, Optional
 from utils.loader import load_instance
 
 # --- Custom AC implementations ---
-from master.clustering.ac_custom.avg_ac import agglomerative_clustering_average
-from master.clustering.ac_custom.max_ac import agglomerative_clustering_complete
-from master.clustering.ac_custom.min_ac import agglomerative_clustering_min
+from master.clustering.custom.avg_ac import agglomerative_clustering_average
+from master.clustering.custom.max_ac import agglomerative_clustering_complete
+from master.clustering.custom.min_ac import agglomerative_clustering_min
 
 # --- Custom K-Medoids ---
-from master.clustering.k_medoids import k_medoids
+from master.clustering.custom.k_medoids import k_medoids
 from master.clustering.k_medoids_pyclustering import k_medoids_pyclustering
 
 # --- sklearn-based clustering ---
