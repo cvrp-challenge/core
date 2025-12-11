@@ -173,7 +173,7 @@ def evaluate_method_on_instance(
 
         # ------------------ 5) Write .sol output -----------
         # Use instance name with method suffix for unique filenames
-        sol_instance_name = f"{Path(instance_name).stem}_{method}_dri"
+        sol_instance_name = f"{Path(instance_name).stem}_{method}_{dissimilarity}_dri"
         stopping = "60s per cluster"
 
         _write_solution(
