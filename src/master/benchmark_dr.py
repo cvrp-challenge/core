@@ -49,7 +49,7 @@ from master.utils.solution_helpers import (
 )
 
 # ---------------------------------------------------------
-# Clustering methods and dissimilarity types to benchmark
+# Clustering methods, dissimilarity types and k-clusters to benchmark
 # ---------------------------------------------------------
 CLUSTERING_METHODS = [
     "sk_ac_avg",
@@ -63,6 +63,14 @@ CLUSTERING_METHODS = [
 DISSIMILARITY_TYPES = [
     "spatial",
     "combined",
+]
+
+K_CLUSTERS = [
+    2,
+    4,
+    6,
+    9,
+    12,
 ]
 
 # ---------------------------------------------------------
@@ -123,9 +131,9 @@ def evaluate_method_on_instance(
     try:
         inst = load_instance(instance_name)
 
-        # Determine number of clusters (vehicles)
+        # Determine number of clusters (fix value for fallback)
         if k is None:
-            k = int(instance_name.split("-k")[-1].split(".")[0])
+            k = 3
 
         # Determine dissimilarity type
         if dissimilarity == "combined":
@@ -137,12 +145,15 @@ def evaluate_method_on_instance(
         clusters, _ = run_clustering(method, instance_name, k, use_combined=use_combined)
 
         # 2) Routing subproblems
+        import time
+        routing_start = time.time()
         routing = solve_clusters_with_pyvrp(
             instance_name=instance_name,
             clusters=clusters,
             time_limit_per_cluster=10.0,
             seed=0,
         )
+        routing_runtime = time.time() - routing_start
 
         cost = routing["total_cost"]
         routes = routing["routes"]
@@ -154,23 +165,26 @@ def evaluate_method_on_instance(
 
         _write_solution(
             where=output_dir,
-            instance_name=f"{Path(instance_name).stem}_{method}_{dissimilarity}",
+            instance_name=f"{Path(instance_name).stem}_{method}_{dissimilarity}_k={k}",
             data=inst,
             result=routes,
             solver=f"PyVRP (HGS)",
-            runtime=routing["total_runtime"],
-            stopping_criteria="60s per cluster",
+            runtime=routing_runtime,
+            stopping_criteria="10s per cluster",
             gap_percent=gap,
             clustering_method=method,
             dissimilarity=dissimilarity,
+            k_clusters=k,
         )
 
         return {
             "instance": instance_name,
             "method": method,
             "cost": cost,
+            "dissimilarity": dissimilarity,
+            "k_clusters": k,
             "routes": routes,
-            "runtime": routing["total_runtime"],
+            "runtime": routing_runtime,
             "feasible": True,
             "gap_percent": gap,
             "reference_cost": reference_cost,
@@ -181,6 +195,8 @@ def evaluate_method_on_instance(
         return {
             "instance": instance_name,
             "method": method,
+            "dissimilarity": dissimilarity,
+            "k_clusters": k,
             "error": str(e),
             "success": False,
         }
@@ -193,7 +209,8 @@ def run_benchmark(
     output_path: str,
     max_workers: Optional[int],
     methods: List[str],
-    k_override: Optional[int],
+    dissimilarity_types: List[str],
+    k_values: Optional[List[int]],
 ):
     """
     Run all clustering methods on all instances in parallel.
@@ -201,8 +218,14 @@ def run_benchmark(
     output_dir = Path(output_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Default k values if not provided
+    if k_values is None:
+        k_values = K_CLUSTERS
+
     print(f"Running DR benchmark on {len(INSTANCES)} instances")
     print(f"Methods: {methods}")
+    print(f"K values: {k_values}")
+    print(f"Dissimilarity types: {dissimilarity_types}")
     print(f"Output directory: {output_dir}")
     print(f"Parallel workers: {max_workers or 'auto'}")
     print("-" * 80)
@@ -216,16 +239,17 @@ def run_benchmark(
                 inst,
                 method,
                 output_dir,
-                k_override,
+                k,
                 dissimilarity,
-            ): (inst, method, dissimilarity)
+            ): (inst, method, dissimilarity, k)
             for inst in INSTANCES
             for method in methods
-            for dissimilarity in DISSIMILARITY_TYPES
+            for dissimilarity in dissimilarity_types
+            for k in k_values
         }
 
         for future in as_completed(futures):
-            inst, method = futures[future]
+            inst, method, dissimilarity, k = futures[future]
 
             try:
                 r = future.result()
@@ -251,6 +275,8 @@ def run_benchmark(
                 results.append({
                     "instance": inst,
                     "method": method,
+                    "dissimilarity": dissimilarity,
+                    "k_clusters": k,
                     "error": str(e),
                     "success": False,
                 })
@@ -264,6 +290,8 @@ def run_benchmark(
     for r in results:
         inst = r["instance"]
         method = r["method"]
+        dissimilarity = r["dissimilarity"]
+        k = r["k_clusters"]
         if inst not in table:
             table[inst] = {}
         table[inst][method] = r["cost"] if r["success"] else float("inf")
@@ -304,7 +332,11 @@ def main():
                         default=CLUSTERING_METHODS,
                         help="Clustering methods to compare")
 
-    parser.add_argument("--k", type=int, default=None,
+    parser.add_argument("--dissimilarity", type=str, nargs="+",
+                        default=DISSIMILARITY_TYPES,
+                        help="Dissimilarity types to compare")
+
+    parser.add_argument("--k", type=int, default=K_CLUSTERS,
                         help="Override number of clusters (default: derive from instance name)")
 
     args = parser.parse_args()
@@ -313,7 +345,8 @@ def main():
         output_path=args.output_path,
         max_workers=args.max_workers,
         methods=args.methods,
-        k_override=args.k,
+        dissimilarity_types=args.dissimilarity,
+        k_values=args.k,
     )
 
 

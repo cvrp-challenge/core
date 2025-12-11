@@ -89,6 +89,7 @@ def _write_solution(
     stopping_criteria: str,
     gap_percent: Optional[float] = None,
     clustering_method: Optional[str] = None,
+    k_clusters: Optional[int] = None,
     dissimilarity: Optional[str] = None,
 ) -> None:
     """
@@ -152,8 +153,10 @@ def _write_solution(
         
         # Clustering Method, Dissimilarity, Solver
         clustering_str = clustering_method if clustering_method is not None else "n/a"
+        k_clusters_str = k_clusters if k_clusters is not None else "n/a"
         dissimilarity_str = dissimilarity if dissimilarity is not None else "n/a"
         handle.write(f"Clustering: {clustering_str}\n")
+        handle.write(f"# Clusters: {k_clusters_str}\n")
         handle.write(f"Dissimilarity: {dissimilarity_str}\n")
         handle.write(f"Solver: {solver}\n")
         
