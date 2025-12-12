@@ -92,11 +92,6 @@ def enforce_full_coverage(
     clusters[smallest_cluster_id].extend(missing)
     return clusters
 
-
-# =====================================================================
-# Unified Clustering Dispatch
-# =====================================================================
-
 def run_clustering(
     method: str,
     instance_name: str,
@@ -106,92 +101,77 @@ def run_clustering(
 ) -> Tuple[Dict[int, List[int]], Optional[Dict[int, int]]]:
     """
     Unified clustering interface.
-
-    Parameters
-    ----------
-    method : str
-        One of:
-            !custom_ac_avg
-            !custom_ac_complete
-            !custom_ac_min
-            !custom_k_medoids
-            k_medoids_pyclustering
-            sk_ac_avg
-            sk_ac_complete
-            sk_ac_min
-            sk_kmeans
-            fcm
-
-    Returns
-    -------
-    clusters : dict[int -> list[int]]
-    medoids  : dict[int -> int] | None
     """
+
     method = method.lower()
 
-    # -------------------------------
-    # Dispatch to implementation
-    # -------------------------------
+    # =====================================================================
+    # DISPATCH (no early returns — only assignments!)
+    # =====================================================================
 
     if method == "custom_ac_avg":
-        return agglomerative_clustering_average(instance_name, k, use_combined=use_combined, **kwargs)
-    if method == "custom_ac_complete":
-        return agglomerative_clustering_complete(instance_name, k, use_combined=use_combined, **kwargs)
-    if method == "custom_ac_min":
-        return agglomerative_clustering_min(instance_name, k, use_combined=use_combined, **kwargs)
+        clusters, medoids = agglomerative_clustering_average(
+            instance_name, k, use_combined=use_combined, **kwargs
+        )
 
-    # ============================================================
-    # CUSTOM K-MEDOIDS
-    # ============================================================
-    if method == "custom_k_medoids":
-        return k_medoids(instance_name, k, use_combined=use_combined, **kwargs)
+    elif method == "custom_ac_complete":
+        clusters, medoids = agglomerative_clustering_complete(
+            instance_name, k, use_combined=use_combined, **kwargs
+        )
 
-    if method == "k_medoids_pyclustering":
-        # pyclustering format is {medoid -> members}
-        clust_by_medoid = k_medoids_pyclustering(instance_name, k, use_combined=use_combined, **kwargs)
+    elif method == "custom_ac_min":
+        clusters, medoids = agglomerative_clustering_min(
+            instance_name, k, use_combined=use_combined, **kwargs
+        )
+
+    elif method == "custom_k_medoids":
+        clusters, medoids = k_medoids(
+            instance_name, k, use_combined=use_combined, **kwargs
+        )
+
+    elif method == "k_medoids_pyclustering":
+        clust_by_medoid = k_medoids_pyclustering(
+            instance_name, k, use_combined=use_combined, **kwargs
+        )
         clusters = {}
         medoids = {}
         for cid, (med, members) in enumerate(clust_by_medoid.items(), start=1):
             clusters[cid] = members
             medoids[cid] = med
-        return clusters, medoids
 
-    # ============================================================
-    # SKLEARN AC
-    # ============================================================
-    if method == "sk_ac_avg":
-        return run_sklearn_ac(instance_name, k, linkage="average", use_combined=use_combined, **kwargs)
-    if method == "sk_ac_complete":
-        return run_sklearn_ac(instance_name, k, linkage="complete", use_combined=use_combined, **kwargs)
-    if method == "sk_ac_min":
-        return run_sklearn_ac(instance_name, k, linkage="single", use_combined=use_combined, **kwargs)
+    elif method in ("sk_ac_avg", "sk_ac_complete", "sk_ac_min"):
+        linkage = {
+            "sk_ac_avg": "average",
+            "sk_ac_complete": "complete",
+            "sk_ac_min": "single",
+        }[method]
+        clusters, medoids = run_sklearn_ac(
+            instance_name, k, linkage=linkage, use_combined=use_combined, **kwargs
+        )
 
-    # ============================================================
-    # SKLEARN K-MEANS
-    # ============================================================
-    if method == "sk_kmeans":
-        clusters, medoids, _ = run_sklearn_kmeans(instance_name, k, use_combined=use_combined, **kwargs)
-        return clusters, medoids
+    elif method == "sk_kmeans":
+        clusters, medoids, _ = run_sklearn_kmeans(
+            instance_name, k, use_combined=use_combined, **kwargs
+        )
 
-    # ============================================================
-    # FCM (scikit-fuzzy)
-    # ============================================================
-    if method == "fcm":
-        clusters, medoids, _, _ = run_sklearn_fcm(instance_name, k, use_combined=use_combined, **kwargs)
-        return clusters, medoids
+    elif method == "fcm":
+        clusters, medoids, _, _ = run_sklearn_fcm(
+            instance_name, k, use_combined=use_combined, **kwargs
+        )
 
     else:
         raise ValueError(f"Unknown clustering method '{method}'.")
 
     # =====================================================================
-    # COVERAGE ENFORCEMENT
+    # FULL COVERAGE ENFORCEMENT
     # =====================================================================
+
     inst = load_instance(instance_name)
     num_nodes = len(inst["demand"])
-    all_customers = list(range(2, num_nodes))
 
+    # depot is 1 → customers are 2..num_nodes
+    all_customers = list(range(2, num_nodes + 1))
 
     clusters = enforce_full_coverage(clusters, all_customers)
-
 
     return clusters, medoids
