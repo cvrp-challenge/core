@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Dict, Tuple
-from utils.loader import load_instance
-from clustering.dissimilarity.polar_coordinates import compute_polar_angle
-from clustering.dissimilarity.spatial import compute_lambda
+from master.utils.loader import load_instance
+from master.clustering.dissimilarity.polar_coordinates import compute_polar_angle
+from master.clustering.dissimilarity.spatial import compute_lambda
 
 @dataclass
 class DRIContext:

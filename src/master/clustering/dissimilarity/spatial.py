@@ -2,8 +2,8 @@
 
 import math
 from typing import Dict, Tuple, Optional
-from utils.loader import load_instance
-from clustering.dissimilarity.polar_coordinates import compute_polar_angle
+from master.utils.loader import load_instance
+from master.clustering.dissimilarity.polar_coordinates import compute_polar_angle
 
 
 # ----------------------------------------------------------------------

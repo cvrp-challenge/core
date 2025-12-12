@@ -19,15 +19,17 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project
-COPY . .
-
-# Build and install vendored PyVRP (so pyvrp._pyvrp exists)
+# Copy PyVRP first and install it (for better Docker layer caching)
+# This layer will only rebuild if solver/pyvrp/ changes
+COPY solver/pyvrp ./solver/pyvrp
 RUN pip install --no-cache-dir ./solver/pyvrp
+
+# Copy the rest of the project
+COPY . .
 
 # Set Python path to include the project root and src directory
 ENV PYTHONPATH=/app:/app/src
 
 # Default entry point: src/master/main.py
-ENTRYPOINT ["python", "-m", "master.benchmark"]
+ENTRYPOINT ["python", "-m", "master.benchmark_dr"]
 

@@ -25,10 +25,10 @@ from typing import Dict, List, Tuple, Optional
 
 import skfuzzy as fuzz
 
-from utils.loader import load_instance
-from clustering.dissimilarity.spatial import spatial_dissimilarity
-from clustering.dissimilarity.polar_coordinates import compute_polar_angle
-from utils.symmetric_matrix_read import get_symmetric_value
+from master.utils.loader import load_instance
+from master.clustering.dissimilarity.spatial import spatial_dissimilarity
+from master.clustering.dissimilarity.polar_coordinates import compute_polar_angle
+from master.utils.symmetric_matrix_read import get_symmetric_value
 
 
 # -------------------------------------------------------------

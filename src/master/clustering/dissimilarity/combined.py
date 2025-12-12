@@ -1,10 +1,10 @@
 # clustering/dissimilarity/combined.py
 
 from typing import Dict, Tuple
-from utils.loader import load_instance
-from utils.symmetric_matrix_read import get_symmetric_value
-from clustering.dissimilarity.spatial import spatial_dissimilarity
-from clustering.dissimilarity.demand import demand_dissimilarity
+from master.utils.loader import load_instance
+from master.utils.symmetric_matrix_read import get_symmetric_value
+from master.clustering.dissimilarity.spatial import spatial_dissimilarity
+from master.clustering.dissimilarity.demand import demand_dissimilarity
 
 
 def combined_dissimilarity(instance_name: str) -> Dict[Tuple[int, int], float]:

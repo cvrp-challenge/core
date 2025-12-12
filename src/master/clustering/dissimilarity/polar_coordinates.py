@@ -2,7 +2,7 @@
 
 import math
 from typing import Dict, Optional
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 
 
 def compute_polar_angle(instance_name: str, instance: Optional[dict] = None) -> Dict[int, float]:

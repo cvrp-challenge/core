@@ -41,7 +41,7 @@ from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
 from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.clustering.route_based import route_based_decomposition
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 
 
 def lazy_import_scp():
