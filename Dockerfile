@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     cmake \
     git \
+    libblas-dev \
+    liblapack-dev \
+    gfortran \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better Docker layer caching
@@ -17,7 +20,9 @@ COPY requirements.txt .
 
 # Upgrade pip and install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    python -c "import sklearn; print(f'scikit-learn version: {sklearn.__version__}')" && \
+    python -c "from sklearn.cluster import AgglomerativeClustering, KMeans; from sklearn.preprocessing import StandardScaler; print('sklearn imports successful')"
 
 # Copy PyVRP first and install it (for better Docker layer caching)
 # This layer will only rebuild if solver/pyvrp/ changes

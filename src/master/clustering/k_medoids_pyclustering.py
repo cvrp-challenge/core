@@ -14,11 +14,12 @@ from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 
+from pyclustering.cluster.kmedoids import kmedoids
 from master.utils.loader import load_instance
 from master.utils.symmetric_matrix_read import get_symmetric_value
 from master.clustering.dissimilarity.spatial import spatial_dissimilarity
 from master.clustering.dissimilarity.combined import combined_dissimilarity
-from master.clustering.custom.k_medoids import initialize_medoids, k_medoids
+from master.clustering.custom.k_medoids import initialize_medoids
 
 
 def _build_distance_matrix(
@@ -91,7 +92,7 @@ def k_medoids_pyclustering(
 
     # --- Run pyclustering K-Medoids ---
     # data_type='distance_matrix' tells it D[i][j] is a distance
-    kmed = k_medoids(D.tolist(), init_medoids, data_type='distance_matrix')
+    kmed = kmedoids(D.tolist(), init_medoids, data_type='distance_matrix')
     kmed.process()
 
     clusters_indices = kmed.get_clusters()   # list of lists of indices

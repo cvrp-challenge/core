@@ -20,8 +20,8 @@ Output format is compatible with:
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 
-from master.clustering.scikit_clustering import AgglomerativeClustering, KMeans
-from master.clustering.scikit_clustering import StandardScaler
+from sklearn.cluster import AgglomerativeClustering, KMeans
+from sklearn.preprocessing import StandardScaler
 from master.utils.loader import load_instance
 from master.clustering.dissimilarity.spatial import spatial_dissimilarity
 from master.clustering.dissimilarity.combined import combined_dissimilarity
