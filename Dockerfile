@@ -36,5 +36,5 @@ COPY . .
 ENV PYTHONPATH=/app:/app/src
 
 # Default entry point: src/master/main.py
-ENTRYPOINT ["python", "-m", "master.benchmark_dr"]
+ENTRYPOINT ["python", "-m", "master.benchmark_dri"]
 

@@ -137,12 +137,20 @@ def _write_solution(
             for idx, route in enumerate(result, 1):
                 # Remove depot markers if present
                 if len(route) > 0 and route[0] == route[-1]:
-                    # Depot at start and end
+                    # Depot at start and end - use it to determine depot node ID
+                    # Supports both VRPLIB format (depot=1) and new format (depot=0)
+                    depot_node = route[0]
                     visits = route[1:-1]
                 else:
+                    # No matching depot markers - check route content to infer format
+                    # If route contains 0, assume new format (depot=0); otherwise VRPLIB (depot=1)
+                    if len(route) > 0 and 0 in route:
+                        depot_node = 0
+                    else:
+                        depot_node = 1  # Default to VRPLIB format for backward compatibility
                     visits = route
-                # Convert to strings and write
-                visit_strs = [str(v) for v in visits if v != 1]  # Filter out depot (node 1)
+                # Convert to strings and write, filtering out depot node
+                visit_strs = [str(v) for v in visits if v != depot_node]
                 if visit_strs:  # Only write non-empty routes
                     handle.write(f"Route #{idx}: {' '.join(visit_strs)}\n")
             
