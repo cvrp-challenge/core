@@ -3,20 +3,17 @@
 Duplicate removal + repair local search for DRSCI.
 
 This module takes a set of routes (typically the solution of the SCP),
-detects customers that are visited more than once, and iteratively:
+detects customers that are visited more than once, and:
 
-    1) Removes one "redundant" visit (based on a savings criterion).
-    2) Repairs the solution using PyVRP LocalSearch:
-        - First with restricted (dissimilarity-based) neighbourhoods.
-        - If that causes missing customers, fallback to a "full-ish"
-          LS with a much larger neighbourhood.
+    1) Removes redundant visits (based on a savings criterion) so that
+       each customer appears at most once.
+    2) Repairs / improves the solution using PyVRP LocalSearch on a
+       *feasible* solution (no duplicate customers).
 
-The process stops when every customer is visited at most once, or when a
-maximum number of iterations is reached.
-
-It uses:
-    - instance loader from master.utils.loader
-    - PyVRP LS wrapper from master.improve.ls_controller
+Important change vs. previous version:
+    - Local search is only called AFTER all duplicates are removed.
+      PyVRP expects a valid solution; it cannot fix duplicate clients
+      and will crash if we feed duplicated routes.
 """
 
 from __future__ import annotations
@@ -53,11 +50,12 @@ def _compute_customer_counts(routes: Routes) -> Dict[int, int]:
 
 def _find_duplicates(routes: Routes) -> Dict[int, List[Tuple[int, int]]]:
     """
-    Find customers that appear in more than one position.
+    Find customers that appear in more than one position (over all routes).
 
-    Returns:
-        duplicates: dict
-            duplicates[i] = list of (route_idx, pos_idx) where node i appears.
+    Returns
+    -------
+    duplicates : dict
+        duplicates[i] = list of (route_idx, pos_idx) where node i appears.
     """
     occ: Dict[int, List[Tuple[int, int]]] = {}
     for r_idx, route in enumerate(routes):
@@ -101,10 +99,9 @@ def _compute_savings_for_occurrence(
     route = routes[r_idx]
     nid = route[pos_idx]
 
-    # We assume standard VRPLIB routes: [1, ..., 1],
-    # so prev and next always exist for customer entries.
     if nid == 1:
-        return -1e9  # should never happen; depot removal not allowed
+        # depot removal is not allowed / not meaningful
+        return -1e9
 
     prev_nid = route[pos_idx - 1]
     next_nid = route[pos_idx + 1]
@@ -112,25 +109,34 @@ def _compute_savings_for_occurrence(
     return dist(prev_nid, nid) + dist(nid, next_nid) - dist(prev_nid, next_nid)
 
 
-def _remove_occurrence(routes: Routes, r_idx: int, pos_idx: int) -> Routes:
+def _apply_removals(routes: Routes, removals: List[Tuple[int, int]]) -> Routes:
     """
-    Remove the node at (r_idx, pos_idx) from the routes.
+    Apply a list of (route_idx, pos_idx) removals to the routes.
 
-    If a route becomes [1, 1] or shorter (no customers), remove the route.
-    Returns a *new* routes list (does not mutate input in place).
+    Removals are done without mutating the input, and routes that
+    become [1, 1] (empty) are dropped.
     """
+    # Group removals per route for efficiency
+    to_remove_per_route: Dict[int, List[int]] = {}
+    for r_idx, pos_idx in removals:
+        to_remove_per_route.setdefault(r_idx, []).append(pos_idx)
+
     new_routes: Routes = []
-    for idx, route in enumerate(routes):
-        if idx != r_idx:
+    for r_idx, route in enumerate(routes):
+        if r_idx not in to_remove_per_route:
+            # no removals in this route
             new_routes.append(list(route))
             continue
 
-        # Remove the node at pos_idx
-        new_route = route[:pos_idx] + route[pos_idx + 1:]
+        positions = sorted(to_remove_per_route[r_idx], reverse=True)
+        new_route = list(route)
+        for pos in positions:
+            # Guard against out-of-range due to earlier deletions
+            if 0 <= pos < len(new_route):
+                del new_route[pos]
 
-        # If route is effectively empty (just depots), drop it
+        # Drop routes that are just depots or empty
         if len(new_route) <= 2:
-            # skip adding this route
             continue
 
         new_routes.append(new_route)
@@ -147,38 +153,36 @@ def remove_duplicates(
     routes: Routes,
     *,
     max_iters: int = 100,
-    ls_neighbourhood: str = "dri_spatial",  # "dri_spatial" or "dri_combined"
+    ls_neighbourhood: str = "dri_spatial",
     ls_max_neighbours_restricted: int = 40,
     seed: int = 0,
     verbose: bool = False,
 ) -> Dict[str, object]:
     """
-    Iteratively remove duplicate customer visits and repair with LS.
+    Remove duplicate customer visits and repair with LS, safely.
 
-    Args
-    ----
-    instance_name : str
-        VRPLIB instance name (e.g., "X-n101-k25.vrp").
-    routes : list[list[int]]
-        Current solution routes in VRPLIB format [1, ..., 1].
-    max_iters : int
-        Maximum number of duplicate-removal iterations.
-    ls_neighbourhood : str
-        Which DRI-based neighbourhood type to use for LS:
-            "dri_spatial"  -> spatial dissimilarity
-            "dri_combined" -> spatial + demand dissimilarity
-    ls_max_neighbours_restricted : int
-        Max neighbours per client in the restricted LS calls.
-    seed : int
-        Random seed for PyVRP LS.
-    verbose : bool
-        If True, prints progress and basic statistics.
+    The new behavior is:
+
+        1) Repeatedly:
+            - Detect all customers that appear more than once.
+            - For each such customer, keep exactly one occurrence
+              (the one with the smallest removal savings) and mark
+              all other occurrences for removal.
+            - Apply all removals in one batch.
+
+           This loop stops when no duplicates are left, or when
+           `max_iters` is reached.
+
+        2) Run PyVRP LocalSearch ONCE on the deduplicated solution.
+
+    At no point is LocalSearch called on a solution that still has
+    duplicate customer visits.
 
     Returns
     -------
     dict with keys:
         "routes"             : final routes (VRPLIB format)
-        "iterations"         : number of removal iterations performed
+        "iterations"         : number of duplicate-removal iterations
         "ls_calls"           : number of LS calls made
         "initial_duplicates" : number of customers with duplicates at start
         "final_duplicates"   : number of customers with duplicates at end
@@ -189,13 +193,14 @@ def remove_duplicates(
 
     inst = load_instance(instance_name)
     dim = int(inst["dimension"])
-    all_customers = list(range(2, dim + 1))  # vrplib customers
+    # VRPLIB: depot is node 1, customers = 2..dim
+    all_customers = list(range(2, dim + 1))
     dist = _build_distance_function(inst)
 
     # Initial counts / duplicates
     counts = _compute_customer_counts(routes)
-    duplicates = {i for i, c in counts.items() if c > 1}
-    initial_duplicates = len(duplicates)
+    dup_customers = {i for i, c in counts.items() if c > 1}
+    initial_duplicates = len(dup_customers)
 
     if verbose:
         print(f"[dup-removal] Initial #customers with duplicates: {initial_duplicates}")
@@ -214,61 +219,72 @@ def remove_duplicates(
         }
 
     current_routes = [list(r) for r in routes]
-    ls_calls = 0
     iterations = 0
 
+    # ------------------------------------------------------------------
+    # Phase 1: PURE duplicate removal (no LS yet)
+    # ------------------------------------------------------------------
     for it in range(max_iters):
-        iterations = it + 1
-
-        # Recompute duplicates at the start of this iteration
         dup_map = _find_duplicates(current_routes)
         if not dup_map:
             if verbose:
-                print(f"[dup-removal] Iteration {iterations}: no duplicates left.")
+                print(f"[dup-removal] Iteration {it}: no duplicates left.")
             break
 
+        iterations = it + 1
         if verbose:
             print(f"[dup-removal] Iteration {iterations}: "
                   f"{len(dup_map)} customers with duplicates.")
 
-        # ------------------------------------------------------------------
-        # 1) Choose which occurrence to remove based on max savings
-        # ------------------------------------------------------------------
-        best_savings = -1e18
-        best_choice: Optional[Tuple[int, int, int]] = None  # (cust, r_idx, pos_idx)
+        removals: List[Tuple[int, int]] = []
 
+        # For each duplicated customer, decide which occurrences to remove
         for cust, occs in dup_map.items():
-            # For each occurrence of this customer, compute savings
-            for (r_idx, pos_idx) in occs:
-                s = _compute_savings_for_occurrence(
-                    current_routes, r_idx, pos_idx, dist
-                )
-                if s > best_savings:
-                    best_savings = s
-                    best_choice = (cust, r_idx, pos_idx)
+            if len(occs) <= 1:
+                continue
 
-        if best_choice is None:
+            scored: List[Tuple[float, int, int]] = []
+            for (r_idx, pos_idx) in occs:
+                s = _compute_savings_for_occurrence(current_routes, r_idx, pos_idx, dist)
+                scored.append((s, r_idx, pos_idx))
+
+            # Sort by descending savings: first entries are most profitable to remove
+            scored.sort(reverse=True)
+
+            # Keep exactly ONE occurrence: the one with the smallest savings
+            # (worst to remove), which is the last in this sorted list.
+            # All others are marked for removal.
+            for (s, r_idx, pos_idx) in scored[:-1]:
+                removals.append((r_idx, pos_idx))
+
+        if not removals:
+            # Nothing to remove => stop
             if verbose:
-                print("[dup-removal] No removable occurrence found; stopping early.")
+                print("[dup-removal] No removable occurrences found; stopping.")
             break
 
-        cust_star, r_idx_star, pos_idx_star = best_choice
+        # Apply removals in one batch
+        current_routes = _apply_removals(current_routes, removals)
 
-        if verbose:
-            print(f"[dup-removal] Removing customer {cust_star} at "
-                  f"(route {r_idx_star}, pos {pos_idx_star}), "
-                  f"savings ≈ {best_savings:.2f}")
+    # After Phase 1, check duplicates and missing customers
+    counts = _compute_customer_counts(current_routes)
+    final_dup_customers = {i for i, c in counts.items() if c > 1}
+    final_duplicates = len(final_dup_customers)
+    missing_customers = [i for i in all_customers if counts.get(i, 0) == 0]
 
-        # ------------------------------------------------------------------
-        # 2) Remove that occurrence
-        # ------------------------------------------------------------------
-        current_routes = _remove_occurrence(current_routes, r_idx_star, pos_idx_star)
+    if verbose:
+        print(f"[dup-removal] After removal: {final_duplicates} customers still duplicated.")
+        if missing_customers:
+            print(f"[dup-removal] WARNING: customers missing before LS: {missing_customers}")
 
-        # ------------------------------------------------------------------
-        # 3) Repair using LS (restricted neighbourhood first)
-        # ------------------------------------------------------------------
-        # restricted LS
-        ls_result_restricted = improve_with_local_search(
+    # At this point, LS will only be called if there's at least a feasible-ish structure.
+    ls_calls = 0
+
+    # ------------------------------------------------------------------
+    # Phase 2: LocalSearch on deduplicated solution
+    # ------------------------------------------------------------------
+    if current_routes:
+        ls_result = improve_with_local_search(
             instance_name=instance_name,
             routes_vrplib=current_routes,
             neighbourhood=ls_neighbourhood,
@@ -276,55 +292,22 @@ def remove_duplicates(
             seed=seed,
         )
         ls_calls += 1
-        current_routes = ls_result_restricted["routes_improved"]
+        current_routes = ls_result["routes_improved"]
 
-        # Check for missing customers after restricted LS
+        # Recompute stats after LS
         counts = _compute_customer_counts(current_routes)
-        missing = [i for i in all_customers if counts.get(i, 0) == 0]
+        final_dup_customers = {i for i, c in counts.items() if c > 1}
+        final_duplicates = len(final_dup_customers)
+        missing_customers = [i for i in all_customers if counts.get(i, 0) == 0]
 
-        if missing:
-            if verbose:
-                print(f"[dup-removal] Restricted LS caused missing customers "
-                      f"{missing}. Falling back to full LS.")
-
-            # Fallback: full-ish LS (large neighbourhood)
-            ls_result_full = improve_with_local_search(
-                instance_name=instance_name,
-                routes_vrplib=current_routes,
-                neighbourhood=ls_neighbourhood,
-                # approximate "full" by allowing as many neighbours
-                # as there are locations; ls_controller will clip
-                # internally if needed
-                max_neighbours=dim,
-                seed=seed,
-            )
-            ls_calls += 1
-            current_routes = ls_result_full["routes_improved"]
-
-            # Re-check missing customers after full LS
-            counts = _compute_customer_counts(current_routes)
-            missing = [i for i in all_customers if counts.get(i, 0) == 0]
-
-            if missing:
-                if verbose:
-                    print("[dup-removal] Even full LS could not restore all "
-                          f"customers. Missing: {missing}. Stopping.")
-                break
-
-        # After LS, we continue to next iteration and re-evaluate duplicates.
-
-    # Final stats
-    counts = _compute_customer_counts(current_routes)
-    final_duplicates = sum(1 for c in counts.values() if c > 1)
-    missing_customers = [i for i in all_customers if counts.get(i, 0) == 0]
+        if verbose:
+            print(f"[dup-removal] After LS: {final_duplicates} customers with duplicates.")
+            if missing_customers:
+                print(f"[dup-removal] WARNING: customers missing in final solution: "
+                      f"{missing_customers}")
 
     if verbose:
-        print(f"[dup-removal] Finished after {iterations} iterations, "
-              f"LS calls: {ls_calls}")
-        print(f"[dup-removal] Final #customers with duplicates: {final_duplicates}")
-        if missing_customers:
-            print(f"[dup-removal] WARNING: customers missing in final solution: "
-                  f"{missing_customers}")
+        print(f"[dup-removal] Finished after {iterations} iterations, LS calls: {ls_calls}")
 
     return {
         "routes": current_routes,
@@ -334,4 +317,3 @@ def remove_duplicates(
         "final_duplicates": final_duplicates,
         "missing_customers": missing_customers,
     }
-

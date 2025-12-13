@@ -24,6 +24,7 @@ import numpy as np
 from typing import Dict, List, Tuple, Optional
 
 import skfuzzy as fuzz
+from sklearn.preprocessing import StandardScaler    # ← REQUIRED
 
 from utils.loader import load_instance
 from clustering.dissimilarity.spatial import spatial_dissimilarity
