@@ -1,56 +1,30 @@
 """
-Multi-K DRSCI for CVRP (Robin Version)
---------------------------------------
+DRSCI (Decompose–Route–SetCover–Improve) multi-k driver
+-------------------------------------------------------
 
-Pipeline for each vertex-based method m and cluster count k:
+This script implements a DRSCI-style metaheuristic compatible with
+benchmark_dri.py, with:
 
-    VB STEP (m, k)
-        1) Vertex-based clustering
-        2) Route VB clusters with PyVRP
-        3) Local Search on routed VB solution        <- DRI-style LS (immediate)
-        4) Add VB routes to global pool
-        5) SCP + duplicate removal + LS (global refine)
-           -> update best_routes / best_cost
-           -> add repaired routes back to pool
-
-    RBD STEP (m, k)
-        6) Route-based decomposition on current best solution
-        7) Route RBD clusters with PyVRP
-        8) Local Search on routed RBD solution       <- DRI-style LS (immediate)
-        9) Add RBD routes to global pool
-       10) SCP + duplicate removal + LS (global refine)
-           -> update best_routes / best_cost
-           -> add repaired routes back to pool
-
-After all methods and all k's:
-
-    FINAL STEP
-       11) Global SCP + duplicate removal + LS
-       12) Final best solution
-
-This is a multi-granularity DRSCI system with:
-    - multiple k values per vertex-based method,
-    - immediate LS after each routing phase (DRI-style),
-    - global SCP-based refinement,
-    - route pool enrichment with repaired routes.
+✔ PyVRP-compatible integer-rounded objective computation
+✔ Full runtime tracking per instance
 """
 
 from __future__ import annotations
 
-import os
 import sys
 import time
-from typing import Dict, List, Optional, Any
+import math
+from typing import Dict, List, Optional, Any, Tuple
+from pathlib import Path
 
 # ---------------------------------------------------------
-# sys.path setup
+# Project path setup
 # ---------------------------------------------------------
-CURRENT = os.path.dirname(__file__)          # core/src/master
-ROOT = os.path.abspath(os.path.join(CURRENT, "."))        # core/src/master
-PROJECT_ROOT = os.path.abspath(os.path.join(ROOT, ".."))  # core/src
+CURRENT = Path(__file__).parent
+SRC_ROOT = CURRENT.parent
 
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
 
 # ---------------------------------------------------------
 # Project imports
@@ -68,12 +42,11 @@ def lazy_import_scp():
     return solve_scp
 
 
-Route = List[int]
+Route = List[int]   # VRPLIB format: [1, ..., 1]
 Routes = List[Route]
 
-
 # ---------------------------------------------------------
-# Vertex-based methods in deterministic sequence
+# Methods & defaults
 # ---------------------------------------------------------
 VB_CLUSTER_METHODS = [
     "sk_ac_avg",
@@ -81,60 +54,63 @@ VB_CLUSTER_METHODS = [
     "sk_ac_min",
     "sk_kmeans",
     "fcm",
-    "pyclust_k_medoids",
+    "k_medoids_pyclustering",
 ]
 
-
-# ---------------------------------------------------------
-# Default multi-k configuration (customize via k_per_method)
-# All k values should come from {2, 4, 6, 9, 15}.
-# ---------------------------------------------------------
-K_PER_METHOD_DEFAULT: Dict[str, List[int]] = {
-    "sk_ac_avg": [4, 6],
+K_PER_METHOD_DEFAULT = {
+    "sk_ac_avg": [4],
     "sk_ac_complete": [4],
-    "sk_ac_min": [6],
-    "sk_kmeans": [4, 6],
-    "fcm": [6],
-    "pyclust_k_medoids": [4, 6],
+    "sk_ac_min": [4],
+    "sk_kmeans": [4],
+    "fcm": [4],
+    "k_medoids_pyclustering": [4],
 }
 
 
 # ---------------------------------------------------------
-# Helper functions
+# Helpers
 # ---------------------------------------------------------
-def deduplicate_routes(route_pool: Routes) -> Routes:
-    """
-    Deduplicate a list of routes (each route is a list[int]).
-    """
+def _result_to_vrplib_routes(result) -> Routes:
+    best = result.best
+    if best is None:
+        return []
+
+    routes = []
+    for r in best.routes():
+        visits = [v for v in r.visits() if v > 0]
+        if visits:
+            routes.append([1] + [v + 1 for v in visits] + [1])
+    return routes
+
+
+def _deduplicate_routes(pool: Routes) -> Routes:
     seen = set()
-    unique: Routes = []
-    for r in route_pool:
-        key = tuple(r)
-        if key not in seen:
-            seen.add(key)
-            unique.append(r)
-    return unique
+    out = []
+    for r in pool:
+        t = tuple(r)
+        if t not in seen:
+            seen.add(t)
+            out.append(r)
+    return out
 
 
-def add_repaired_routes_to_pool(pool: Routes, repaired: Routes) -> Routes:
-    """
-    Add repaired routes (from SCP + duplicate removal + LS) back into
-    the global route pool, only if they are new.
-    """
-    seen = set(tuple(r) for r in pool)
-    added = 0
+def compute_integer_rounded_cost(instance: dict, routes: Routes) -> int:
+    coords = instance["node_coord"]
+    edge_mat = instance.get("edge_weight")
 
-    for r in repaired:
-        key = tuple(r)
-        if key not in seen:
-            pool.append(r)
-            seen.add(key)
-            added += 1
+    def dist(u: int, v: int) -> int:
+        u_idx, v_idx = u - 1, v - 1
+        if edge_mat is not None:
+            return int(round(float(edge_mat[u_idx, v_idx])))
+        dx = coords[u_idx][0] - coords[v_idx][0]
+        dy = coords[u_idx][1] - coords[v_idx][1]
+        return int(round(math.hypot(dx, dy)))
 
-    if added > 0:
-        print(f"[Pool] Added {added} repaired routes to global pool.")
-
-    return pool
+    total = 0
+    for r in routes:
+        for a, b in zip(r, r[1:]):
+            total += dist(a, b)
+    return total
 
 
 def _scp_plus_ls(
@@ -146,15 +122,8 @@ def _scp_plus_ls(
     ls_max_neighbours_restricted: int,
     seed: int,
     scp_time_limit: float,
-) -> tuple[Routes, float]:
-    """
-    Run:
-        - SCP on the given route_pool,
-        - duplicate removal + LS repair,
-        - global LS refine.
+) -> Tuple[Routes, int]:
 
-    Returns (routes, cost) of the refined solution.
-    """
     scp_res = solve_scp(
         instance_name=instance_name,
         route_pool=route_pool,
@@ -163,7 +132,6 @@ def _scp_plus_ls(
     )
     selected = scp_res["selected_routes"]
 
-    # Duplicate removal + repair LS
     dup_res = remove_duplicates(
         instance_name=instance_name,
         routes=selected,
@@ -175,7 +143,6 @@ def _scp_plus_ls(
     )
     repaired = dup_res["routes"]
 
-    # Global LS refine
     ls_res = improve_with_local_search(
         instance_name=instance_name,
         routes_vrplib=repaired,
@@ -184,319 +151,165 @@ def _scp_plus_ls(
         seed=seed,
     )
 
-    routes_final = ls_res["routes_improved"]
-    cost_final = ls_res["improved_cost"]
+    inst = load_instance(instance_name)
+    final_routes = ls_res["routes_improved"]
+    final_cost = compute_integer_rounded_cost(inst, final_routes)
 
-    return routes_final, cost_final
+    return final_routes, final_cost
 
 
 # =====================================================================
-# DRSCI solver with multi-k + DRI-style LS after routing
+# MAIN DRIVER
 # =====================================================================
-def drsci_solve(
+def run_drsci_for_instance(
+    instance_name: str,
     *,
-    instance: str,
     seed: int = 0,
-    max_iters: int = 1,  # kept for compatibility; not used
     time_limit_per_cluster: float = 20.0,
     ls_neighbourhood: str = "dri_spatial",
     ls_after_routing_max_neighbours: int = 40,
     ls_max_neighbours_restricted: int = 40,
     scp_time_limit: float = 600.0,
+    use_combined_dissimilarity: bool = False,
     k_per_method: Optional[Dict[str, List[int]]] = None,
 ) -> Dict[str, Any]:
-    """
-    Multi-K DRSCI main entry point.
 
-    Parameters
-    ----------
-    instance : str
-        VRPLIB instance name, e.g. "XLTEST-n2541-k62.vrp".
-    seed : int
-        Random seed for PyVRP and LS.
-    time_limit_per_cluster : float
-        Time limit per cluster-subproblem for PyVRP.
-    ls_neighbourhood : str
-        Neighbourhood name passed to improve_with_local_search.
-    ls_after_routing_max_neighbours : int
-        max_neighbours for LS immediately after routing (DRI step).
-    ls_max_neighbours_restricted : int
-        max_neighbours for LS in SCP+repair refinement.
-    scp_time_limit : float
-        Time limit in seconds per SCP solve.
-    k_per_method : dict[str, list[int]], optional
-        Mapping method -> list of k values (e.g. [4, 6]).
-        If None, K_PER_METHOD_DEFAULT is used.
-    """
     start_time = time.time()
     solve_scp = lazy_import_scp()
+    inst = load_instance(instance_name)
 
-    # -----------------------------------------------------
-    # Resolve k-per-method configuration
-    # -----------------------------------------------------
     if k_per_method is None:
         k_per_method = {m: list(K_PER_METHOD_DEFAULT[m]) for m in K_PER_METHOD_DEFAULT}
 
-    for m in VB_CLUSTER_METHODS:
-        if m not in k_per_method:
-            raise ValueError(f"Missing k list for method '{m}'.")
-        k_list = k_per_method[m]
-        if not isinstance(k_list, list) or len(k_list) == 0:
-            raise ValueError(f"k_per_method['{m}'] must be a non-empty list.")
-        if any(k < 2 for k in k_list):
-            raise ValueError(f"All k values for method '{m}' must be >= 2.")
-
-    print(f"\n=== DRSCI Multi-K RUN on {instance} ===")
-    print(f"VB methods                  : {VB_CLUSTER_METHODS}")
-    print(f"k per method                : {k_per_method}")
-    print(f"Routing TL per cluster      : {time_limit_per_cluster}s")
-    print(f"LS after routing (max nnbs) : {ls_after_routing_max_neighbours}")
-    print(f"SCP time limit              : {scp_time_limit}s")
-    print(f"LS refine max neighbours    : {ls_max_neighbours_restricted}")
-    print(f"Seed                        : {seed}")
-    print("------------------------------------------------------------")
-
-    inst = load_instance(instance)
-    dim = int(inst["dimension"])
-    print(f"Instance dimension          : {dim}")
-
-    # -----------------------------------------------------
-    # Global DRSCI state
-    # -----------------------------------------------------
-    global_route_pool: Routes = []
+    global_pool: Routes = []
     best_routes: Optional[Routes] = None
-    best_cost: float = float("inf")
-    stages_executed = 0
+    best_cost = float("inf")
+    stages = 0
 
-    # -----------------------------------------------------
-    # MAIN LOOP: for each VB method and each k in its list
-    # -----------------------------------------------------
     for method in VB_CLUSTER_METHODS:
-        print("\n" + "=" * 70)
-        print(f"=== METHOD: {method} ===")
-        print("=" * 70)
-
         for k in k_per_method[method]:
-            print("\n" + "-" * 70)
-            print(f"[VB] method={method}, k={k}")
-            print("-" * 70)
-            stages_executed += 1
+            stages += 1
 
-            # =================================================
-            # (1) Vertex-based clustering
-            # =================================================
-            clusters_vb, _ = run_clustering(
+            clusters, _ = run_clustering(
                 method=method,
-                instance_name=instance,
+                instance_name=instance_name,
                 k=k,
+                use_combined=use_combined_dissimilarity,
             )
-            total_assigned = sum(len(v) for v in clusters_vb.values())
-            print(f"[VB] #clusters={len(clusters_vb)}, assigned_customers={total_assigned}")
 
-            # =================================================
-            # (2) Route VB clusters with PyVRP
-            # =================================================
-            routing_vb = solve_clusters_with_pyvrp(
-                instance_name=instance,
-                clusters=clusters_vb,
+            routing = solve_clusters_with_pyvrp(
+                instance_name=instance_name,
+                clusters=clusters,
                 time_limit_per_cluster=time_limit_per_cluster,
                 seed=seed,
             )
-            routes_vb = routing_vb["routes"]
-            print(f"[VB] Routed {len(routes_vb)} routes, cost={routing_vb['total_cost']}")
+            vb_routes = _result_to_vrplib_routes(routing)
 
-            # =================================================
-            # (3) LS immediately after VB routing (DRI-style)
-            # =================================================
             ls_vb = improve_with_local_search(
-                instance_name=instance,
-                routes_vrplib=routes_vb,
+                instance_name=instance_name,
+                routes_vrplib=vb_routes,
                 neighbourhood=ls_neighbourhood,
                 max_neighbours=ls_after_routing_max_neighbours,
                 seed=seed,
             )
-            improved_vb_routes = ls_vb["routes_improved"]
-            print(f"[VB] LS-after-routing cost={ls_vb['improved_cost']}")
 
-            # =================================================
-            # (4) Add improved VB routes to global route pool
-            # =================================================
-            global_route_pool.extend(improved_vb_routes)
-            global_route_pool = deduplicate_routes(global_route_pool)
-            print(f"[VB] Global pool size after VB add = {len(global_route_pool)}")
+            global_pool.extend(ls_vb["routes_improved"])
+            global_pool = _deduplicate_routes(global_pool)
 
-            # =================================================
-            # (5) SCP + duplicate removal + LS refine (global)
-            # =================================================
-            vb_routes_final, vb_cost = _scp_plus_ls(
-                instance_name=instance,
-                route_pool=global_route_pool,
+            vb_final, vb_cost = _scp_plus_ls(
+                instance_name=instance_name,
+                route_pool=global_pool,
                 solve_scp=solve_scp,
                 ls_neighbourhood=ls_neighbourhood,
                 ls_max_neighbours_restricted=ls_max_neighbours_restricted,
                 seed=seed,
                 scp_time_limit=scp_time_limit,
             )
-            print(f"[VB] Candidate post-SCP cost = {vb_cost}")
 
-            # --- enrich pool with repaired VB routes
-            global_route_pool = add_repaired_routes_to_pool(global_route_pool, vb_routes_final)
-            global_route_pool = deduplicate_routes(global_route_pool)
-            print(f"[VB] Pool size after adding repaired VB routes = {len(global_route_pool)}")
-
-            # --- update best solution
             if vb_cost < best_cost:
-                delta = best_cost - vb_cost if best_cost < float("inf") else 0.0
                 best_cost = vb_cost
-                best_routes = vb_routes_final
-                print(f"[VB] NEW BEST solution: cost={best_cost:.2f} (Δ={delta:.2f})")
-            else:
-                print(f"[VB] No improvement over current best={best_cost:.2f}")
+                best_routes = vb_final
 
-            # =================================================
-            # RBD step only if we already have a best solution
-            # =================================================
             if best_routes is None:
-                print("[RB] Skipping RBD – no best solution available yet.")
                 continue
 
-            stages_executed += 1
-            print("\n[RB] Route-based decomposition step")
-            print(f"[RB] k={k}, method='sk_kmeans'")
-
-            # (6) Route-based decomposition on best_routes
+            stages += 1
             clusters_rb = route_based_decomposition(
-                instance_name=instance,
+                instance_name=instance_name,
                 global_routes=best_routes,
                 k=k,
                 method="sk_kmeans",
                 use_angle=True,
                 use_load=True,
             )
-            total_assigned_rb = sum(len(v) for v in clusters_rb.values())
-            print(f"[RB] #RBD clusters={len(clusters_rb)}, assigned_customers={total_assigned_rb}")
 
-            # (7) Route RBD clusters
             routing_rb = solve_clusters_with_pyvrp(
-                instance_name=instance,
+                instance_name=instance_name,
                 clusters=clusters_rb,
                 time_limit_per_cluster=time_limit_per_cluster,
                 seed=seed,
             )
-            routes_rb = routing_rb["routes"]
-            print(f"[RB] Routed {len(routes_rb)} routes, cost={routing_rb['total_cost']}")
+            rb_routes = _result_to_vrplib_routes(routing_rb)
 
-            # (8) LS immediately after RBD routing (DRI-style)
             ls_rb = improve_with_local_search(
-                instance_name=instance,
-                routes_vrplib=routes_rb,
+                instance_name=instance_name,
+                routes_vrplib=rb_routes,
                 neighbourhood=ls_neighbourhood,
                 max_neighbours=ls_after_routing_max_neighbours,
                 seed=seed,
             )
-            improved_rb_routes = ls_rb["routes_improved"]
-            print(f"[RB] LS-after-routing cost={ls_rb['improved_cost']}")
 
-            # (9) Add improved RBD routes to global pool
-            global_route_pool.extend(improved_rb_routes)
-            global_route_pool = deduplicate_routes(global_route_pool)
-            print(f"[RB] Global pool size after RBD add = {len(global_route_pool)}")
+            global_pool.extend(ls_rb["routes_improved"])
+            global_pool = _deduplicate_routes(global_pool)
 
-            # (10) SCP + duplicate removal + LS refine
-            rb_routes_final, rb_cost = _scp_plus_ls(
-                instance_name=instance,
-                route_pool=global_route_pool,
+            rb_final, rb_cost = _scp_plus_ls(
+                instance_name=instance_name,
+                route_pool=global_pool,
                 solve_scp=solve_scp,
                 ls_neighbourhood=ls_neighbourhood,
                 ls_max_neighbours_restricted=ls_max_neighbours_restricted,
                 seed=seed,
                 scp_time_limit=scp_time_limit,
             )
-            print(f"[RB] Candidate post-SCP cost = {rb_cost}")
 
-            # --- enrich pool with repaired RBD routes
-            global_route_pool = add_repaired_routes_to_pool(global_route_pool, rb_routes_final)
-            global_route_pool = deduplicate_routes(global_route_pool)
-            print(f"[RB] Pool size after adding repaired RBD routes = {len(global_route_pool)}")
-
-            # --- update best solution
             if rb_cost < best_cost:
-                delta = best_cost - rb_cost
                 best_cost = rb_cost
-                best_routes = rb_routes_final
-                print(f"[RB] NEW BEST solution: cost={best_cost:.2f} (Δ={delta:.2f})")
-            else:
-                print(f"[RB] No improvement over current best={best_cost:.2f}")
+                best_routes = rb_final
 
-    # ---------------------------------------------------------
-    # FINAL GLOBAL SCP + LS over full pool
-    # ---------------------------------------------------------
-    print("\n" + "=" * 70)
-    print("=== FINAL GLOBAL SCP + LS ===")
-    print("=" * 70)
+    final_runtime = time.time() - start_time
 
-    if not global_route_pool:
-        print("[Final] WARNING: global route pool is empty – no solution.")
-        runtime = time.time() - start_time
-        return {
-            "instance": instance,
-            "best_cost": float("inf"),
-            "routes": [],
-            "runtime": runtime,
-            "iterations": stages_executed,
-            "route_pool_size": 0,
-        }
+    print("\n=== FINAL ROUTES (customer-only) ===")
+    for i, r in enumerate(best_routes or [], 1):
+        seq = [str(n - 1) for n in r if n != 1]
+        print(f"Route #{i}: {' '.join(seq)}")
 
-    final_routes, final_cost = _scp_plus_ls(
-        instance_name=instance,
-        route_pool=global_route_pool,
-        solve_scp=solve_scp,
-        ls_neighbourhood=ls_neighbourhood,
-        ls_max_neighbours_restricted=ls_max_neighbours_restricted,
-        seed=seed,
-        scp_time_limit=scp_time_limit,
-    )
-    print(f"[Final] Final SCP+LS cost = {final_cost:.2f}")
-
-    if final_cost < best_cost:
-        print(f"[Final] Improved best from {best_cost:.2f} → {final_cost:.2f}")
-        best_cost = final_cost
-        best_routes = final_routes
-
-    runtime = time.time() - start_time
-
-    print("\n=== DRSCI COMPLETED ===")
-    print(f"Best cost        : {best_cost:.2f}")
-    print(f"#best routes     : {len(best_routes) if best_routes else 0}")
-    print(f"Runtime          : {runtime:.2f}s")
-    print(f"Stages executed  : {stages_executed}")
-    print(f"Final pool size  : {len(global_route_pool)}")
+    print(f"\nBest cost : {best_cost}")
+    print(f"Runtime   : {final_runtime:.2f}s")
 
     return {
-        "instance": instance,
+        "instance": instance_name,
         "best_cost": best_cost,
-        "routes": best_routes if best_routes is not None else [],
-        "runtime": runtime,
-        "iterations": stages_executed,
-        "route_pool_size": len(global_route_pool),
+        "routes": best_routes or [],
+        "runtime": final_runtime,
+        "route_pool_size": len(global_pool),
+        "stages": stages,
     }
 
-
-# ---------------------------------------------------------------------
-# Debug entry point (optional)
-# ---------------------------------------------------------------------
 if __name__ == "__main__":
-    result = drsci_solve(
-        instance="X-n502-k39.vrp",
+    res = run_drsci_for_instance(
+        instance_name="X-n502-k39.vrp",
         seed=0,
         time_limit_per_cluster=20.0,
+        ls_neighbourhood="dri_spatial",
         k_per_method={
             "sk_ac_avg": [4],
             "sk_ac_complete": [4],
             "sk_ac_min": [4],
             "sk_kmeans": [4],
             "fcm": [4],
-            "pyclust_k_medoids": [4],
+            "k_medoids_pyclustering": [4],
         },
     )
-    print("\n[DEBUG] Best cost:", result["best_cost"], "#routes:", len(result["routes"]))
+
+    print("\n[DEBUG] Best cost:", res["best_cost"])
+    print("[DEBUG] #routes:", len(res["routes"]))

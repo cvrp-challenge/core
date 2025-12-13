@@ -197,28 +197,59 @@ def run_sklearn_ac(instance_name: str,
 # ---------------------------------------------------------
 # K-Means (scikit-learn)
 # ---------------------------------------------------------
+# ---------------------------------------------------------
+# K-Means (scikit-learn)
+# ---------------------------------------------------------
 
 def run_sklearn_kmeans(instance_name: str,
                        k: int,
                        use_combined: bool = False,
                        use_polar: bool = True,
                        use_demand: bool = False,
-                       instance: Optional[dict] = None
-                       ) -> Tuple[Dict[int, List[int]], Dict[int, int], np.ndarray]:
+                       instance: Optional[dict] = None,
+                       X_override: Optional[np.ndarray] = None,
+                       **kwargs
+                       ) -> Tuple[Dict[int, List[int]], Dict[int, int], Optional[np.ndarray]]:
     """
-    K-Means clustering (feature-based only).
+    K-Means clustering.
 
-    Returns:
-        clusters  : {cluster_id → [node_ids]}
-        medoids   : medoid per cluster
-        centroids : cluster centroid positions (scaled feature space)
+    Two modes:
+    ----------
+    1. Customer Clustering (default)
+        - Builds feature vectors for customers (x, y, theta, demand)
+        - Returns cluster -> [customer_ids]
+
+    2. Route Clustering (X_override provided)
+        - X_override = feature matrix for ROUTES
+        - Cluster IDs refer to route indices (0..R-1)
+        - Returns cluster -> [route_indices]
+        - medoids = centroid vectors (as placeholders)
     """
 
+    # =========================================================
+    # ROUTE-BASED KMEANS (X_override)
+    # =========================================================
+    if X_override is not None:
+        X = np.asarray(X_override, dtype=float)
+        model = KMeans(n_clusters=k, random_state=0, n_init=10)
+        labels = model.fit_predict(X)
+
+        # cluster assignments for ROUTES (not customers)
+        clusters = {cid: [] for cid in range(k)}
+        for route_idx, lab in enumerate(labels):
+            clusters[lab].append(route_idx)
+
+        # For route-based mode: centroid vectors serve as "medoids"
+        medoids = {cid: model.cluster_centers_[cid] for cid in range(k)}
+
+        return clusters, medoids, model.cluster_centers_
+
+    # =========================================================
+    # CUSTOMER-BASED KMEANS (normal mode)
+    # =========================================================
     if instance is None:
         instance = load_instance(instance_name)
 
-    # If use_combined is True, add both polar and demand features
-    # If use_combined is False, use only polar features
     if use_combined:
         use_polar = True
         use_demand = True
@@ -231,9 +262,8 @@ def run_sklearn_kmeans(instance_name: str,
 
     X_scaled = StandardScaler().fit_transform(X)
 
-    model = KMeans(n_clusters=k, n_init="auto")
+    model = KMeans(n_clusters=k, random_state=0, n_init=10)
     labels = model.fit_predict(X_scaled)
-    centroids = model.cluster_centers_
 
     clusters = {cid: [] for cid in range(k)}
     for idx, lab in enumerate(labels):
@@ -242,4 +272,4 @@ def run_sklearn_kmeans(instance_name: str,
     S = spatial_dissimilarity(instance_name)
     medoids = compute_medoids(clusters, S)
 
-    return clusters, medoids, centroids
+    return clusters, medoids, model.cluster_centers_
