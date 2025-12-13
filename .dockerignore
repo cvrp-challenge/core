@@ -53,6 +53,7 @@ instances/**/*.png
 *.out
 *.sol
 results/
+output/benchmark_evaluation/*.png
 
 # Ignore all solvers by default
 solver/
