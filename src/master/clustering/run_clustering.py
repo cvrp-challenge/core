@@ -15,7 +15,7 @@ Clustering methods supported:
     custom_ac_complete
     custom_ac_min
     custom_k_medoids
-    pyclust_k_medoids
+    k_medoids_pyclustering
     sk_ac_avg
     sk_ac_complete
     sk_ac_min
@@ -27,7 +27,7 @@ from typing import Dict, List, Tuple, Optional
 
 
 # --- Instance loader (needed for enforcing full coverage)
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 
 # --- Custom AC implementations ---
 from master.clustering.custom.avg_ac import agglomerative_clustering_average

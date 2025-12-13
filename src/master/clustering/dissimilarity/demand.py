@@ -1,7 +1,7 @@
 # clustering/dissimilarity/demand.py
 
 from typing import Dict, Tuple, Optional
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 
 
 def demand_dissimilarity(instance_name: str, instance: Optional[dict] = None) -> Dict[Tuple[int, int], float]:

@@ -3,9 +3,9 @@
 import os
 import math
 import numpy as np
-from utils.loader import load_instance
-from clustering.dissimilarity.polar_coordinates import compute_polar_angle
-from clustering.dissimilarity.spatial import compute_lambda, angular_spread_circular
+from master.utils.loader import load_instance
+from master.clustering.dissimilarity.polar_coordinates import compute_polar_angle
+from master.clustering.dissimilarity.spatial import compute_lambda, angular_spread_circular
 
 
 def compute_lambda_factor(instance_name: str) -> dict:
@@ -80,9 +80,9 @@ if __name__ == "__main__":
 # master/main.py
 
 import math
-from utils.loader import load_instance
-from clustering.dissimilarity.polar_coordinates import compute_polar_angle
-from clustering.dissimilarity.spatial import (
+from master.utils.loader import load_instance
+from master.clustering.dissimilarity.polar_coordinates import compute_polar_angle
+from master.clustering.dissimilarity.spatial import (
     compute_lambda,
     spatial_dissimilarity,
     angular_spread_circular,

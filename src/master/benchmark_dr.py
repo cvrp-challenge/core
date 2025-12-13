@@ -44,6 +44,7 @@ from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
 from master.utils.loader import load_instance
 from master.utils.solution_helpers import (
     _write_solution,
+    _write_solution_2,
     find_existing_solution,
     calculate_gap,
 )
@@ -144,38 +145,52 @@ def evaluate_method_on_instance(
         # 1) Clustering
         clusters, _ = run_clustering(method, instance_name, k, use_combined=use_combined)
 
+        import sys
+        sys.stdout.flush()
+        print(f"{instance_name} [{method}] k={k} {dissimilarity}...", flush=True)
+
         # 2) Routing subproblems
-        import time
-        routing_start = time.time()
         routing = solve_clusters_with_pyvrp(
             instance_name=instance_name,
             clusters=clusters,
-            time_limit_per_cluster=10.0,
+            time_limit_per_cluster=20.0,
             seed=0,
         )
-        routing_runtime = time.time() - routing_start
 
-        cost = routing["total_cost"]
-        routes = routing["routes"]
+        # routing is now a PyVRP Result object
+        cost = routing.cost()
+        routing_runtime = routing.runtime
 
         # 3) Gap vs reference
         ref = find_existing_solution(instance_name)
         reference_cost = ref[1] if ref else None
         gap = calculate_gap(cost, reference_cost) if reference_cost else None
 
-        _write_solution(
-            where=output_dir,
-            instance_name=f"{Path(instance_name).stem}_{method}_{dissimilarity}_k={k}",
-            data=inst,
-            result=routes,
-            solver=f"PyVRP (HGS)",
-            runtime=routing_runtime,
-            stopping_criteria="10s per cluster",
-            gap_percent=gap,
-            clustering_method=method,
-            dissimilarity=dissimilarity,
-            k_clusters=k,
-        )
+        # 4) Write solution file
+        # routing is a PyVRP Result object with ProblemData attached
+        # Use _write_solution_2 which is designed for routing_controller.py output
+        try:
+            _write_solution_2(
+                where=output_dir,
+                instance_name=f"{Path(instance_name).stem}_{method}_{dissimilarity}_k={k}",
+                data=getattr(routing, 'data', inst),  # Use ProblemData if available, else instance dict
+                result=routing,  # Pass the PyVRP Result object
+                solver=f"PyVRP (HGS)",
+                runtime=routing_runtime,
+                stopping_criteria="20s per cluster",
+                gap_percent=gap,
+                clustering_method=method,
+                dissimilarity=dissimilarity,
+                k_clusters=k,
+            )
+            instance_stem = Path(instance_name).stem
+            print(f"✓ {instance_stem} completed using {method}, diss={dissimilarity}, and k={k}", flush=True)
+        except Exception as write_error:
+            sys.stdout.flush()
+            print(f"[ERROR] {instance_name} [{method}] k={k}: Failed to write solution: {write_error}", flush=True)
+            import traceback
+            traceback.print_exc()
+            raise
 
         return {
             "instance": instance_name,
@@ -183,7 +198,7 @@ def evaluate_method_on_instance(
             "cost": cost,
             "dissimilarity": dissimilarity,
             "k_clusters": k,
-            "routes": routes,
+            "routes": routing,  # PyVRP Result object
             "runtime": routing_runtime,
             "feasible": True,
             "gap_percent": gap,
@@ -192,12 +207,20 @@ def evaluate_method_on_instance(
         }
 
     except Exception as e:
+        import sys
+        import traceback
+        error_traceback = traceback.format_exc()
+        sys.stdout.flush()
+        print(f"[ERROR] {instance_name} [{method}] k={k}: Exception in evaluate_method_on_instance: {e}", flush=True)
+        print(error_traceback, flush=True)
+        sys.stdout.flush()
         return {
             "instance": instance_name,
             "method": method,
             "dissimilarity": dissimilarity,
             "k_clusters": k,
             "error": str(e),
+            "traceback": error_traceback,
             "success": False,
         }
 
@@ -268,10 +291,15 @@ def run_benchmark(
                         f"{gap_str}"
                     )
                 else:
-                    print(f"✗ {inst} [{method}]: ERROR - {r['error']}")
+                    print(f"✗ {inst} [{method}]: ERROR - {r.get('error', 'Unknown error')}")
+                    import traceback
+                    if 'traceback' in r:
+                        print(r['traceback'])
 
             except Exception as e:
-                print(f"✗ {inst} [{method}]: EXCEPTION - {e}")
+                import traceback
+                print(f"✗ {inst} [{method}]: EXCEPTION in future.result() - {e}")
+                traceback.print_exc()
                 results.append({
                     "instance": inst,
                     "method": method,
@@ -336,8 +364,8 @@ def main():
                         default=DISSIMILARITY_TYPES,
                         help="Dissimilarity types to compare")
 
-    parser.add_argument("--k", type=int, default=K_CLUSTERS,
-                        help="Override number of clusters (default: derive from instance name)")
+    parser.add_argument("--k", type=int, nargs="+", default=None,
+                        help="Cluster sizes to test (default: K_CLUSTERS = [2, 4, 6, 9, 12])")
 
     args = parser.parse_args()
 
@@ -346,7 +374,7 @@ def main():
         max_workers=args.max_workers,
         methods=args.methods,
         dissimilarity_types=args.dissimilarity,
-        k_values=args.k,
+        k_values=args.k,  # Will be None if not provided, then defaults to K_CLUSTERS in run_benchmark
     )
 
 

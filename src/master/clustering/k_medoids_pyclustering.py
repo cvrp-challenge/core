@@ -14,10 +14,12 @@ from typing import Dict, List, Tuple, Optional
 
 import numpy as np
 
-from utils.loader import load_instance
-from utils.symmetric_matrix_read import get_symmetric_value
-from clustering.dissimilarity.spatial import spatial_dissimilarity
-from clustering.dissimilarity.combined import combined_dissimilarity
+from pyclustering.cluster.kmedoids import kmedoids
+from master.utils.loader import load_instance
+from master.utils.symmetric_matrix_read import get_symmetric_value
+from master.clustering.dissimilarity.spatial import spatial_dissimilarity
+from master.clustering.dissimilarity.combined import combined_dissimilarity
+from master.clustering.custom.k_medoids import initialize_medoids
 
 
 def _build_distance_matrix(

@@ -9,7 +9,7 @@ Supports both:
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 import matplotlib as mpl
 
 

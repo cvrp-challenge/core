@@ -11,10 +11,10 @@ based on minimum average pairwise dissimilarity (Eq. 23 using average linkage).
 import math
 import random
 from typing import Dict, List, Tuple, Optional
-from utils.loader import load_instance
-from utils.symmetric_matrix_read import get_symmetric_value
-from clustering.dissimilarity.combined import combined_dissimilarity
-from clustering.dissimilarity.spatial import spatial_dissimilarity
+from master.utils.loader import load_instance
+from master.utils.symmetric_matrix_read import get_symmetric_value
+from master.clustering.dissimilarity.combined import combined_dissimilarity
+from master.clustering.dissimilarity.spatial import spatial_dissimilarity
 
 
 def average_linkage_distance(

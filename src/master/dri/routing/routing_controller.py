@@ -3,7 +3,7 @@
 Routing controller: glue between clustering and PyVRP.
 
 Minimal prototype:
-    1) Load instance via utils.loader.load_instance (vrplib dict).
+    1) Load instance via master.utils.loader.load_instance (vrplib dict).
     2) For each cluster (set of customers, VRPLIB indices, depot = 1):
         - Build a PyVRP model restricted to that cluster (+ depot).
         - Solve with PyVRP.
@@ -29,15 +29,15 @@ from typing import Dict, List, Tuple, Any
 
 import numpy as np
 
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 
 # ---------------------------------------------------------------------------
 # PyVRP import (works both if pip-installed or only as git submodule in solver/pyvrp)
 # ---------------------------------------------------------------------------
 
 try:
-    from pyvrp import Model, solve
-    from pyvrp.stop import MaxRuntime
+    from pyvrp import Model, solve, Solution, Result, Statistics  # type: ignore
+    from pyvrp.stop import MaxRuntime  # type: ignore
 except ImportError:
     # Try to import from project submodule: core/solver/pyvrp
     CURRENT_DIR = os.path.dirname(__file__)
@@ -46,7 +46,7 @@ except ImportError:
     if PYVRP_DIR not in sys.path:
         sys.path.append(PYVRP_DIR)
 
-    from pyvrp import Model, solve  # type: ignore
+    from pyvrp import Model, solve, Solution, Result, Statistics  # type: ignore
     from pyvrp.stop import MaxRuntime  # type: ignore
 
 
@@ -232,6 +232,119 @@ def _solve_cluster_with_pyvrp(
 
 
 # ---------------------------------------------------------------------------
+# Helper to build unified model and create PyVRP Result
+# ---------------------------------------------------------------------------
+
+def _build_unified_model(instance: Dict[str, Any]) -> Tuple[Model, Dict[int, int]]:
+    """
+    Build a PyVRP Model for the entire instance (all customers).
+    
+    Returns:
+        model: PyVRP Model for the full instance
+        vrplib_to_pyvrp: Mapping from VRPLIB node ID -> PyVRP client index
+                         (0 = depot, 1+ = customers)
+    """
+    coords = instance["node_coord"]
+    demands = instance["demand"]
+    capacity = int(instance["capacity"])
+    edge_mat = instance.get("edge_weight")
+    depot_idx0 = int(instance["depot"][0])
+    
+    # Get all customers (excluding depot)
+    # demands is a numpy array: demands[0] = depot, demands[1] = customer 2, etc.
+    # VRPLIB node ID = array_index + 1
+    all_customers = list(range(2, len(demands) + 1))  # VRPLIB nodes 2, 3, 4, ..., n
+    
+    # Build mapping: VRPLIB node ID -> PyVRP location index
+    # PyVRP uses 0-based location indices: 0 = depot, 1+ = customers
+    vrplib_to_pyvrp = {1: 0}  # depot -> location 0
+    for idx, customer_id in enumerate(all_customers, start=1):
+        vrplib_to_pyvrp[customer_id] = idx  # customer -> location idx (1-based)
+    
+    # Build PyVRP model
+    m = Model()
+    
+    # Add depot
+    depot_coord = coords[depot_idx0]
+    m.add_depot(x=float(depot_coord[0]), y=float(depot_coord[1]), name="depot")
+    
+    # Add all clients
+    for customer_id in all_customers:
+        idx0 = customer_id - 1
+        xy = coords[idx0]
+        demand = int(demands[idx0])
+        m.add_client(
+            x=float(xy[0]),
+            y=float(xy[1]),
+            delivery=demand,
+            name=f"cust_{customer_id}",
+        )
+    
+    # Add vehicle type (enough vehicles for all customers)
+    m.add_vehicle_type(num_available=len(all_customers), capacity=capacity)
+    
+    # Add edges
+    locations = m.locations
+    num_loc = len(locations)
+    
+    for i in range(num_loc):
+        for j in range(num_loc):
+            if i == j:
+                continue
+            
+            # Map PyVRP indices back to original indices
+            if i == 0:
+                orig_i = depot_idx0
+            else:
+                orig_i = all_customers[i - 1] - 1
+            
+            if j == 0:
+                orig_j = depot_idx0
+            else:
+                orig_j = all_customers[j - 1] - 1
+            
+            if edge_mat is not None:
+                dist = edge_mat[orig_i, orig_j]
+                dist_int = int(round(float(dist)))
+            else:
+                dx = float(coords[orig_i, 0] - coords[orig_j, 0])
+                dy = float(coords[orig_i, 1] - coords[orig_j, 1])
+                dist_int = int(round((dx * dx + dy * dy) ** 0.5))
+            
+            m.add_edge(locations[i], locations[j], distance=dist_int)
+    
+    return m, vrplib_to_pyvrp
+
+
+def _convert_vrplib_routes_to_pyvrp(
+    routes_vrplib: List[List[int]],
+    vrplib_to_pyvrp: Dict[int, int]
+) -> List[List[int]]:
+    """
+    Convert VRPLIB routes (with depot markers) to PyVRP format.
+    
+    VRPLIB format: [1, 4, 7, 29, 1] (depot at start/end, node IDs)
+    
+    Note: Looking at _vrplib_routes_to_solution in ls_controller.py, it uses (nid - 1)
+    which converts VRPLIB node IDs directly to location indices. However, PyVRP Solution
+    constructor with list of lists expects client indices (0-based, where 0 = first client).
+    
+    The key insight: When using (nid - 1), VRPLIB node 2 -> location 1 -> client 0.
+    So we should use (nid - 2) to get client indices directly, OR use location - 1.
+    
+    Actually, let's use the same approach as _vrplib_routes_to_solution: (nid - 1) gives
+    location indices, and PyVRP Solution accepts location indices when given as list of lists.
+    """
+    routes_pyvrp = []
+    for route_vrplib in routes_vrplib:
+        # Use the same conversion as _vrplib_routes_to_solution: (nid - 1) gives location indices
+        clients = [(nid - 1) for nid in route_vrplib if nid != 1]
+        if clients:
+            routes_pyvrp.append(clients)
+    return routes_pyvrp
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -240,7 +353,7 @@ def solve_clusters_with_pyvrp(
     clusters: Dict[int, List[int]],
     time_limit_per_cluster: float = 10.0,
     seed: int = 0,
-) -> Dict[str, Any]:
+) -> Result:
     """
     High-level entry point: solve all clusters of an instance with PyVRP.
 
@@ -248,7 +361,7 @@ def solve_clusters_with_pyvrp(
     ----------
     instance_name
         File name of the instance, e.g. "X-n101-k25.vrp".
-        Must be found by utils.loader.load_instance (x/xl folders).
+        Must be found by master.utils.loader.load_instance (x/xl folders).
     clusters
         Mapping cluster_id -> list of VRPLIB node IDs (customers) in that cluster.
         Example:
@@ -265,55 +378,83 @@ def solve_clusters_with_pyvrp(
 
     Returns
     -------
-    result : dict
-        {
-            "routes": List[List[int]],   # all routes (global), VRPLIB node IDs
-            "total_cost": float,        # sum of cluster costs
-            "cluster_costs": Dict[int, float],  # per-cluster objective
-        }
+    result : pyvrp.Result
+        A PyVRP Result object containing the aggregated solution from all clusters.
     """
-    print(f"[routing] Loading instance '{instance_name}' ...")
+    import time
+    
     instance = load_instance(instance_name)
 
     all_routes: List[List[int]] = []
     total_cost: float = 0.0
+    total_runtime: float = 0.0
     cluster_costs: Dict[int, float] = {}
 
     for cid, nodes in clusters.items():
         # Ensure we do not accidentally pass depot as a customer.
         customers = [nid for nid in nodes if nid != 1]
 
-        print(
-            f"[routing] Solving cluster {cid}: "
-            f"{len(customers)} customers (VRPLIB IDs) ..."
-        )
-
+        cluster_start = time.time()
         routes_c, cost_c = _solve_cluster_with_pyvrp(
             instance,
             customers,
             time_limit=time_limit_per_cluster,
             seed=seed + cid,
         )
-
-        print(
-            f"[routing]   -> Cluster {cid}: "
-            f"{len(routes_c)} routes, cost = {cost_c:.2f}"
-        )
+        cluster_runtime = time.time() - cluster_start
+        total_runtime += cluster_runtime
 
         all_routes.extend(routes_c)
         cluster_costs[cid] = cost_c
         total_cost += cost_c
 
-    print(
-        f"[routing] Done. Total routes: {len(all_routes)}, "
-        f"aggregated cost = {total_cost:.2f}"
+    # Build unified model for the entire instance
+    unified_model, vrplib_to_pyvrp = _build_unified_model(instance)
+    unified_data = unified_model.data()
+    
+    # Convert VRPLIB routes to PyVRP format
+    # Match the conversion used in ls_controller.py:_vrplib_routes_to_solution
+    # VRPLIB node IDs to location indices: VRPLIB node 2 -> location 1, node 3 -> location 2, etc.
+    # PyVRP Solution constructor with list[list[int]] expects location indices (not client indices)
+    routes_pyvrp = []
+    for route_vrplib in all_routes:
+        # Convert VRPLIB nodes to location indices (same as ls_controller.py)
+        # VRPLIB node 2 -> location 1 (first client)
+        # VRPLIB node 3 -> location 2 (second client)
+        # So: (nid - 1) gives location index
+        locations = [(nid - 1) for nid in route_vrplib if nid != 1]
+        if locations:
+            routes_pyvrp.append(locations)
+    
+    # Check for any invalid indices - PyVRP expects location indices (0=depot, 1+=clients)
+    # First location index for clients is 1 (after depot at 0)
+    # Last location index is num_locations - 1
+    max_location = unified_data.num_locations - 1
+    for idx, route in enumerate(routes_pyvrp):
+        for visit in route:
+            if visit < 1 or visit > max_location:  # Location indices for clients start at 1
+                print(f"[ERROR] Route {idx} contains invalid location index {visit} (should be 1-{max_location})")
+    
+    # Create PyVRP Solution from routes
+    # PyVRP Solution constructor with list[list[int]] expects location indices (0=depot, 1+=clients)
+    solution = Solution(unified_data, routes_pyvrp)
+    
+    # Create Statistics object (minimal, since we don't have iteration stats)
+    stats = Statistics()
+    
+    # Create PyVRP Result object
+    result = Result(
+        best=solution,
+        stats=stats,
+        num_iterations=len(clusters),  # Number of cluster solves
+        runtime=total_runtime,
     )
-
-    return {
-        "routes": all_routes,
-        "total_cost": total_cost,
-        "cluster_costs": cluster_costs,
-    }
+    
+    # Attach cluster costs and ProblemData as attributes for convenience
+    result.cluster_costs = cluster_costs
+    result.data = unified_data  # Store ProblemData for _write_solution
+    
+    return result
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Dict, List, Tuple, Literal
 
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 
 # sklearn-based clustering (customer-based functions, but reused here)
 from master.clustering.scikit_clustering import (

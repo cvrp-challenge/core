@@ -5,7 +5,7 @@ This module shows only the instance layout — no routes or clustering lines.
 """
 
 import matplotlib.pyplot as plt
-from utils.loader import load_instance
+from master.utils.loader import load_instance
 
 
 def plot_instance(instance_name: str, show_labels: bool = False):

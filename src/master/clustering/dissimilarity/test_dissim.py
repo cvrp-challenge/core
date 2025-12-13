@@ -1,11 +1,11 @@
 # Orchestrator for the entire pipeline
 # master/main.py
 
-from utils.loader import load_instance
-from clustering.dissimilarity.polar_coordinates import compute_polar_angle
-from clustering.dissimilarity.spatial import spatial_dissimilarity
-from clustering.dissimilarity.demand import demand_dissimilarity
-from clustering.dissimilarity.combined import combined_dissimilarity
+from master.utils.loader import load_instance
+from master.clustering.dissimilarity.polar_coordinates import compute_polar_angle
+from master.clustering.dissimilarity.spatial import spatial_dissimilarity
+from master.clustering.dissimilarity.demand import demand_dissimilarity
+from master.clustering.dissimilarity.combined import combined_dissimilarity
 
 
 def main():
