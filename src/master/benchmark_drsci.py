@@ -42,10 +42,6 @@ from master.utils.solution_helpers import (
 )
 from master.utils.loader import load_instance
 
-# ---------------------------------------------------------
-# Imports inside worker will load run_drsci correctly
-# ---------------------------------------------------------
-
 
 # ---------------------------------------------------------
 # Instances to benchmark
@@ -73,6 +69,24 @@ INSTANCES = [
     "XLTEST-n10001-k798.vrp",
 ]
 
+CLUSTERING_METHODS = [
+    "sk_ac_avg",
+    "sk_ac_complete",
+    "sk_ac_min",
+    "sk_kmeans",
+    "fcm",
+    "k_medoids_pyclustering",
+]
+
+K_PER_METHOD = {
+    "sk_ac_avg": [2, 4, 6, 8],
+    "sk_ac_complete": [2, 4, 6, 8],
+    "sk_ac_min": [2, 4, 6, 8],
+    "sk_kmeans": [2, 4, 6, 8],
+    "fcm": [2, 4, 6, 8],
+    "k_medoids_pyclustering": [2, 4, 6, 8],
+}
+
 
 # ---------------------------------------------------------
 # Worker initialization for multiprocessing
@@ -95,30 +109,45 @@ def _init_worker():
 def solve_instance_drsci(
     instance_name: str,
     output_dir: Path,
-    max_iters: int,
-    seed: int = 0,
+    seed: int = 42,
+    time_limit_per_cluster: float = 30.0,
+    ls_neighbourhood: str = "dri_spatial",
+    ls_after_routing_max_neighbours: int = 40,
+    ls_max_neighbours_restricted: int = 40,
+    scp_time_limit: float = 600.0,
+    use_combined_dissimilarity: bool = False,
 ) -> dict:
     """
     Executes full DRSCI on one VRP instance.
-    Returns dict with cost, runtime, iteration count, and feasibility.
+    Returns dict with cost, runtime, and feasibility.
     """
     try:
         # Import inside worker so parallel jobs do not fail
-        from master.run_drsci import drsci_solve
+        from master.run_drsci import run_drsci_for_instance
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
+        # Print start message
+        print(f"{instance_name} is starting.", flush=True)
+
         # ----------------- RUN DRSCI -----------------
-        result = drsci_solve(
-            instance=instance_name,
-            max_iters=max_iters,
+        result = run_drsci_for_instance(
+            instance_name=instance_name,
             seed=seed,
+            time_limit_per_cluster=time_limit_per_cluster,
+            ls_neighbourhood=ls_neighbourhood,
+            ls_after_routing_max_neighbours=ls_after_routing_max_neighbours,
+            ls_max_neighbours_restricted=ls_max_neighbours_restricted,
+            scp_time_limit=scp_time_limit,
+            use_combined_dissimilarity=use_combined_dissimilarity,
+            methods=CLUSTERING_METHODS,
+            k_per_method=K_PER_METHOD,
         )
 
         best_cost = result["best_cost"]
-        routes = result["routes"]
+        routes = result["routes"]  # VRPLIB format: depot=1, customers=2+
         runtime = result["runtime"]
-        iters = result["iterations"]
+        stages = result.get("stages", 0)
 
         # ----------------- GAP vs REF -----------------
         ref = find_existing_solution(instance_name)
@@ -127,18 +156,19 @@ def solve_instance_drsci(
 
         # ----------------- WRITE .SOL -----------------
         inst = load_instance(instance_name)
-        sol_path = output_dir / f"{Path(instance_name).stem}_drsci.sol"
+        instance_stem = Path(instance_name).stem
+        sol_instance_name = f"{instance_stem}_drsci"
 
         _write_solution(
             where=output_dir,
-            instance_name=instance_name,
+            instance_name=sol_instance_name,
             data=inst,
             result=routes,
             solver="DRSCI",
             runtime=runtime,
-            stopping_criteria=f"DRSCI(iters={iters})",
+            stopping_criteria=f"DRSCI({stages} Stages)",
             gap_percent=gap,
-            filename_override=sol_path.name,
+            cost=best_cost,  # Required when result is a list of routes
         )
 
         return {
@@ -146,17 +176,24 @@ def solve_instance_drsci(
             "success": True,
             "cost": best_cost,
             "runtime": runtime,
-            "iterations": iters,
+            "stages": stages,
             "gap_percent": gap,
             "reference_cost": reference_cost,
-            "sol_path": str(sol_path),
         }
 
     except Exception as e:
+        import sys
+        import traceback
+        error_traceback = traceback.format_exc()
+        sys.stdout.flush()
+        print(f"[ERROR] {instance_name}: Exception in solve_instance_drsci: {e}", flush=True)
+        print(error_traceback, flush=True)
+        sys.stdout.flush()
         return {
             "instance": instance_name,
             "success": False,
             "error": str(e),
+            "traceback": error_traceback,
         }
 
 
@@ -166,7 +203,13 @@ def solve_instance_drsci(
 def run_benchmark(
     output_path: str,
     max_workers: Optional[int],
-    max_iters: int,
+    seed: int = 42,
+    time_limit_per_cluster: float = 30.0,
+    ls_neighbourhood: str = "dri_spatial",
+    ls_after_routing_max_neighbours: int = 40,
+    ls_max_neighbours_restricted: int = 40,
+    scp_time_limit: float = 600.0,
+    use_combined_dissimilarity: bool = False,
 ):
     """
     Run DRSCI on all benchmark instances in parallel.
@@ -175,9 +218,15 @@ def run_benchmark(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Running DRSCI benchmark on {len(INSTANCES)} instances.")
-    print(f"Max DRSCI iterations  : {max_iters}")
-    print(f"Parallel workers       : {max_workers or 'auto'}")
-    print(f"Output directory       : {output_dir}")
+    print(f"Seed                    : {seed}")
+    print(f"Time limit per cluster  : {time_limit_per_cluster}s")
+    print(f"LS neighbourhood        : {ls_neighbourhood}")
+    print(f"LS max neighbours       : {ls_after_routing_max_neighbours}")
+    print(f"LS max neighbours (SCP) : {ls_max_neighbours_restricted}")
+    print(f"SCP time limit          : {scp_time_limit}s")
+    print(f"Combined dissimilarity  : {use_combined_dissimilarity}")
+    print(f"Parallel workers        : {max_workers or 'auto'}")
+    print(f"Output directory        : {output_dir}")
     print("-" * 80)
 
     results = []
@@ -189,7 +238,13 @@ def run_benchmark(
                 solve_instance_drsci,
                 inst,
                 output_dir,
-                max_iters,
+                seed,
+                time_limit_per_cluster,
+                ls_neighbourhood,
+                ls_after_routing_max_neighbours,
+                ls_max_neighbours_restricted,
+                scp_time_limit,
+                use_combined_dissimilarity,
             ): inst
             for inst in INSTANCES
         }
@@ -207,16 +262,20 @@ def run_benchmark(
                         else ""
                     )
                     print(
-                        f"✓ {instance:<20} "
+                        f"✓ {instance:<30} "
                         f"Cost={r['cost']:.2f} "
                         f"Time={r['runtime']:.2f}s "
-                        f"Iters={r['iterations']}{gap_txt}"
+                        f"Stages={r.get('stages', 0)}{gap_txt}"
                     )
                 else:
-                    print(f"✗ {instance} ERROR: {r['error']}")
+                    print(f"✗ {instance} ERROR: {r.get('error', 'Unknown error')}")
+                    if 'traceback' in r:
+                        print(r['traceback'])
 
             except Exception as e:
+                import traceback
                 print(f"✗ {instance} EXCEPTION: {e}")
+                traceback.print_exc()
                 results.append({
                     "instance": instance,
                     "success": False,
@@ -238,8 +297,10 @@ def run_benchmark(
     if ok:
         avg_cost = sum(r["cost"] for r in ok) / len(ok)
         avg_runtime = sum(r["runtime"] for r in ok) / len(ok)
+        avg_stages = sum(r.get("stages", 0) for r in ok) / len(ok)
         print(f"Average final cost    : {avg_cost:.2f}")
         print(f"Average runtime       : {avg_runtime:.2f}s")
+        print(f"Average stages        : {avg_stages:.1f}")
 
         gaps = [r["gap_percent"] for r in ok if r["gap_percent"] is not None]
         if gaps:
@@ -249,7 +310,9 @@ def run_benchmark(
     if bad:
         print("\nFailed instances:")
         for r in bad:
-            print(f"  - {r['instance']}: {r['error']}")
+            print(f"  - {r['instance']}: {r.get('error', 'Unknown error')}")
+
+    print("\nBenchmark complete.\n")
 
 
 # ---------------------------------------------------------
@@ -266,16 +329,51 @@ def main():
         help="Directory to store .sol files",
     )
     parser.add_argument(
-        "--max_iters",
-        type=int,
-        default=10,
-        help="Maximum DRSCI outer iterations per instance",
-    )
-    parser.add_argument(
         "--max_workers",
         type=int,
         default=None,
         help="Parallel worker processes (default auto)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="Random seed for DRSCI",
+    )
+    parser.add_argument(
+        "--time_limit_per_cluster",
+        type=float,
+        default=30.0,
+        help="Time limit per cluster in seconds (default: 30.0)",
+    )
+    parser.add_argument(
+        "--ls_neighbourhood",
+        type=str,
+        default="dri_spatial",
+        help="Local search neighbourhood (default: dri_spatial)",
+    )
+    parser.add_argument(
+        "--ls_after_routing_max_neighbours",
+        type=int,
+        default=40,
+        help="Max neighbours for LS after routing (default: 40)",
+    )
+    parser.add_argument(
+        "--ls_max_neighbours_restricted",
+        type=int,
+        default=40,
+        help="Max neighbours for LS in SCP phase (default: 40)",
+    )
+    parser.add_argument(
+        "--scp_time_limit",
+        type=float,
+        default=600.0,
+        help="Time limit for SCP solver in seconds (default: 600.0)",
+    )
+    parser.add_argument(
+        "--use_combined_dissimilarity",
+        action="store_true",
+        help="Use combined dissimilarity instead of spatial only",
     )
 
     args = parser.parse_args()
@@ -283,7 +381,13 @@ def main():
     run_benchmark(
         output_path=args.output_path,
         max_workers=args.max_workers,
-        max_iters=args.max_iters,
+        seed=args.seed,
+        time_limit_per_cluster=args.time_limit_per_cluster,
+        ls_neighbourhood=args.ls_neighbourhood,
+        ls_after_routing_max_neighbours=args.ls_after_routing_max_neighbours,
+        ls_max_neighbours_restricted=args.ls_max_neighbours_restricted,
+        scp_time_limit=args.scp_time_limit,
+        use_combined_dissimilarity=args.use_combined_dissimilarity,
     )
 
 

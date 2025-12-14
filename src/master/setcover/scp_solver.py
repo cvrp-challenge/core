@@ -22,7 +22,15 @@ from __future__ import annotations
 import math
 from typing import List, Dict, Optional
 
-from gurobipy import Model, GRB, quicksum
+try:
+    from gurobipy import Model, GRB, quicksum
+except ImportError as e:
+    raise ImportError(
+        "gurobipy is required for SCP solving. "
+        "Install it with: pip install gurobipy\n"
+        "Note: Gurobi requires a valid license (academic or commercial)."
+        "See https://www.gurobi.com/ for more information."
+    ) from e
 
 from master.utils.loader import load_instance
 

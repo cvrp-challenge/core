@@ -171,6 +171,7 @@ def run_drsci_for_instance(
     ls_max_neighbours_restricted: int = 40,
     scp_time_limit: float = 600.0,
     use_combined_dissimilarity: bool = False,
+    methods: Optional[List[str]] = VB_CLUSTER_METHODS,
     k_per_method: Optional[Dict[str, List[int]]] = None,
 ) -> Dict[str, Any]:
 
@@ -181,14 +182,19 @@ def run_drsci_for_instance(
     if k_per_method is None:
         k_per_method = {m: list(K_PER_METHOD_DEFAULT[m]) for m in K_PER_METHOD_DEFAULT}
 
+    # Calculate total stages: number of (method, k) combinations
+    total_stages = sum(len(k_per_method[method]) for method in methods)
+
     global_pool: Routes = []
     best_routes: Optional[Routes] = None
     best_cost = float("inf")
     stages = 0
+    current_stage = 0  # Progress counter for printing (one per (method, k) combination)
 
-    for method in VB_CLUSTER_METHODS:
+    for method in methods:
         for k in k_per_method[method]:
             stages += 1
+            current_stage += 1
 
             clusters, _ = run_clustering(
                 method=method,
@@ -231,6 +237,8 @@ def run_drsci_for_instance(
                 best_routes = vb_final
 
             if best_routes is None:
+                # Print progress even if we skip RB stage
+                print(f"{instance_name} arrived at stage {current_stage}/{total_stages}.", flush=True)
                 continue
 
             stages += 1
@@ -275,6 +283,9 @@ def run_drsci_for_instance(
             if rb_cost < best_cost:
                 best_cost = rb_cost
                 best_routes = rb_final
+
+            # Print progress after (method, k) combination completes
+            print(f"{instance_name} arrived at stage {current_stage}/{total_stages}.", flush=True)
 
     final_runtime = time.time() - start_time
 
