@@ -78,13 +78,21 @@ CLUSTERING_METHODS = [
     "k_medoids_pyclustering",
 ]
 
+# K_PER_METHOD = {
+#     "sk_ac_avg": [2, 4, 6, 8],
+#     "sk_ac_complete": [2, 4, 6, 8],
+#     "sk_ac_min": [2, 4, 6, 8],
+#     "sk_kmeans": [2, 4, 6, 8],
+#     "fcm": [2, 4, 6, 8],
+#     "k_medoids_pyclustering": [2, 4, 6, 8],
+# }
 K_PER_METHOD = {
-    "sk_ac_avg": [2, 4, 6, 8],
-    "sk_ac_complete": [2, 4, 6, 8],
-    "sk_ac_min": [2, 4, 6, 8],
-    "sk_kmeans": [2, 4, 6, 8],
-    "fcm": [2, 4, 6, 8],
-    "k_medoids_pyclustering": [2, 4, 6, 8],
+    "sk_ac_avg": [2, 4],
+    "sk_ac_complete": [2, 4],
+    "sk_ac_min": [2, 4],
+    "sk_kmeans": [2, 4],
+    "fcm": [2, 4],
+    "k_medoids_pyclustering": [2, 4],
 }
 
 

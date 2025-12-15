@@ -183,7 +183,7 @@ def run_drsci_for_instance(
         k_per_method = {m: list(K_PER_METHOD_DEFAULT[m]) for m in K_PER_METHOD_DEFAULT}
 
     # Calculate total stages: number of (method, k) combinations
-    total_stages = sum(len(k_per_method[method]) for method in methods)
+    total_stages = sum(len(k_per_method[method]) for method in methods) * 2
 
     global_pool: Routes = []
     best_routes: Optional[Routes] = None
@@ -194,7 +194,6 @@ def run_drsci_for_instance(
     for method in methods:
         for k in k_per_method[method]:
             stages += 1
-            current_stage += 1
 
             clusters, _ = run_clustering(
                 method=method,
@@ -238,7 +237,7 @@ def run_drsci_for_instance(
 
             if best_routes is None:
                 # Print progress even if we skip RB stage
-                print(f"{instance_name} arrived at stage {current_stage}/{total_stages}.", flush=True)
+                print(f"{instance_name} arrived at stage {stages}/{total_stages}.", flush=True)
                 continue
 
             stages += 1
@@ -285,7 +284,7 @@ def run_drsci_for_instance(
                 best_routes = rb_final
 
             # Print progress after (method, k) combination completes
-            print(f"{instance_name} arrived at stage {current_stage}/{total_stages}.", flush=True)
+            print(f"{instance_name} arrived at stage {stages}/{total_stages}.", flush=True)
 
     final_runtime = time.time() - start_time
 
