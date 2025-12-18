@@ -23,7 +23,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from master.clustering.run_clustering import run_clustering
-from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
+from master.routing.routing_controller import solve_clusters_with_pyvrp
 from master.improve.ls_controller import improve_with_local_search
 
 

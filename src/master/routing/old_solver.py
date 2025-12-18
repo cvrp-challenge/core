@@ -7,7 +7,7 @@ solver-specific plumbing.
 Supported backends:
     - pyvrp   (built-in)
     - hexaly  (via solver_hexaly.py)
-    - filo1 / filo2 (via solver_filo.py)
+    - future: FILO1 / FILO2
 """
 
 from __future__ import annotations
@@ -23,6 +23,35 @@ import warnings
 # Repo paths
 # -----------------------------------------------------------------------------
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+# -----------------------------------------------------------------------------
+# Ensure vendored PyVRP is importable
+# -----------------------------------------------------------------------------
+def _ensure_vendored_pyvrp() -> None:
+    vendored = REPO_ROOT / "solver" / "pyvrp"
+    path_str = str(vendored)
+    if vendored.exists() and path_str not in sys.path:
+        sys.path.insert(0, path_str)
+
+_ensure_vendored_pyvrp()
+
+# -----------------------------------------------------------------------------
+# PyVRP imports (eager, core dependency)
+# -----------------------------------------------------------------------------
+_pyvrp = importlib.import_module("pyvrp")
+_pyvrp_stop = importlib.import_module("pyvrp.stop")
+
+ProblemData = _pyvrp.ProblemData
+Result = _pyvrp.Result
+SolveParams = _pyvrp.SolveParams
+read = _pyvrp.read
+pyvrp_solve = _pyvrp.solve
+
+MaxIterations = _pyvrp_stop.MaxIterations
+MaxRuntime = _pyvrp_stop.MaxRuntime
+MultipleCriteria = _pyvrp_stop.MultipleCriteria
+NoImprovement = _pyvrp_stop.NoImprovement
+StoppingCriterion = _pyvrp_stop.StoppingCriterion
 
 _DEFAULT_INSTANCE_SUBDIRS = (
     REPO_ROOT,
@@ -43,7 +72,7 @@ class SolveOutput:
     runtime: float
     num_iterations: int
     feasible: bool
-    data: Any | None
+    data: ProblemData | None
     raw_result: Any
     metadata: Dict[str, Any] = field(default_factory=dict)
 
@@ -51,7 +80,7 @@ class SolveOutput:
         return str(self.raw_result)
 
 # -----------------------------------------------------------------------------
-# PyVRP options (kept here, but PyVRP itself is lazy-imported)
+# PyVRP options
 # -----------------------------------------------------------------------------
 @dataclass(slots=True)
 class PyVRPSolveOptions:
@@ -87,7 +116,7 @@ def register_solver(name: str) -> Callable[[SolverCallable], SolverCallable]:
     return decorator
 
 # -----------------------------------------------------------------------------
-# Lazy backend loader
+# Lazy backend loader (THIS IS THE IMPORTANT PART)
 # -----------------------------------------------------------------------------
 def _lazy_import_backend(solver_key: str) -> None:
     """
@@ -99,9 +128,6 @@ def _lazy_import_backend(solver_key: str) -> None:
     elif solver_key in {"filo1", "filo2"}:
         importlib.import_module("master.routing.solver_filo")
 
-    elif solver_key == "pyvrp":
-        # PyVRP backend is defined below in this file
-        pass
 
 # -----------------------------------------------------------------------------
 # Dispatcher
@@ -115,6 +141,7 @@ def solve(
 
     solver_key = solver.lower()
 
+    # 🔑 ensure backend is loaded
     if solver_key not in _SOLVER_REGISTRY:
         _lazy_import_backend(solver_key)
 
@@ -129,47 +156,17 @@ def solve(
     return adapter(instance_path, solver_options or {})
 
 # -----------------------------------------------------------------------------
-# PyVRP backend (LAZY IMPORT INSIDE)
+# PyVRP backend
 # -----------------------------------------------------------------------------
 @register_solver("pyvrp")
 def _solve_with_pyvrp(
     instance_path: Path, options: Mapping[str, Any]
 ) -> SolveOutput:
 
-    # Lazy imports — PyVRP is only required if we actually use it
-    _pyvrp = importlib.import_module("pyvrp")
-    _pyvrp_stop = importlib.import_module("pyvrp.stop")
-
-    ProblemData = _pyvrp.ProblemData
-    SolveParams = _pyvrp.SolveParams
-    read = _pyvrp.read
-    pyvrp_solve = _pyvrp.solve
-
-    MaxIterations = _pyvrp_stop.MaxIterations
-    MaxRuntime = _pyvrp_stop.MaxRuntime
-    MultipleCriteria = _pyvrp_stop.MultipleCriteria
-    NoImprovement = _pyvrp_stop.NoImprovement
-
     cfg = PyVRPSolveOptions.from_kwargs(options)
 
     data = read(instance_path, cfg.round_func)
-
-    terms = []
-    if cfg.max_runtime is not None:
-        terms.append(MaxRuntime(cfg.max_runtime))
-    if cfg.max_iterations is not None:
-        terms.append(MaxIterations(cfg.max_iterations))
-    if cfg.no_improvement is not None:
-        terms.append(NoImprovement(cfg.no_improvement))
-
-    if not terms:
-        warnings.warn("No stopping criterion set, defaulting to 30s runtime.")
-        stop = MaxRuntime(30.0)
-    elif len(terms) == 1:
-        stop = terms[0]
-    else:
-        stop = MultipleCriteria(terms)
-
+    stop = _build_stop_criterion(data, cfg)
     params = SolveParams.from_file(cfg.params_file) if cfg.params_file else SolveParams()
 
     result = pyvrp_solve(
@@ -196,6 +193,22 @@ def _solve_with_pyvrp(
 # -----------------------------------------------------------------------------
 # Helpers
 # -----------------------------------------------------------------------------
+def _build_stop_criterion(data: ProblemData, cfg: PyVRPSolveOptions) -> StoppingCriterion:
+    terms: list[StoppingCriterion] = []
+
+    if cfg.max_runtime is not None:
+        terms.append(MaxRuntime(cfg.max_runtime))
+    if cfg.max_iterations is not None:
+        terms.append(MaxIterations(cfg.max_iterations))
+    if cfg.no_improvement is not None:
+        terms.append(NoImprovement(cfg.no_improvement))
+
+    if not terms:
+        warnings.warn("No stopping criterion set, defaulting to 30s runtime.")
+        return MaxRuntime(30.0)
+
+    return terms[0] if len(terms) == 1 else MultipleCriteria(terms)
+
 def _resolve_instance_path(instance: str | Path) -> Path:
     p = Path(instance)
     if p.exists():

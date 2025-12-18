@@ -7,6 +7,8 @@ benchmark_dri.py, with:
 
 ✔ PyVRP-compatible integer-rounded objective computation
 ✔ Full runtime tracking per instance
+✔ Pluggable routing solvers (PyVRP / Hexaly / FILO)
+✔ Pluggable SCP solvers (Gurobi / Hexaly)
 """
 
 from __future__ import annotations
@@ -31,14 +33,22 @@ if str(SRC_ROOT) not in sys.path:
 # ---------------------------------------------------------
 from master.clustering.run_clustering import run_clustering
 from master.clustering.route_based import route_based_decomposition
-from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
+from master.routing.routing_controller import solve_clusters
 from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.utils.loader import load_instance
 
 
-def lazy_import_scp():
-    from master.setcover.scp_solver import solve_scp
+# ---------------------------------------------------------
+# SCP solver dispatcher
+# ---------------------------------------------------------
+def lazy_import_scp(scp_solver: str):
+    if scp_solver == "hexaly":
+        from master.setcover.scp_solver_hexaly import solve_scp
+    elif scp_solver == "gurobi":
+        from master.setcover.scp_solver import solve_scp
+    else:
+        raise ValueError(f"Unknown SCP solver: {scp_solver}")
     return solve_scp
 
 
@@ -65,7 +75,6 @@ K_PER_METHOD_DEFAULT = {
     "fcm": [4],
     "k_medoids_pyclustering": [4],
 }
-
 
 # ---------------------------------------------------------
 # Helpers
@@ -167,29 +176,29 @@ def run_drsci_for_instance(
     seed: int = 0,
     time_limit_per_cluster: float = 20.0,
     ls_neighbourhood: str = "dri_spatial",
-    ls_after_routing_max_neighbours: int = 40,
-    ls_max_neighbours_restricted: int = 40,
+    ls_after_routing_max_neighbours: int = 100,
+    ls_max_neighbours_restricted: int = 100,
     scp_time_limit: float = 600.0,
     use_combined_dissimilarity: bool = False,
     methods: Optional[List[str]] = VB_CLUSTER_METHODS,
     k_per_method: Optional[Dict[str, List[int]]] = None,
+    routing_solver: str = "pyvrp",
+    scp_solver: str = "gurobi",
 ) -> Dict[str, Any]:
 
     start_time = time.time()
-    solve_scp = lazy_import_scp()
+    solve_scp = lazy_import_scp(scp_solver)
     inst = load_instance(instance_name)
 
     if k_per_method is None:
         k_per_method = {m: list(K_PER_METHOD_DEFAULT[m]) for m in K_PER_METHOD_DEFAULT}
 
-    # Calculate total stages: number of (method, k) combinations
-    total_stages = sum(len(k_per_method[method]) for method in methods) * 2
+    total_stages = sum(len(k_per_method[m]) for m in methods) * 2
 
     global_pool: Routes = []
     best_routes: Optional[Routes] = None
     best_cost = float("inf")
     stages = 0
-    current_stage = 0  # Progress counter for printing (one per (method, k) combination)
 
     for method in methods:
         for k in k_per_method[method]:
@@ -202,9 +211,10 @@ def run_drsci_for_instance(
                 use_combined=use_combined_dissimilarity,
             )
 
-            routing = solve_clusters_with_pyvrp(
+            routing = solve_clusters(
                 instance_name=instance_name,
                 clusters=clusters,
+                solver=routing_solver,
                 time_limit_per_cluster=time_limit_per_cluster,
                 seed=seed,
             )
@@ -236,7 +246,6 @@ def run_drsci_for_instance(
                 best_routes = vb_final
 
             if best_routes is None:
-                # Print progress even if we skip RB stage
                 print(f"{instance_name} arrived at stage {stages}/{total_stages}.", flush=True)
                 continue
 
@@ -250,9 +259,10 @@ def run_drsci_for_instance(
                 use_load=True,
             )
 
-            routing_rb = solve_clusters_with_pyvrp(
+            routing_rb = solve_clusters(
                 instance_name=instance_name,
                 clusters=clusters_rb,
+                solver=routing_solver,
                 time_limit_per_cluster=time_limit_per_cluster,
                 seed=seed,
             )
@@ -283,7 +293,6 @@ def run_drsci_for_instance(
                 best_cost = rb_cost
                 best_routes = rb_final
 
-            # Print progress after (method, k) combination completes
             print(f"{instance_name} arrived at stage {stages}/{total_stages}.", flush=True)
 
     final_runtime = time.time() - start_time
@@ -305,20 +314,13 @@ def run_drsci_for_instance(
         "stages": stages,
     }
 
+
 if __name__ == "__main__":
     res = run_drsci_for_instance(
         instance_name="X-n502-k39.vrp",
         seed=0,
-        time_limit_per_cluster=20.0,
-        ls_neighbourhood="dri_spatial",
-        k_per_method={
-            "sk_ac_avg": [4],
-            "sk_ac_complete": [4],
-            "sk_ac_min": [4],
-            "sk_kmeans": [4],
-            "fcm": [4],
-            "k_medoids_pyclustering": [4],
-        },
+        routing_solver="pyvrp",
+        scp_solver="gurobi",
     )
 
     print("\n[DEBUG] Best cost:", res["best_cost"])
