@@ -171,11 +171,14 @@ def solve_scp(
     model.optimize()
 
     status = model.Status
+    optimal = (status == GRB.OPTIMAL)
 
     if status == GRB.INF_OR_UNBD or status == GRB.INFEASIBLE:
         if verbose:
             print("[SCP] Model infeasible or unbounded.")
         return {
+            "solver": "gurobi",
+            "optimal": False,
             "status": status,
             "obj_value": None,
             "selected_indices": [],
@@ -206,11 +209,14 @@ def solve_scp(
         print(f"[SCP] Routes used : {len(selected_indices)} / {num_routes}")
 
     return {
+        "solver": "gurobi",
+        "optimal": optimal,
         "status": status,
         "obj_value": obj_value,
         "selected_indices": selected_indices,
         "selected_routes": selected_routes,
     }
+
 
 
 if __name__ == "__main__":

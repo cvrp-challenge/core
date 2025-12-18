@@ -43,7 +43,7 @@ if str(PROJECT_ROOT) not in sys.path:
 # Imports from project modules
 # ---------------------------------------------------------
 from master.clustering.run_clustering import run_clustering
-from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
+from master.routing.routing_controller import solve_clusters_with_pyvrp
 from master.improve.ls_controller import improve_with_local_search
 from master.utils.loader import load_instance
 from master.utils.solution_helpers import (

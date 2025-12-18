@@ -37,7 +37,7 @@ if PROJECT_ROOT not in sys.path:
 # Project imports
 # ---------------------------------------------------------
 from master.clustering.run_clustering import run_clustering
-from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
+from master.routing.routing_controller import solve_clusters_with_pyvrp
 from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.clustering.route_based import route_based_decomposition

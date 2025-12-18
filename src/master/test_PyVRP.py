@@ -25,7 +25,7 @@ if PROJECT_ROOT not in sys.path:
 print("[test] sys.path now contains:", PROJECT_ROOT)
 
 from master.utils.loader import load_instance
-from master.dri.routing.routing_controller import solve_clusters_with_pyvrp
+from master.routing.routing_controller import solve_clusters_with_pyvrp
 
 
 
