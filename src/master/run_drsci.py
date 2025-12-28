@@ -9,6 +9,9 @@ benchmark_dri.py, with:
 ✔ Full runtime tracking per instance
 ✔ Pluggable routing solvers (PyVRP / Hexaly / FILO)
 ✔ Pluggable SCP solvers (Gurobi / Hexaly)
+✔ Additional diagnostics:
+    - Full cluster size listing per stage
+    - SCP timing + effectiveness (pool size -> selected size)
 """
 
 from __future__ import annotations
@@ -37,16 +40,20 @@ from master.routing.routing_controller import solve_clusters
 from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.utils.loader import load_instance
+from master.setcover.route_dominance_filter import filter_route_pool
+
 
 
 # ---------------------------------------------------------
 # SCP solver dispatcher
 # ---------------------------------------------------------
 def lazy_import_scp(scp_solver: str):
-    if scp_solver == "hexaly":
+    if scp_solver == "gurobi_mip":
+        from master.setcover.scp_solver_gurobi_MIP import solve_scp
+    elif scp_solver == "gurobi_lp":
+        from master.setcover.scp_solver_gurobi_LP import solve_scp
+    elif scp_solver == "hexaly":
         from master.setcover.scp_solver_hexaly import solve_scp
-    elif scp_solver == "gurobi":
-        from master.setcover.scp_solver import solve_scp
     else:
         raise ValueError(f"Unknown SCP solver: {scp_solver}")
     return solve_scp
@@ -92,16 +99,6 @@ def _result_to_vrplib_routes(result) -> Routes:
     return routes
 
 
-def _deduplicate_routes(pool: Routes) -> Routes:
-    seen = set()
-    out = []
-    for r in pool:
-        t = tuple(r)
-        if t not in seen:
-            seen.add(t)
-            out.append(r)
-    return out
-
 
 def compute_integer_rounded_cost(instance: dict, routes: Routes) -> int:
     coords = instance["node_coord"]
@@ -122,6 +119,19 @@ def compute_integer_rounded_cost(instance: dict, routes: Routes) -> int:
     return total
 
 
+def _format_cluster_sizes(clusters: Dict[Any, List[int]]) -> str:
+    """
+    Returns a compact string listing ALL cluster sizes, plus min/max/avg.
+    Example:
+      sizes=[83, 102, 121, 110] | min=83 max=121 avg=104.0
+    """
+    sizes = [len(v) for v in clusters.values()]
+    if not sizes:
+        return "sizes=[] | min=0 max=0 avg=0.0"
+    avg = sum(sizes) / len(sizes)
+    return f"sizes={sizes} | min={min(sizes)} max={max(sizes)} avg={avg:.1f}"
+
+
 def _scp_plus_ls(
     *,
     instance_name: str,
@@ -131,20 +141,34 @@ def _scp_plus_ls(
     ls_max_neighbours_restricted: int,
     seed: int,
     scp_time_limit: float,
+    best_cost_so_far: int | None,
 ) -> Tuple[Routes, int]:
 
+    # --------------------------------------------------------------
+    # SCP timing + effectiveness diagnostics (B + C)
+    # --------------------------------------------------------------
+    t0 = time.time()
     scp_res = solve_scp(
         instance_name=instance_name,
         route_pool=route_pool,
         time_limit=scp_time_limit,
         verbose=False,
     )
+    scp_time = time.time() - t0
+
     selected = scp_res["selected_routes"]
+
+    # Print SCP timing + effectiveness (pool -> selected)
+    solver_tag = getattr(solve_scp, "__module__", "unknown").split(".")[-1]
+    print(
+        f"[SCP] solver={solver_tag} | pool={len(route_pool)} -> selected={len(selected)} | time={scp_time:.2f}s",
+        flush=True,
+    )
 
     dup_res = remove_duplicates(
         instance_name=instance_name,
         routes=selected,
-        verbose=False,
+        verbose=True,
         max_iters=50,
         ls_neighbourhood=ls_neighbourhood,
         ls_max_neighbours_restricted=ls_max_neighbours_restricted,
@@ -163,6 +187,18 @@ def _scp_plus_ls(
     inst = load_instance(instance_name)
     final_routes = ls_res["routes_improved"]
     final_cost = compute_integer_rounded_cost(inst, final_routes)
+
+    # --------------------------------------------------------------
+    # Accept SCP solution ONLY if it improves the incumbent
+    # --------------------------------------------------------------
+    if best_cost_so_far is not None and final_cost >= best_cost_so_far:
+        print(
+            f"[SCP-REJECTED] best={best_cost_so_far} | "
+            f"scp={final_cost} | Δ={final_cost - best_cost_so_far:+}",
+            flush=True,
+        )
+        return [], best_cost_so_far
+
 
     return final_routes, final_cost
 
@@ -183,7 +219,8 @@ def run_drsci_for_instance(
     methods: Optional[List[str]] = VB_CLUSTER_METHODS,
     k_per_method: Optional[Dict[str, List[int]]] = None,
     routing_solver: str = "pyvrp",
-    scp_solver: str = "gurobi",
+    scp_solver: str = "gurobi_mip",
+    ls_solver: str = "pyvrp",
 ) -> Dict[str, Any]:
 
     start_time = time.time()
@@ -211,6 +248,14 @@ def run_drsci_for_instance(
                 use_combined=use_combined_dissimilarity,
             )
 
+            # ----------------------------------------------------------
+            # Cluster size diagnostics: list ALL cluster sizes
+            # ----------------------------------------------------------
+            print(
+                f"[CLUSTER] method={method} k={k} | {_format_cluster_sizes(clusters)}",
+                flush=True,
+            )
+
             routing = solve_clusters(
                 instance_name=instance_name,
                 clusters=clusters,
@@ -226,10 +271,12 @@ def run_drsci_for_instance(
                 neighbourhood=ls_neighbourhood,
                 max_neighbours=ls_after_routing_max_neighbours,
                 seed=seed,
+                ls_solver=ls_solver,
             )
 
             global_pool.extend(ls_vb["routes_improved"])
-            global_pool = _deduplicate_routes(global_pool)
+            global_pool = filter_route_pool(global_pool, depot_id=1, verbose=True)
+
 
             vb_final, vb_cost = _scp_plus_ls(
                 instance_name=instance_name,
@@ -239,6 +286,8 @@ def run_drsci_for_instance(
                 ls_max_neighbours_restricted=ls_max_neighbours_restricted,
                 seed=seed,
                 scp_time_limit=scp_time_limit,
+                best_cost_so_far=best_cost,
+
             )
 
             if vb_cost < best_cost:
@@ -259,6 +308,23 @@ def run_drsci_for_instance(
                 use_load=True,
             )
 
+            # ----------------------------------------------------------
+            # Cluster size diagnostics for RB decomposition
+            # (route_based_decomposition might return a different structure;
+            #  if it's dict-like, this will work; otherwise, we fall back.)
+            # ----------------------------------------------------------
+            try:
+                print(
+                    f"[CLUSTER-RB] k={k} | {_format_cluster_sizes(clusters_rb)}",
+                    flush=True,
+                )
+            except Exception:
+                # Safe fallback: at least print how many clusters we got
+                try:
+                    print(f"[CLUSTER-RB] k={k} | num_clusters={len(clusters_rb)}", flush=True)
+                except Exception:
+                    print(f"[CLUSTER-RB] k={k} | (cluster stats unavailable)", flush=True)
+
             routing_rb = solve_clusters(
                 instance_name=instance_name,
                 clusters=clusters_rb,
@@ -274,10 +340,11 @@ def run_drsci_for_instance(
                 neighbourhood=ls_neighbourhood,
                 max_neighbours=ls_after_routing_max_neighbours,
                 seed=seed,
+                ls_solver=ls_solver,
             )
 
             global_pool.extend(ls_rb["routes_improved"])
-            global_pool = _deduplicate_routes(global_pool)
+            global_pool = filter_route_pool(global_pool, depot_id=1, verbose=True)
 
             rb_final, rb_cost = _scp_plus_ls(
                 instance_name=instance_name,
@@ -287,6 +354,7 @@ def run_drsci_for_instance(
                 ls_max_neighbours_restricted=ls_max_neighbours_restricted,
                 seed=seed,
                 scp_time_limit=scp_time_limit,
+                best_cost_so_far=best_cost,
             )
 
             if rb_cost < best_cost:
@@ -320,7 +388,7 @@ if __name__ == "__main__":
         instance_name="X-n502-k39.vrp",
         seed=0,
         routing_solver="pyvrp",
-        scp_solver="gurobi",
+        scp_solver="gurobi_mip",
     )
 
     print("\n[DEBUG] Best cost:", res["best_cost"])

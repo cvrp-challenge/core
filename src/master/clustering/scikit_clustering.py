@@ -101,7 +101,8 @@ def run_sklearn_ac(instance_name: str,
                    use_combined: bool = False,
                    use_polar: bool = True,
                    use_demand: bool = False,
-                   instance: Optional[dict] = None
+                   instance: Optional[dict] = None,
+                   X_override: Optional[np.ndarray] = None,
                    ) -> Tuple[Dict[int, List[int]], Dict[int, int]]:
     """
     Unified interface for sklearn AgglomerativeClustering.
@@ -123,6 +124,26 @@ def run_sklearn_ac(instance_name: str,
     """
     assert linkage in ("average", "complete", "single"), \
         f"Invalid linkage '{linkage}', must be one of: 'average', 'complete', 'single'"
+
+    # =========================================================
+    # ROUTE-BASED MODE (feature override)
+    # =========================================================
+    if X_override is not None:
+        X = np.asarray(X_override, dtype=float)
+
+        model = AgglomerativeClustering(
+            n_clusters=k,
+            linkage=linkage,
+        )
+        labels = model.fit_predict(X)
+
+        clusters = {cid: [] for cid in range(k)}
+        for ridx, lab in enumerate(labels):
+            clusters[lab].append(ridx)
+
+        # No medoids for route-based clustering
+        return clusters, None
+
 
     if instance is None:
         instance = load_instance(instance_name)
