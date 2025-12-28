@@ -45,7 +45,7 @@ from master.utils.loader import load_instance
 
 
 def lazy_import_scp():
-    from master.setcover.scp_solver import solve_scp
+    from master.setcover.scp_solver_gurobi_MIP import solve_scp
     return solve_scp
 
 

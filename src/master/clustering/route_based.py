@@ -115,15 +115,16 @@ def cluster_routes(
             "sk_ac_complete": "complete",
             "sk_ac_min": "single",
         }
-        linkage = linkage_map[method]
 
-        from sklearn.cluster import AgglomerativeClustering
-        labels = AgglomerativeClustering(n_clusters=k, linkage=linkage).fit_predict(X)
-
-        clusters = {cid: [] for cid in range(k)}
-        for ridx, lab in enumerate(labels):
-            clusters[lab].append(ridx)
+        clusters, _ = run_sklearn_ac(
+            instance_name=None,      # not needed for route-based
+            k=k,
+            linkage=linkage_map[method],
+            instance={"dummy": True},
+            X_override=X,             # <-- THIS is the key
+        )
         return clusters
+
 
     # ---------------------------------------------------------
     # sklearn KMeans

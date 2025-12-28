@@ -40,7 +40,7 @@ from master.utils.loader import load_instance
 # Instances to benchmark
 # ---------------------------------------------------------
 INSTANCES = [
-    "X-n502-k39.vrp",
+    # "X-n502-k39.vrp",
     # "X-n524-k153.vrp",
     # "X-n561-k42.vrp",
     # "X-n641-k35.vrp",
@@ -52,7 +52,7 @@ INSTANCES = [
     # "X-n916-k207.vrp",
     # "XLTEST-n1048-k138.vrp",
     # "XLTEST-n1794-k408.vrp",
-    # "XLTEST-n2541-k62.vrp",
+    "XLTEST-n2541-k62.vrp",
     # "XLTEST-n3147-k210.vrp",
     # "XLTEST-n4153-k259.vrp",
     # "XLTEST-n6034-k1685.vrp",
@@ -60,24 +60,26 @@ INSTANCES = [
     # "XLTEST-n8028-k691.vrp",
     # "XLTEST-n8766-k55.vrp",
     # "XLTEST-n10001-k798.vrp",
+
+    # "XLTEST-n1094-k6.vrp"
 ]
 
 CLUSTERING_METHODS = [
     "sk_ac_avg",
-    # "sk_ac_complete",
-    # "sk_ac_min",
-    # "sk_kmeans",
-    # "fcm",
+    "sk_ac_complete",
+    "sk_ac_min",
+    "sk_kmeans",
+    "fcm",
     "k_medoids_pyclustering",
 ]
 
 K_PER_METHOD = {
-    "sk_ac_avg": [2, 4],
-    "sk_ac_complete": [2, 4],
-    "sk_ac_min": [2, 4],
-    "sk_kmeans": [2, 4],
-    "fcm": [2, 4],
-    "k_medoids_pyclustering": [2, 4],
+    "sk_ac_avg": [2],
+    "sk_ac_complete": [4],
+    "sk_ac_min": [6],
+    "sk_kmeans": [5],
+    "fcm": [4],
+    "k_medoids_pyclustering": [3],
 }
 
 
@@ -109,6 +111,7 @@ def solve_instance_drsci(
     use_combined_dissimilarity: bool,
     scp_solver: str,
     routing_solver: str,
+    ls_solver: str, 
 ) -> dict:
     try:
         from master.run_drsci import run_drsci_for_instance
@@ -129,6 +132,7 @@ def solve_instance_drsci(
             k_per_method=K_PER_METHOD,
             scp_solver=scp_solver,
             routing_solver=routing_solver,
+            ls_solver=ls_solver,
         )
 
         best_cost = result["best_cost"]
@@ -192,6 +196,7 @@ def run_benchmark(
     use_combined_dissimilarity: bool,
     scp_solver: str,
     routing_solver: str,
+    ls_solver: str,
 ):
     output_dir = Path(output_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -199,6 +204,7 @@ def run_benchmark(
     print(f"Running DRSCI benchmark on {len(INSTANCES)} instances.")
     print(f"Routing solver          : {routing_solver}")
     print(f"SCP solver              : {scp_solver}")
+    print(f"LS solver               : {ls_solver}")
     print(f"Seed                    : {seed}")
     print(f"Time limit per cluster  : {time_limit_per_cluster}s")
     print(f"SCP time limit          : {scp_time_limit}s")
@@ -222,6 +228,7 @@ def run_benchmark(
                 use_combined_dissimilarity,
                 scp_solver,
                 routing_solver,
+                ls_solver,
             ): inst
             for inst in INSTANCES
         }
@@ -259,7 +266,7 @@ def main():
     parser.add_argument("output_path", type=str)
     parser.add_argument("--max_workers", type=int, default=None)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--time_limit_per_cluster", type=float, default=15.0)
+    parser.add_argument("--time_limit_per_cluster", type=float, default=20.0)
     parser.add_argument("--ls_neighbourhood", type=str, default="dri_spatial")
     parser.add_argument("--ls_after_routing_max_neighbours", type=int, default=40)
     parser.add_argument("--ls_max_neighbours_restricted", type=int, default=40)
@@ -268,8 +275,8 @@ def main():
 
     parser.add_argument(
         "--scp_solver",
-        choices=["gurobi", "hexaly"],
-        default="gurobi",
+        choices=["gurobi_mip", "gurobi_lp", "hexaly"],
+        default="gurobi_mip",
     )
 
     parser.add_argument(
@@ -277,6 +284,13 @@ def main():
         choices=["pyvrp", "hexaly", "filo1", "filo2"],
         default="pyvrp",
     )
+
+    parser.add_argument(
+        "--ls_solver",
+        choices=["pyvrp", "hexaly", "none"],
+        default="pyvrp",
+    )
+
 
 
     args = parser.parse_args()
@@ -293,6 +307,7 @@ def main():
         use_combined_dissimilarity=args.use_combined_dissimilarity,
         scp_solver=args.scp_solver,
         routing_solver=args.routing_solver,
+        ls_solver=args.ls_solver,  
     )
 
 if __name__ == "__main__":

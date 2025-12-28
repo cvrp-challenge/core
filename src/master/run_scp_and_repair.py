@@ -40,7 +40,7 @@ from master.clustering.route_based import route_based_decomposition
 # Lazy import wrapper for SCP (because gurobi might not be installed)
 # ---------------------------------------------------------
 def lazy_import_scp():
-    from master.setcover.scp_solver import solve_scp
+    from master.setcover.scp_solver_gurobi_MIP import solve_scp
     return solve_scp
 
 
