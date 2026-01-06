@@ -24,8 +24,11 @@ from master.clustering.custom.k_medoids import initialize_medoids
 
 def _build_distance_matrix(
     instance_name: str,
+    *,
+    angle_offset: float = 0.0,
     use_combined: bool = False,
 ) -> Tuple[np.ndarray, List[int], Dict[Tuple[int, int], float]]:
+
     """
     Build dense NxN distance matrix D from your dissimilarity dict S.
 
@@ -35,9 +38,10 @@ def _build_distance_matrix(
         S        : original dissimilarity dict
     """
     if use_combined:
-        S = combined_dissimilarity(instance_name)
+        S = combined_dissimilarity(instance_name, angle_offset=angle_offset)
     else:
-        S = spatial_dissimilarity(instance_name)
+        S = spatial_dissimilarity(instance_name, angle_offset=angle_offset)
+
 
     # Use exactly the same node ordering as your other clustering methods
     node_ids = sorted({n for pair in S.keys() for n in pair})
@@ -57,10 +61,13 @@ def _build_distance_matrix(
 def k_medoids_pyclustering(
     instance_name: str,
     k: int,
+    *,
+    angle_offset: float = 0.0,
     instance: Optional[dict] = None,
     use_combined: bool = False,
     use_custom_init: bool = True,
 ) -> Dict[int, List[int]]:
+
     """
     Run K-Medoids using pyclustering on your dissimilarity matrix.
 
@@ -78,7 +85,11 @@ def k_medoids_pyclustering(
                             (medoid NOT included in the member list)
     """
     # Build distance matrix and node ordering
-    D, node_ids, S = _build_distance_matrix(instance_name, use_combined=use_combined)
+    D, node_ids, S = _build_distance_matrix(
+        instance_name,
+        angle_offset=angle_offset,
+        use_combined=use_combined,
+    )
     n = len(node_ids)
 
     # --- Initial medoids (indices into D) ---

@@ -7,7 +7,12 @@ from master.clustering.dissimilarity.spatial import spatial_dissimilarity
 from master.clustering.dissimilarity.demand import demand_dissimilarity
 
 
-def combined_dissimilarity(instance_name: str) -> Dict[Tuple[int, int], float]:
+def combined_dissimilarity(
+    instance_name: str,
+    *,
+    angle_offset: float = 0.0,
+) -> Dict[Tuple[int, int], float]:
+
     """
     Computes combined spatial-demand dissimilarity:
         S^sd_ij = S^s_ij * (1 + (d_i + d_j) / Q)
@@ -20,7 +25,12 @@ def combined_dissimilarity(instance_name: str) -> Dict[Tuple[int, int], float]:
     DEPOT_ID = 1
 
     # Compute spatial and demand dissimilarities with shared instance
-    S_s = spatial_dissimilarity(instance_name, instance)
+    S_s = spatial_dissimilarity(
+        instance_name,
+        instance,
+        angle_offset=angle_offset,
+    )
+
     S_d = demand_dissimilarity(instance_name, instance)
 
     nodes = list({n for pair in S_s.keys() for n in pair})

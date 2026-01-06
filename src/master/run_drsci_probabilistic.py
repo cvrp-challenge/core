@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 import random
 from typing import Dict, List, Optional, Any, Mapping
+import math
 
 import sys
 from pathlib import Path
@@ -136,7 +137,6 @@ def run_drsci_probabilistic(
     time_limit_scp: float = 300.0,
     scp_every: int = 5,
     time_limit_total: float = 600.0,
-    time_limit_per_cluster: float = 20.0,
     max_no_improvement_iters: int = 20,
     k_min: int = 2,
     k_max: int = 8,
@@ -145,6 +145,7 @@ def run_drsci_probabilistic(
     ls_neighbourhood: str = "dri_spatial",
     ls_after_routing_max_neighbours: int = 100,
     ls_max_neighbours_restricted: int = 100,
+    randomize_polar_angle: bool = True,
 ) -> Dict[str, Any]:
     """
     Probabilistic DRSCI driver.
@@ -174,8 +175,9 @@ def run_drsci_probabilistic(
     iteration = 0
 
     routing_solver_key = routing_solver.lower()
-    routing_solver_options = dict(routing_solver_options or {})
-
+    routing_solver_options = {
+        "use_stall": False   # disables Hexaly stalling
+    }
     # ========================================================
     # MAIN LOOP
     # ========================================================
@@ -192,6 +194,18 @@ def run_drsci_probabilistic(
             break
 
         iteration += 1
+
+        if randomize_polar_angle:
+            angle_offset = rng.uniform(0.0, 2 * math.pi)
+        else:
+            angle_offset = 0.0
+        
+        print(
+            f"[ANGLE] polar_offset={angle_offset:.3f} rad "
+            f"({angle_offset * 180 / math.pi:.1f}°)",
+            flush=True,
+        )
+
         improved_this_iter = False
 
         # -------------------------------
@@ -231,6 +245,7 @@ def run_drsci_probabilistic(
                 instance_name=instance_name,
                 k=k,
                 use_combined=False,
+                angle_offset=angle_offset,
             )
         else:
             if best_routes is None:
@@ -417,15 +432,15 @@ def run_drsci_probabilistic(
 if __name__ == "__main__":
     res = run_drsci_probabilistic(
         instance_name="XLTEST-n2541-k62.vrp",
-        seed=2,
-        scp_solvers=["gurobi_mip", "gurobi_lp", "hexaly"],
-        scp_switch_prob=0.0,
+        seed=1,
+        scp_solvers=["gurobi_mip", "hexaly"],
+        scp_switch_prob=0.5,
         time_limit_total=300.0,
         time_limit_scp=600.0,
         scp_every=2,
         k_min=2,
         k_max=4,
-        routing_solver="pyvrp",
+        routing_solver="hexaly",
         routing_solver_options=None,
     )
 

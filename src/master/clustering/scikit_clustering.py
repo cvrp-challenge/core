@@ -33,10 +33,15 @@ from master.utils.symmetric_matrix_read import get_symmetric_value
 # Feature Vector Builder
 # ---------------------------------------------------------
 
-def build_feature_matrix(instance_name: str,
-                         instance: dict,
-                         use_polar: bool = True,
-                         use_demand: bool = False) -> np.ndarray:
+def build_feature_matrix(
+    instance_name: str,
+    instance: dict,
+    *,
+    angle_offset: float = 0.0,
+    use_polar: bool = True,
+    use_demand: bool = False,
+) -> np.ndarray:
+
     """
     Build feature matrix X for sklearn algorithms using:
       x, y, (optional) θ, (optional) demand
@@ -45,7 +50,11 @@ def build_feature_matrix(instance_name: str,
     """
     coords = instance["node_coord"][1:]      # remove depot
     demands = instance["demand"][1:]
-    angles = compute_polar_angle(instance_name, instance)
+    angles = compute_polar_angle(
+        instance_name, 
+        instance,
+        angle_offset=angle_offset,
+    )
 
     X = []
     node_ids = []
@@ -101,6 +110,7 @@ def run_sklearn_ac(instance_name: str,
                    use_combined: bool = False,
                    use_polar: bool = True,
                    use_demand: bool = False,
+                   angle_offset: float = 0.0,
                    instance: Optional[dict] = None,
                    X_override: Optional[np.ndarray] = None,
                    ) -> Tuple[Dict[int, List[int]], Dict[int, int]]:
@@ -157,16 +167,23 @@ def run_sklearn_ac(instance_name: str,
 
     # Build feature matrix
     X, node_ids = build_feature_matrix(
-        instance_name, instance,
+        instance_name,
+        instance,
+        angle_offset=angle_offset,
         use_polar=use_polar,
-        use_demand=use_demand
+        use_demand=use_demand,
     )
+
 
     # ---------------------------------------------------------
     # PRECOMPUTED DISSIMILARITY MODE
     # ---------------------------------------------------------
     if use_dissimilarity:
-        S = combined_dissimilarity(instance_name) if use_combined else spatial_dissimilarity(instance_name)
+        S = (
+            combined_dissimilarity(instance_name, angle_offset=angle_offset)
+            if use_combined
+            else spatial_dissimilarity(instance_name, instance, angle_offset=angle_offset)
+        )
 
         # convert S dict to dense NxN matrix
         n = len(node_ids)
@@ -209,7 +226,7 @@ def run_sklearn_ac(instance_name: str,
         clusters[lab].append(node_ids[idx])
 
     # compute medoids with spatial S
-    S = spatial_dissimilarity(instance_name)
+    S = spatial_dissimilarity(instance_name, instance, angle_offset=angle_offset)
     medoids = compute_medoids(clusters, S)
 
     return clusters, medoids

@@ -5,7 +5,13 @@ from typing import Dict, Optional
 from master.utils.loader import load_instance
 
 
-def compute_polar_angle(instance_name: str, instance: Optional[dict] = None) -> Dict[int, float]:
+def compute_polar_angle(
+    instance_name: str,
+    instance: Optional[dict] = None,
+    *,
+    angle_offset: float = 0.0,
+) -> Dict[int, float]:
+
     """
     Computes polar angles θ_i of all customer nodes relative to the depot (node 1).
 
@@ -26,7 +32,14 @@ def compute_polar_angle(instance_name: str, instance: Optional[dict] = None) -> 
     for i, (x_i, y_i) in coords.items():
         if i == DEPOT_ID:
             continue
-        angles[i] = math.atan2(y_i - y0, x_i - x0)
+        raw = math.atan2(y_i - y0, x_i - x0)
+        theta = raw + angle_offset
+
+        # wrap to (-pi, pi]
+        theta = math.atan2(math.sin(theta), math.cos(theta))
+
+        angles[i] = theta
+
 
     return angles
 

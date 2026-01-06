@@ -35,13 +35,15 @@ from master.utils.symmetric_matrix_read import get_symmetric_value
 # -------------------------------------------------------------
 # Feature Builder
 # -------------------------------------------------------------
-
 def build_fcm_feature_matrix(
     instance_name: str,
     instance: dict,
+    *,
+    angle_offset: float = 0.0,
     use_polar: bool = True,
     use_demand: bool = False
 ) -> Tuple[np.ndarray, List[int]]:
+
     """
     Builds feature matrix for FCM:
         X[i] = [x, y, (θ optional), (q optional)]
@@ -52,7 +54,11 @@ def build_fcm_feature_matrix(
 
     coords = instance["node_coord"][1:]         # remove depot
     demands = instance["demand"][1:]
-    angles = compute_polar_angle(instance_name, instance)
+    angles = compute_polar_angle(
+        instance_name,
+        instance,
+        angle_offset=angle_offset,
+    )
 
     X = []
     node_ids = []
@@ -105,6 +111,8 @@ def compute_medoids_from_centroids(
 def run_sklearn_fcm(
     instance_name: str,
     k: int,
+    *,
+    angle_offset: float = 0.0,
     m: float = 2.0,
     max_iter: int = 150,
     error: float = 1e-5,
@@ -144,9 +152,11 @@ def run_sklearn_fcm(
     X, node_ids = build_fcm_feature_matrix(
         instance_name,
         instance,
+        angle_offset=angle_offset,
         use_polar=use_polar,
-        use_demand=use_demand
+        use_demand=use_demand,
     )
+
 
     # Scale features (critical for FCM)
     scaler = StandardScaler()
@@ -182,7 +192,12 @@ def run_sklearn_fcm(
     # ---------------------------------------------------------
     # Convert centroids → medoids
     # ---------------------------------------------------------
-    S_spatial = spatial_dissimilarity(instance_name)
+    S_spatial = spatial_dissimilarity(
+        instance_name,
+        instance,
+        angle_offset=angle_offset,
+    )
+
     medoids = compute_medoids_from_centroids(clusters, S_spatial)
 
     # ---------------------------------------------------------

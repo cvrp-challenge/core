@@ -34,10 +34,10 @@ def _adaptive_cluster_time(
     n: int,
     *,
     base: float = 1.0,
-    alpha: float = 0.08,
-    exponent: float = 0.85,
+    alpha: float = 0.16,
+    exponent: float = 0.9,
     min_time: float = 2.0,
-    max_time: float = 120.0,
+    max_time: float = 180.0,
 ) -> float:
     if n <= 0:
         return min_time
@@ -234,9 +234,6 @@ def solve_clusters(
         cluster_time = _adaptive_cluster_time(n)
         stall_time = _adaptive_stall_time(n)
 
-        cluster_time = _adaptive_cluster_time(n)
-        stall_time   = _adaptive_stall_time(n)
-
         print(
             f"[ROUTING] solver={solver_key} | cluster={cid} | "
             f"n={n} | cluster_time={cluster_time:.2f}s | stall_time={stall_time:.2f}s",
@@ -254,17 +251,23 @@ def solve_clusters(
                 seed=seed + cid,
             )
         else:
+            opts = {
+                **solver_options,
+                "cluster_nodes": customers,
+                "seed": seed + cid,
+                "max_runtime": cluster_time,
+            }
+
+            # Only add stall_time if explicitly enabled
+            if solver_options.get("use_stall", False):
+                opts["stall_time"] = stall_time
+
             out = routing_solve(
                 instance=instance_name,
                 solver=solver_key,
-                solver_options={
-                    **solver_options,
-                    "cluster_nodes": customers,
-                    "seed": seed + cid,
-                    "max_runtime": cluster_time,
-                    "stall_time": stall_time,
-                },
+                solver_options=opts,
             )
+
             routes = out.metadata["routes_vrplib"]
             cost = float(out.cost)
 

@@ -46,7 +46,12 @@ def compute_lambda(coords: Dict[int, Tuple[float, float]]) -> float:
 # --- Main dissimilarity computation -----------------------------------
 # ----------------------------------------------------------------------
 
-def spatial_dissimilarity(instance_name: str, instance: Optional[dict] = None) -> Dict[Tuple[int, int], float]:
+def spatial_dissimilarity(
+    instance_name: str,
+    instance: Optional[dict] = None,
+    *,
+    angle_offset: float = 0.0,
+) -> Dict[Tuple[int, int], float]:
     """
     Computes spatial dissimilarity S^s_ij:
         S^s_ij = sqrt((x_j - x_i)^2 + (y_j - y_i)^2 + λ_eff * (Δθ_ij)^2)
@@ -65,7 +70,12 @@ def spatial_dissimilarity(instance_name: str, instance: Optional[dict] = None) -
     coords = {i: coords_full[i] for i in coords_full if i != DEPOT_ID}
 
     # Polar angles & base λ
-    angles = compute_polar_angle(instance_name, instance)
+    angles = compute_polar_angle(
+        instance_name,
+        instance,
+        angle_offset=angle_offset,
+    )
+
     lam = compute_lambda(coords)
 
     # ---- Adaptive λ scaling (variance correction) ---------------------

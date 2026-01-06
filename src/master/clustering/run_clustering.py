@@ -25,7 +25,6 @@ Clustering methods supported:
 
 from typing import Dict, List, Tuple, Optional
 
-
 # --- Instance loader (needed for enforcing full coverage)
 from master.utils.loader import load_instance
 
@@ -61,18 +60,6 @@ def enforce_full_coverage(
 
     Missing customers are appended to the smallest cluster (by size).
     This prevents missing-customer failures in routing and SCP.
-
-    Parameters
-    ----------
-    clusters : dict[int -> list[int]]
-        Raw clusters from the chosen clustering algorithm.
-    all_customers : list[int]
-        List of all customer IDs (1..N), excluding depot.
-
-    Returns
-    -------
-    dict
-        Corrected cluster dictionary with full coverage.
     """
     assigned = set()
     for members in clusters.values():
@@ -83,7 +70,6 @@ def enforce_full_coverage(
     if not missing:
         return clusters
 
-    # Find cluster with minimal size
     smallest_cluster_id = min(clusters, key=lambda cid: len(clusters[cid]))
 
     print(f"[Clustering WARNING] Missing customers detected: {missing}")
@@ -91,6 +77,11 @@ def enforce_full_coverage(
 
     clusters[smallest_cluster_id].extend(missing)
     return clusters
+
+
+# =====================================================================
+# Unified Clustering Entry Point
+# =====================================================================
 
 def run_clustering(
     method: str,
@@ -101,9 +92,22 @@ def run_clustering(
 ) -> Tuple[Dict[int, List[int]], Optional[Dict[int, int]]]:
     """
     Unified clustering interface.
+
+    Optional keyword arguments (passed through **kwargs):
+        - angle_offset : float
+            Rotation (in radians) applied to polar angles before computing
+            angular dissimilarities. Used to randomize the 0-degree reference
+            direction (important when depot is near the center).
     """
 
     method = method.lower()
+
+    # Extract angle offset once (default = no rotation)
+    angle_offset: float = kwargs.get("angle_offset", 0.0)
+
+    # # Re-inject explicitly so downstream functions see it
+    # kwargs = dict(kwargs)
+    # kwargs["angle_offset"] = angle_offset
 
     # =====================================================================
     # DISPATCH (no early returns — only assignments!)
@@ -146,17 +150,27 @@ def run_clustering(
             "sk_ac_min": "single",
         }[method]
         clusters, medoids = run_sklearn_ac(
-            instance_name, k, linkage=linkage, use_combined=use_combined, **kwargs
+            instance_name,
+            k,
+            linkage=linkage,
+            use_combined=use_combined,
+            **kwargs,
         )
 
     elif method == "sk_kmeans":
         clusters, medoids, _ = run_sklearn_kmeans(
-            instance_name, k, use_combined=use_combined, **kwargs
+            instance_name,
+            k,
+            use_combined=use_combined,
+            **kwargs,
         )
 
     elif method == "fcm":
         clusters, medoids, _, _ = run_sklearn_fcm(
-            instance_name, k, use_combined=use_combined, **kwargs
+            instance_name,
+            k,
+            use_combined=use_combined,
+            **kwargs,
         )
 
     else:
