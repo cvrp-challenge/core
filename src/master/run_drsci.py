@@ -210,7 +210,6 @@ def run_drsci_for_instance(
     instance_name: str,
     *,
     seed: int = 0,
-    time_limit_per_cluster: float = 20.0,
     ls_neighbourhood: str = "dri_spatial",
     ls_after_routing_max_neighbours: int = 100,
     ls_max_neighbours_restricted: int = 100,
@@ -260,7 +259,6 @@ def run_drsci_for_instance(
                 instance_name=instance_name,
                 clusters=clusters,
                 solver=routing_solver,
-                time_limit_per_cluster=time_limit_per_cluster,
                 seed=seed,
             )
             vb_routes = _result_to_vrplib_routes(routing)
@@ -329,7 +327,6 @@ def run_drsci_for_instance(
                 instance_name=instance_name,
                 clusters=clusters_rb,
                 solver=routing_solver,
-                time_limit_per_cluster=time_limit_per_cluster,
                 seed=seed,
             )
             rb_routes = _result_to_vrplib_routes(routing_rb)

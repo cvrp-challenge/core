@@ -41,23 +41,23 @@ from master.utils.loader import load_instance
 # ---------------------------------------------------------
 INSTANCES = [
     # "X-n502-k39.vrp",
-    # "X-n524-k153.vrp",
-    # "X-n561-k42.vrp",
-    # "X-n641-k35.vrp",
-    # "X-n685-k75.vrp",
-    # "X-n716-k35.vrp",
+    "X-n524-k153.vrp",
+    "X-n561-k42.vrp",
+    "X-n641-k35.vrp",
+    "X-n685-k75.vrp",
+    "X-n716-k35.vrp",
     # "X-n749-k98.vrp",
     # "X-n801-k40.vrp",
     # "X-n856-k95.vrp",
     # "X-n916-k207.vrp",
-    # "XLTEST-n1048-k138.vrp",
-    # "XLTEST-n1794-k408.vrp",
+    "XLTEST-n1048-k138.vrp",
+    "XLTEST-n1794-k408.vrp",
     "XLTEST-n2541-k62.vrp",
     # "XLTEST-n3147-k210.vrp",
     # "XLTEST-n4153-k259.vrp",
     # "XLTEST-n6034-k1685.vrp",
-    # "XLTEST-n6734-k1347.vrp",
-    # "XLTEST-n8028-k691.vrp",
+    "XLTEST-n6734-k1347.vrp",
+    "XLTEST-n8028-k691.vrp",
     # "XLTEST-n8766-k55.vrp",
     # "XLTEST-n10001-k798.vrp",
 
@@ -74,12 +74,12 @@ CLUSTERING_METHODS = [
 ]
 
 K_PER_METHOD = {
-    "sk_ac_avg": [2],
-    "sk_ac_complete": [4],
-    "sk_ac_min": [6],
-    "sk_kmeans": [5],
-    "fcm": [4],
-    "k_medoids_pyclustering": [3],
+    "sk_ac_avg": [2, 4],
+    "sk_ac_complete": [2, 4],
+    "sk_ac_min": [2, 4],
+    "sk_kmeans": [2, 4],
+    "fcm": [2, 4],
+    "k_medoids_pyclustering": [2,4],
 }
 
 
@@ -103,7 +103,6 @@ def solve_instance_drsci(
     instance_name: str,
     output_dir: Path,
     seed: int,
-    time_limit_per_cluster: float,
     ls_neighbourhood: str,
     ls_after_routing_max_neighbours: int,
     ls_max_neighbours_restricted: int,
@@ -122,7 +121,6 @@ def solve_instance_drsci(
         result = run_drsci_for_instance(
             instance_name=instance_name,
             seed=seed,
-            time_limit_per_cluster=time_limit_per_cluster,
             ls_neighbourhood=ls_neighbourhood,
             ls_after_routing_max_neighbours=ls_after_routing_max_neighbours,
             ls_max_neighbours_restricted=ls_max_neighbours_restricted,
@@ -188,7 +186,6 @@ def run_benchmark(
     output_path: str,
     max_workers: Optional[int],
     seed: int,
-    time_limit_per_cluster: float,
     ls_neighbourhood: str,
     ls_after_routing_max_neighbours: int,
     ls_max_neighbours_restricted: int,
@@ -206,7 +203,6 @@ def run_benchmark(
     print(f"SCP solver              : {scp_solver}")
     print(f"LS solver               : {ls_solver}")
     print(f"Seed                    : {seed}")
-    print(f"Time limit per cluster  : {time_limit_per_cluster}s")
     print(f"SCP time limit          : {scp_time_limit}s")
     print(f"Parallel workers        : {max_workers or 'auto'}")
     print("-" * 80)
@@ -220,7 +216,6 @@ def run_benchmark(
                 inst,
                 output_dir,
                 seed,
-                time_limit_per_cluster,
                 ls_neighbourhood,
                 ls_after_routing_max_neighbours,
                 ls_max_neighbours_restricted,
@@ -266,7 +261,6 @@ def main():
     parser.add_argument("output_path", type=str)
     parser.add_argument("--max_workers", type=int, default=None)
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--time_limit_per_cluster", type=float, default=20.0)
     parser.add_argument("--ls_neighbourhood", type=str, default="dri_spatial")
     parser.add_argument("--ls_after_routing_max_neighbours", type=int, default=40)
     parser.add_argument("--ls_max_neighbours_restricted", type=int, default=40)
@@ -299,7 +293,6 @@ def main():
         output_path=args.output_path,
         max_workers=args.max_workers,
         seed=args.seed,
-        time_limit_per_cluster=args.time_limit_per_cluster,
         ls_neighbourhood=args.ls_neighbourhood,
         ls_after_routing_max_neighbours=args.ls_after_routing_max_neighbours,
         ls_max_neighbours_restricted=args.ls_max_neighbours_restricted,
