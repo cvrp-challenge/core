@@ -166,8 +166,9 @@ def _write_sol_if_bks_beaten(
 
     os.makedirs(output_dir, exist_ok=True)
     base = Path(instance_name).stem
-    sol_path = Path(output_dir) / f"{base}_BKS_BEAT_{cost}.sol"
+    sol_path = Path(output_dir) / f"BKS_{base}_{cost}.sol"
 
+    # LUCCA: This needs to be in PyVRP format with depot=0 (excluded) and nodes from 1 to n-1
     with open(sol_path, "w") as f:
         for idx, r in enumerate(routes, start=1):
             # Remove depot (assumes VRPLIB format [1, ..., 1])
@@ -179,12 +180,16 @@ def _write_sol_if_bks_beaten(
 
         f.write(f"Cost: {cost}\n")
 
+    instance_base = Path(instance_name).stem
+
     print(
-        f"[BKS] 🎉 BKS beaten! cost={cost} < BKS={bks_cost} "
-        f"→ wrote {sol_path}",
+        # making the print appear in green for better visibility
+        f"\033[38;2;41;209;47m[{instance_base} BKS] 🎉 BKS beaten! cost={cost} < BKS={bks_cost} "
+        f"→ wrote {sol_path}\033[0m",
         flush=True,
     )
 
+# LUCCA: This doesnt make sense to me, double check during testing
 def print_final_route_summary(
     *,
     best_routes: Routes,
@@ -223,6 +228,7 @@ def print_final_route_summary(
 # MAIN PROBABILISTIC DRSCI DRIVER
 # ============================================================
 
+# LUCCA: What about dissimilarity metrics?
 def run_drsci_probabilistic(
     instance_name: str,
     *,
@@ -231,12 +237,12 @@ def run_drsci_probabilistic(
     scp_switch_prob: float = 0.0,
     time_limit_scp: float = 300.0,
     scp_every: int = 5,
-    time_limit_total: float = 600.0,
+    time_limit_total: float = 600.0, # LUCCA: Time Limit for entire algorithm, not just SCP or one iter?
     max_no_improvement_iters: int = 20,
     k_min: int = 2,                     # kept for backward compatibility
     k_max: int = 8,                     # kept for backward compatibility
-    min_cluster_size: int = 100,
-    max_cluster_size: int = 2500,
+    min_avg_cluster_size: int = 100,
+    max_avg_cluster_size: int = 2500,
     routing_solver: str = "pyvrp",
     routing_solver_options: Optional[Mapping[str, Any]] = None,
     ls_neighbourhood: str = "dri_spatial",
@@ -254,14 +260,15 @@ def run_drsci_probabilistic(
     start_time = time.time()
 
     inst = load_instance(instance_name)
+    instance_base = Path(instance_name).stem
 
     # --------------------------------------------------------
     # Adaptive k-range based on instance size
     # --------------------------------------------------------
     num_customers = len(inst["demand"]) - 1  # exclude depot
 
-    k_min_auto = math.ceil(num_customers / max_cluster_size)
-    k_max_auto = math.floor(num_customers / min_cluster_size)
+    k_min_auto = math.ceil(num_customers / max_avg_cluster_size)
+    k_max_auto = math.floor(num_customers / min_avg_cluster_size)
 
     k_min_auto = max(2, k_min_auto)
     k_max_auto = max(k_min_auto, k_max_auto)
@@ -294,15 +301,14 @@ def run_drsci_probabilistic(
     # MAIN LOOP
     # ========================================================
     while True:
-        # -------------------------------
-        # STOPPING CRITERIA
-        # -------------------------------
+        # stopping criteria fulfilled?
+        # LUCCA: Why do we have max time limit and max no improvement limit?
         if time.time() - start_time >= time_limit_total:
-            print("[STOP] time limit reached", flush=True)
+            print(f"\033[91m[{instance_base} STOP] time limit reached\033[0m", flush=True)
             break
 
         if no_improvement_iters >= max_no_improvement_iters:
-            print("[STOP] no improvement limit reached", flush=True)
+            print(f"\033[91m[{instance_base} STOP] no improvement limit reached\033[0m", flush=True)
             break
 
         iteration += 1
@@ -312,46 +318,31 @@ def run_drsci_probabilistic(
         else:
             angle_offset = 0.0
 
-        print(
-            f"[ANGLE] polar_offset={angle_offset:.3f} rad "
-            f"({angle_offset * 180 / math.pi:.1f}°)",
-            flush=True,
-        )
-
         improved_this_iter = False
 
-        # -------------------------------
-        # SELECT MODE (VB / RB)
-        # -------------------------------
+        # Note: we use auto range; keep k_min/k_max parameters for backward compat only.
+        k = rng.randint(k_min_auto, k_max_auto)
+
+        # select mode (vb or rb)
         if iteration == 1:
             mode = "vb"
+            k = 1 # force single cluster for first iteration
         else:
             mode = "vb" if rng.random() < 0.5 else "rb"
 
-        # -------------------------------
-        # SELECT METHOD
-        # -------------------------------
+        # select method
         if mode == "vb":
             method = rng.choice(VB_METHODS)   # 1/6 each
         else:
             method = rng.choice(RB_METHODS)   # 1/4 each
 
-        # -------------------------------
-        # SELECT k
-        # -------------------------------
-        # NOTE: we use auto range; keep k_min/k_max parameters for backward compat only.
-        k = rng.randint(k_min_auto, k_max_auto)
 
-        print(f"[ITER {iteration}] mode={mode.upper()} method={method} k={k}", flush=True)
+        print(f"\033[94m[{instance_base} ITERATION {iteration}] mode={mode.upper()} method={method} k={k}\033[0m", flush=True)
 
-        # ----------------------------------------------------
-        # SCP schedule: ONLY every scp_every iterations
-        # ----------------------------------------------------
+        # is scp running this iteration:
         run_scp_now = (iteration % scp_every == 0)
 
-        # ====================================================
         # DECOMPOSITION
-        # ====================================================
         if mode == "vb":
             clusters, _ = run_clustering(
                 method=method,
@@ -381,13 +372,10 @@ def run_drsci_probabilistic(
             flush=True,
         )
 
-        # ====================================================
         # ROUTING
-        # ====================================================
-        # Note:
-        # - We do NOT attempt any PyVRP stall stopping here.
-        # - Any solver-specific early-stop behavior (e.g., Hexaly stall_time) belongs
-        #   to routing_controller + solver adapters.
+
+        # Note: We do NOT attempt any PyVRP stall stopping here. Any solver-specific early-stop behavior 
+        # (e.g., Hexaly stall_time) belongs to routing_controller + solver adapters 
         routing = solve_clusters(
             instance_name=instance_name,
             clusters=clusters,
@@ -402,9 +390,7 @@ def run_drsci_probabilistic(
             no_improvement_iters += 1
             continue
 
-        # ====================================================
-        # LOCAL SEARCH (POST-ROUTING)
-        # ====================================================
+        # IMPROVEMENT:LOCAL SEARCH (POST-ROUTING)
         ls_res = improve_with_local_search(
             instance_name=instance_name,
             routes_vrplib=routes,
@@ -458,7 +444,7 @@ def run_drsci_probabilistic(
         if run_scp_now:
             scp_solver_name = _select_scp_solver_name(rng, scp_solvers, scp_switch_prob)
             solve_scp = lazy_import_scp(scp_solver_name)
-            print(f"[SCP] solver={scp_solver_name}", flush=True)
+            print(f"[SCP] solver={scp_solver_name} | Route Pool Size={len(global_route_pool)}", flush=True)
 
             scp_res = solve_scp(
                 instance_name=instance_name,
@@ -486,6 +472,13 @@ def run_drsci_probabilistic(
 
             scp_routes = final_ls["routes_improved"]
             scp_cost = _compute_integer_cost(inst, scp_routes)
+
+            global_route_pool.extend(scp_routes)
+            global_route_pool = filter_route_pool(
+                global_route_pool,
+                depot_id=1,
+                verbose=False,
+            )
 
             # ---------------- TAGGING: SCP-produced routes ----------------
             # These routes are not tied to a single clustering method anymore.
@@ -565,6 +558,13 @@ def run_drsci_probabilistic(
 
         final_routes = final_ls["routes_improved"]
         final_cost = _compute_integer_cost(inst, final_routes)
+
+        global_route_pool.extend(final_routes)
+        global_route_pool = filter_route_pool(
+            global_route_pool,
+            depot_id=1,
+            verbose=False,
+        )
 
         # ---------------- TAGGING: FINAL SCP routes ----------------
         _tag_new_routes(
@@ -650,18 +650,19 @@ def run_drsci_probabilistic(
 
 if __name__ == "__main__":
     res = run_drsci_probabilistic(
-        instance_name="XLTEST-n2541-k62.vrp",
-        seed=1,
+        instance_name="X-n916-k207.vrp",
+        seed=100,
         scp_solvers=["gurobi_mip"],
         scp_switch_prob=0.0,
-        time_limit_total=300.0,
-        time_limit_scp=600.0,
-        scp_every=2,
-        min_cluster_size=300,
-        max_cluster_size=2500,
+        time_limit_total=3000.0,
+        time_limit_scp=300.0,
+        scp_every=5,
+        min_avg_cluster_size=100,
+        max_avg_cluster_size=2500,
+        max_no_improvement_iters=20,
         routing_solver="pyvrp",
         routing_solver_options=None,
-        bks_cost=101100,
+        bks_cost=331355,
     )
 
     print("\n[DEBUG] Best cost:", res["best_cost"])

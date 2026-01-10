@@ -45,10 +45,14 @@ try:
     _HAS_PYVRP = True
 except Exception:
     _HAS_PYVRP = False
+        # Debug: print the actual import error to help diagnose
+    import sys
+    if "--debug-imports" in sys.argv:  # Only print if debug flag is set
+        print(f"[DEBUG] PyVRP import failed")
 
 # Hexaly imports are optional at runtime (only needed if ls_solver="hexaly")
 try:
-    import hexaly.optimizer
+    import hexaly.optimizer  # pyright: ignore[reportMissingImports]
 
     _HAS_HEXALY = True
 except Exception:
