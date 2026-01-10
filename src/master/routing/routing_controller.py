@@ -34,7 +34,7 @@ def _adaptive_cluster_time(
     n: int,
     *,
     base: float = 1.0,
-    alpha: float = 0.16,            #was 0.16
+    alpha: float = 0.01,            #was 0.16
     exponent: float = 0.9,
     min_time: float = 2.0,
     max_time: float = 180.0,

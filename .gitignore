@@ -93,3 +93,6 @@ Thumbs.db
 run.sh
 runner.py
 setup.sh
+
+# TUM Gurobi License Server
+gurobi.lic

@@ -41,16 +41,16 @@ from master.utils.loader import load_instance
 # ---------------------------------------------------------
 INSTANCES = [
     # "X-n502-k39.vrp",
-    "X-n524-k153.vrp",
-    "X-n561-k42.vrp",
-    "X-n641-k35.vrp",
-    "X-n685-k75.vrp",
-    "X-n716-k35.vrp",
+    # "X-n524-k153.vrp",
+    # "X-n561-k42.vrp",
+    # "X-n641-k35.vrp",
+    # "X-n685-k75.vrp",
+    # "X-n716-k35.vrp",
     # "X-n749-k98.vrp",
     # "X-n801-k40.vrp",
     # "X-n856-k95.vrp",
     # "X-n916-k207.vrp",
-    "XLTEST-n1048-k138.vrp",
+    # "XLTEST-n1048-k138.vrp",
     "XLTEST-n1794-k408.vrp",
     "XLTEST-n2541-k62.vrp",
     # "XLTEST-n3147-k210.vrp",
@@ -66,8 +66,8 @@ INSTANCES = [
 
 CLUSTERING_METHODS = [
     "sk_ac_avg",
-    "sk_ac_complete",
-    "sk_ac_min",
+    # "sk_ac_complete",
+    # "sk_ac_min",
     "sk_kmeans",
     "fcm",
     "k_medoids_pyclustering",
@@ -79,7 +79,7 @@ K_PER_METHOD = {
     "sk_ac_min": [2, 4],
     "sk_kmeans": [2, 4],
     "fcm": [2, 4],
-    "k_medoids_pyclustering": [2,4],
+    "k_medoids_pyclustering": [2, 4],
 }
 
 

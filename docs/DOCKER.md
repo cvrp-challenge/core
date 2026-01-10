@@ -203,6 +203,28 @@ docker run -d \
   your-dockerhub-username/core-solver:latest
 ```
 
+### Run with Gurobi Token Server (Network Configuration)
+
+If you're using a Gurobi token server license, the container needs network access to reach the token server. Use `--network host` to allow the container to access the host's network:
+
+```bash
+docker run --rm --network host \
+  -v /tmp/drsci_benchmark:/app/output \
+  zorroy/cvrp:2.1.1 /app/output --max_workers 10
+```
+
+**Why this is needed:**
+- Gurobi token server licenses require the client to be on the same network subnet as the server
+- Docker containers by default use an isolated network namespace
+- `--network host` makes the container use the host's network stack, allowing it to reach the token server
+
+**Platform compatibility:**
+- ✅ **Native Linux servers**: `--network host` works perfectly. This is the recommended setup for university servers or cloud VMs running Linux.
+- ⚠️ **Docker Desktop on Windows/WSL2**: `--network host` has limitations and may not work as expected. The container may still appear on a different subnet than the token server. In this case, you may need to:
+  - Run the code directly on the host (outside Docker)
+  - Use a different license type (node-locked instead of token server)
+  - Configure Docker networking with custom bridge networks (advanced)
+
 ### Monitor running container
 
 ```bash

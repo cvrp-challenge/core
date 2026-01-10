@@ -1,11 +1,11 @@
-# Use Python 3.11 as base image (matches project requirements)
+# syntax=docker/dockerfile:1.7
 FROM python:3.11-slim
-
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies needed for building Python packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt \
+    apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     g++ \
     cmake \
@@ -19,21 +19,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # Upgrade pip and install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt && \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel && \
+    pip install -r requirements.txt && \
     python -c "import sklearn; print(f'scikit-learn version: {sklearn.__version__}')" && \
     python -c "from sklearn.cluster import AgglomerativeClustering, KMeans; from sklearn.preprocessing import StandardScaler; print('sklearn imports successful')"
 
 # Copy PyVRP first and install it (for better Docker layer caching)
 # This layer will only rebuild if solver/pyvrp/ changes
 COPY solver/pyvrp ./solver/pyvrp
-RUN pip install --no-cache-dir ./solver/pyvrp
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install ./solver/pyvrp
 
-# Copy the rest of the project
+# Copy the rest of the project (includes gurobi.lic if present)
 COPY . .
 
 # Set Python path to include the project root and src directory
 ENV PYTHONPATH=/app:/app/src
+
+# Set Gurobi license file to use the workspace tokenserver license
+ENV GRB_LICENSE_FILE=/app/gurobi.lic
 
 # Default entry point: src/master/main.py
 ENTRYPOINT ["python", "-m", "master.benchmark_drsci"]
