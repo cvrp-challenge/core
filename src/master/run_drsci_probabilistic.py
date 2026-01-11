@@ -4,6 +4,7 @@ import time
 import random
 from typing import Dict, List, Optional, Any, Mapping, Tuple
 import math
+import json
 
 import sys
 from pathlib import Path
@@ -153,15 +154,59 @@ def _select_scp_solver_name(rng: random.Random, scp_solvers: List[str], scp_swit
     return scp_solvers[0]
 
 
+def _load_bks_from_file(instance_name: str) -> Optional[int]:
+    """
+    Load BKS (Best Known Solution) cost for an instance from bks.json file.
+    
+    Args:
+        instance_name: Name of the instance (e.g., "X-n916-k207.vrp")
+        
+    Returns:
+        BKS cost as int if found, None otherwise
+    """
+    # Get the path to bks.json file
+    # CURRENT is src/master, so we go up to core, then instances/test-instances
+    bks_file = CURRENT.parent.parent / "instances" / "test-instances" / "test-bks.json"
+    
+    if not bks_file.exists():
+        return None
+    
+    try:
+        with open(bks_file, "r") as f:
+            bks_data = json.load(f)
+        
+        instance_stem = Path(instance_name).stem
+        bks_cost = bks_data.get(instance_stem)
+        
+        # Return None if BKS is null or not found
+        if bks_cost is None:
+            return None
+        
+        return int(bks_cost)
+    except (json.JSONDecodeError, KeyError, ValueError, FileNotFoundError):
+        return None
+
+
 def _write_sol_if_bks_beaten(
     *,
     instance_name: str,
     routes: Routes,
     cost: int,
-    bks_cost: int,
     output_dir: str,
 ):
-    if cost >= bks_cost:
+    """
+    Write solution file if the current cost beats the BKS from bks.json.
+    
+    Args:
+        instance_name: Name of the instance (e.g., "X-n916-k207.vrp")
+        routes: List of routes (VRPLIB format)
+        cost: Current solution cost
+        output_dir: Directory to write the solution file
+    """
+    bks_cost = _load_bks_from_file(instance_name)
+    
+    # If BKS is not found or current cost doesn't beat BKS, return early
+    if bks_cost is None or cost >= bks_cost:
         return
 
     os.makedirs(output_dir, exist_ok=True)
@@ -249,7 +294,6 @@ def run_drsci_probabilistic(
     ls_after_routing_max_neighbours: int = 100,
     ls_max_neighbours_restricted: int = 100,
     randomize_polar_angle: bool = True,
-    bks_cost: Optional[int] = None,
     bks_output_dir: str = "output",
 ) -> Dict[str, Any]:
 
@@ -422,14 +466,12 @@ def run_drsci_probabilistic(
             improved_this_iter = True
             print(f"[IMPROVED-VB/RB] best_cost={best_cost}", flush=True)
 
-            if bks_cost is not None:
-                _write_sol_if_bks_beaten(
-                    instance_name=instance_name,
-                    routes=best_routes,
-                    cost=best_cost,
-                    bks_cost=bks_cost,
-                    output_dir=bks_output_dir,
-                )
+            _write_sol_if_bks_beaten(
+                instance_name=instance_name,
+                routes=best_routes,
+                cost=best_cost,
+                output_dir=bks_output_dir,
+            )
 
         global_route_pool.extend(candidate_routes)
         global_route_pool = filter_route_pool(
@@ -500,14 +542,12 @@ def run_drsci_probabilistic(
                 improved_this_iter = True
                 print(f"[IMPROVED-SCP] best_cost={best_cost}", flush=True)
 
-                if bks_cost is not None:
-                    _write_sol_if_bks_beaten(
-                        instance_name=instance_name,
-                        routes=best_routes,
-                        cost=best_cost,
-                        bks_cost=bks_cost,
-                        output_dir=bks_output_dir,
-                    )
+                _write_sol_if_bks_beaten(
+                    instance_name=instance_name,
+                    routes=best_routes,
+                    cost=best_cost,
+                    output_dir=bks_output_dir,
+                )
             else:
                 print(f"[SCP-NO-IMPROVEMENT] cost={scp_cost} (best={best_cost})", flush=True)
         else:
@@ -662,7 +702,6 @@ if __name__ == "__main__":
         max_no_improvement_iters=20,
         routing_solver="pyvrp",
         routing_solver_options=None,
-        bks_cost=331355,
     )
 
     print("\n[DEBUG] Best cost:", res["best_cost"])
