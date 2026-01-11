@@ -14,13 +14,35 @@ Key points
 Configuration
 -------------
 solver_options can include:
-- "seed": int (passed only if you add it to extra_args yourself)
-- "no_improvement": int (passed only if you add it to extra_args yourself)
-- "time_limit": float (passed only if you add it to extra_args yourself)
-- "extra_args": list[str]  # appended to the CLI call (recommended)
-- "keep_tmp": bool         # keep temp dirs for debugging
-- "filo1_exe": str|Path     # override executable path
-- "filo2_exe": str|Path     # override executable path
+- "cluster_nodes": list[int]   # VRPLIB customer node IDs (no depot) - for cluster subproblems
+- "no_improvement": int        # Max iterations without improvement (required, adaptive by cluster size)
+                               # Auto-converted to --coreopt-iterations <no_improvement * 10>
+- "seed": int                  # Random seed (auto-added as --seed)
+- "extra_args": list[str]      # Additional CLI arguments (e.g., --routemin-iterations)
+- "keep_tmp": bool             # Keep temp dirs for debugging
+- "filo1_exe": str|Path        # Override executable path
+- "filo2_exe": str|Path        # Override executable path
+
+Note: max_runtime is no longer used for FILO. Only no_improvement is used.
+The no_improvement value is calculated adaptively by routing_controller based on
+cluster size (10000 at n<=100 to 100000 at n>=10000, linear in between).
+
+Stopping Criteria:
+------------------
+FILO1 and FILO2:
+- Uses only no_improvement criterion (no time limit)
+- no_improvement is required and adaptive by cluster size
+- Converts to --coreopt-iterations <no_improvement * 10> (approximation)
+
+Note: FILO doesn't have direct "no improvement" support, so we approximate by setting
+--coreopt-iterations = no_improvement * 10. This gives FILO enough iterations to
+have a chance to improve before stopping. The no_improvement value is calculated
+adaptively by routing_controller based on cluster size (10000 at n<=100 to 100000 at n>=10000).
+
+When used via routing_controller.solve_clusters():
+- cluster_nodes is automatically provided for each cluster
+- no_improvement is automatically calculated adaptively by routing_controller
+- Routes are returned in VRPLIB format (global node IDs) via metadata["routes_vrplib"]
 
 Example (cluster test)
 ----------------------
@@ -85,6 +107,7 @@ def _write_subinstance_vrp(
     instance_name: str,
     cluster_customers_global: List[int],
     out_path: Path,
+    solver_variant: str = "filo1",
 ) -> Tuple[Dict[int, int], Dict[int, int]]:
     customers = sorted({int(c) for c in cluster_customers_global if int(c) != 1})
     if not customers:
@@ -105,14 +128,34 @@ def _write_subinstance_vrp(
     name_stem = Path(instance_name).stem
     sub_name = f"{name_stem}_cluster_{len(customers)}"
 
+    solver_variant = solver_variant.lower().strip()
+    is_filo1 = (solver_variant == "filo1")
+    
     lines: List[str] = []
+    
+    # Common header
     lines.append(f"NAME : {sub_name}")
+    lines.append(f'COMMENT : "Cluster sub-instance extracted from {name_stem}"')
     lines.append("TYPE : CVRP")
     lines.append(f"DIMENSION : {dim_local}")
     lines.append(f"EDGE_WEIGHT_TYPE : {edge_type}")
     lines.append(f"CAPACITY : {cap}")
-    lines.append("NODE_COORD_SECTION")
+    
+    if is_filo1:
+        # FILO1 (XInstanceParser) expects:
+        # - Skips 3 lines (NAME, COMMENT, TYPE)
+        # - Reads DIMENSION
+        # - Skips 1 line (EDGE_WEIGHT_TYPE)
+        # - Reads CAPACITY
+        # - Skips 1 blank line
+        # - Reads coordinates directly (NO NODE_COORD_SECTION header!)
+        lines.append("")  # Blank line before coordinates
+    else:
+        # FILO2 expects NODE_COORD_SECTION header
+        lines.append("NODE_COORD_SECTION")
+        lines.append("")  # Blank line after header
 
+    # Write coordinates
     x1, y1 = _coord(inst, 1)
     lines.append(f"1 {x1:.0f} {y1:.0f}")
 
@@ -121,13 +164,24 @@ def _write_subinstance_vrp(
         x, y = _coord(inst, g)
         lines.append(f"{local_id} {x:.0f} {y:.0f}")
 
-    lines.append("DEMAND_SECTION")
+    # DEMAND_SECTION header
+    if is_filo1:
+        # FILO1 reads DEMAND_SECTION header directly after coordinates
+        lines.append("DEMAND_SECTION")
+    else:
+        # FILO2 expects blank line, then DEMAND_SECTION
+        lines.append("")  # Blank line after coordinates
+        lines.append("DEMAND_SECTION")
+        lines.append("")  # Blank line after header
+
+    # Write demands
     lines.append("1 0")
     for local_id in range(2, dim_local + 1):
         g = local_to_global[local_id]
         d = _demand(inst, g)
         lines.append(f"{local_id} {d}")
 
+    # FILO parsers don't read DEPOT_SECTION, but include EOF for completeness
     lines.append("DEPOT_SECTION")
     lines.append("1")
     lines.append("-1")
@@ -323,6 +377,7 @@ def solve_cluster_with_filo(
             instance_name=instance_name,
             cluster_customers_global=list(cluster_customers),
             out_path=sub_vrp_path,
+            solver_variant=solver_variant,
         )
 
         # Allow overriding executable path per variant
@@ -355,22 +410,67 @@ def solve_cluster_with_filo(
 
         routes_local = _parse_routes_from_text(text_for_parse)
 
-        # Some outputs might omit depot. Enforce VRPLIB-style [1, ..., 1] in LOCAL ids.
+        # FILO outputs customer indices (1 to n-1), NOT node IDs!
+        # In VRPLIB format: node 1 = depot, nodes 2,3,...,n = customers
+        # FILO outputs: customer index 1, 2, ..., n-1 (where n-1 is the number of customers)
+        # So we need to convert: customer_index -> node_ID = customer_index + 1
+        #
+        # Example: If sub-instance has 358 nodes (1 depot + 357 customers):
+        #   - FILO outputs customer indices: 1, 2, ..., 357
+        #   - These map to node IDs: 2, 3, ..., 358
+        #   - Customer index 1 -> node ID 2 (first customer)
+        #   - Customer index 79 -> node ID 80 (79th customer)
+        
+        dim_local = len(local_to_global)  # Number of nodes in sub-instance (1 depot + customers)
+        num_customers = dim_local - 1  # Number of customers
+        
         routes_local_norm: List[List[int]] = []
         for r in routes_local:
             rr = [int(x) for x in r]
             if not rr:
                 continue
-            if rr[0] != 1:
-                rr = [1] + rr
-            if rr[-1] != 1:
-                rr = rr + [1]
+            
+            # Check if values are in customer index range (1 to num_customers)
+            # or node ID range (1 to dim_local)
+            max_val = max(rr) if rr else 0
+            min_val = min(rr) if rr else 0
+            
+            # If max value is <= num_customers and min >= 1, likely customer indices
+            # If max value is <= dim_local and we see 1, might be node IDs (but 1 would be depot)
+            # FILO typically outputs customer indices, so convert: customer_index -> node_ID = customer_index + 1
+            if max_val <= num_customers and min_val >= 1:
+                # Customer indices: convert to node IDs
+                # Customer index 1 -> node ID 2, customer index 2 -> node ID 3, etc.
+                rr = [n + 1 for n in rr]
+            # If max_val > num_customers, assume they're already node IDs (shouldn't happen with FILO)
+            
+            # Filter out depot (1) from middle of route if present
+            # FILO shouldn't output depot, but be safe
+            rr = [n for n in rr if n != 1]
+            
+            if not rr:
+                # Empty route after filtering, skip it
+                continue
+            
+            # Enforce VRPLIB-style [1, ..., 1] in LOCAL ids (1-indexed)
+            # Add depot at start/end
+            rr = [1] + rr + [1]
             routes_local_norm.append(rr)
 
         routes_global: Routes = []
         for r in routes_local_norm:
-            mapped = [local_to_global.get(int(n), 1) for n in r]
+            # Map local IDs (1-indexed) to global IDs
+            # Filter out any invalid mappings (shouldn't happen, but be safe)
+            mapped = []
+            for n in r:
+                global_id = local_to_global.get(int(n), None)
+                if global_id is not None:
+                    mapped.append(global_id)
+                else:
+                    # Fallback: if mapping fails, use depot (1)
+                    mapped.append(1)
             routes_global.append(mapped)
+        
 
         cost = _parse_cost_from_text(text_for_parse)
         if cost is None:
@@ -394,9 +494,7 @@ def solve_cluster_with_filo(
         )
 
     finally:
-        if keep_tmp:
-            print(f"[solver_filo] Keeping temp dir: {tmp_dir}")
-        else:
+        if not keep_tmp:
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
@@ -453,12 +551,98 @@ def _solve_instance_with_filo_backend(
     """
     Adapter for master.routing.solver.solve(..., solver='filo1'|'filo2').
 
-    - If instance_path is a REAL file (cluster subinstance), we run FILO on it directly.
-    - If instance_path is a dataset instance name path, it also works (it exists).
-    - We parse the FILO output routes as LOCAL IDs and return them as-is (LOCAL),
-      because routing_controller typically expects routes in the given instance's ID space.
+    Contract (as used by routing_controller.solve_clusters):
+      - options["cluster_nodes"] : list of VRPLIB customer node IDs (no depot) [optional]
+      - options["seed"]         : int [optional]
+      - options["no_improvement"] : int [required, adaptive by cluster size]
+      - options["extra_args"]   : list[str] [optional]
+      - options["keep_tmp"]     : bool [optional]
+      - options["filo1_exe"] / options["filo2_exe"] : Path [optional]
+    
+    Must return:
+      - SolveOutput.metadata["routes_vrplib"] : List[List[int]] in VRPLIB format (global node IDs)
+
+    Behavior:
+      - If cluster_nodes is provided: uses solve_cluster_with_filo (handles subproblems)
+      - Otherwise: runs FILO on the full instance
     """
 
+    # Check if this is a cluster subproblem
+    cluster_nodes: Optional[List[int]] = options.get("cluster_nodes", None)
+    
+    if cluster_nodes is not None:
+        # Handle cluster subproblem using the dedicated cluster solver
+        cluster_customers = sorted({nid for nid in cluster_nodes if nid != 1})
+        
+        if not cluster_customers:
+            # Empty cluster
+            return SolveOutput(
+                solver=solver_variant,
+                instance=instance_path,
+                cost=0.0,
+                runtime=0.0,
+                num_iterations=0,
+                feasible=True,
+                data=None,
+                raw_result=[],
+                metadata={"routes_vrplib": []},
+            )
+        
+        # Build extra_args from options
+        extra_args = list(options.get("extra_args", []))
+        
+        # FILO: Only use no_improvement criterion (no time limit)
+        # no_improvement should always be provided by routing_controller
+        no_improvement = options.get("no_improvement", None)
+        if no_improvement is None:
+            raise ValueError("no_improvement must be provided for FILO solvers")
+        
+        # FILO doesn't have direct "no improvement" support, so we use --coreopt-iterations
+        # as an approximation. Use no_improvement * 10 as coreopt-iterations.
+        # This gives FILO enough iterations to have a chance to improve.
+        coreopt_iterations = no_improvement * 10
+        extra_args.extend(["--coreopt-iterations", str(int(coreopt_iterations))])
+        
+        # Add seed if provided
+        seed = options.get("seed", None)
+        if seed is not None:
+            extra_args.extend(["--seed", str(int(seed))])
+        
+        # Get executable overrides
+        filo1_exe = options.get("filo1_exe", None)
+        filo2_exe = options.get("filo2_exe", None)
+        
+        keep_tmp = bool(options.get("keep_tmp", False))
+        
+        # Solve cluster subproblem
+        result = solve_cluster_with_filo(
+            instance_name=instance_path.name,
+            cluster_customers=cluster_customers,
+            solver_variant=solver_variant,
+            keep_tmp=keep_tmp,
+            extra_args=extra_args if extra_args else None,
+            filo1_exe=filo1_exe,
+            filo2_exe=filo2_exe,
+        )
+        
+        # solve_cluster_with_filo returns routes in GLOBAL node IDs (VRPLIB format)
+        return SolveOutput(
+            solver=solver_variant,
+            instance=instance_path,
+            cost=result.cost,
+            runtime=result.runtime,
+            num_iterations=0,
+            feasible=result.feasible,
+            data=None,
+            raw_result=result.routes_global,
+            metadata={
+                "routes_vrplib": result.routes_global,  # Already in VRPLIB format (global IDs)
+                "tmp_dir": result.metadata.get("tmp_dir"),
+                "sol_file": result.metadata.get("sol_file"),
+            },
+        )
+    
+    # Full instance mode (original behavior)
     keep_tmp = bool(options.get("keep_tmp", False))
     extra_args = options.get("extra_args", None)
 
@@ -521,15 +705,14 @@ def _solve_instance_with_filo_backend(
             data=None,
             raw_result=routes_norm,  # IMPORTANT: routes in THIS instance's node IDs
             metadata={
+                "routes_vrplib": routes_norm,  # Add routes_vrplib for consistency
                 "tmp_dir": str(tmp_dir),
                 "sol_file": str(sol_file) if sol_file else None,
             },
         )
 
     finally:
-        if keep_tmp:
-            print(f"[solver_filo backend] Keeping temp dir: {tmp_dir}")
-        else:
+        if not keep_tmp:
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
 

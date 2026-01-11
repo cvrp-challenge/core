@@ -40,6 +40,6 @@ ENV PYTHONPATH=/app:/app/src
 # Set Gurobi license file to use the workspace tokenserver license
 ENV GRB_LICENSE_FILE=/app/gurobi.lic
 
-# Default entry point: src/master/main.py
-ENTRYPOINT ["python", "-m", "master.benchmark_drsci"]
+# Default entry point: run final_benchmark.py
+ENTRYPOINT ["python", "-m", "master.benchmarking.final_benchmark"]
 
