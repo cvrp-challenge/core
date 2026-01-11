@@ -54,6 +54,8 @@ instances/**/*.png
 *.sol
 results/
 output/benchmark_evaluation/*.png
+*.png
+*.pdf
 
 # Ignore all solvers by default
 solver/
@@ -65,6 +67,20 @@ solver/
 # And still ignore build/install artefacts inside pyvrp
 solver/pyvrp/build/
 solver/pyvrp/install/
+
+# Keep cobra, filo1, and filo2 source files (needed for building)
+!solver/cobra/
+!solver/cobra/**
+!solver/filo1/
+!solver/filo1/**
+!solver/filo2/
+!solver/filo2/**
+
+# Ignore build/install artefacts (will be built fresh in Docker)
+solver/cobra/build/
+solver/cobra/install/
+solver/filo1/build/
+solver/filo2/build/
 
 # OS
 .DS_Store

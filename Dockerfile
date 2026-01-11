@@ -31,6 +31,31 @@ COPY solver/pyvrp ./solver/pyvrp
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install ./solver/pyvrp
 
+# Build COBRA library (required by filo1)
+# This layer will only rebuild if solver/cobra/ changes
+COPY solver/cobra ./solver/cobra
+RUN cd solver/cobra && \
+    mkdir -p build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    make install
+
+# Build FILO1 (depends on cobra)
+# This layer will only rebuild if solver/filo1/ changes
+COPY solver/filo1 ./solver/filo1
+RUN cd solver/filo1 && \
+    mkdir -p build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_VERBOSE=OFF && \
+    make -j$(nproc)
+
+# Build FILO2 (standalone)
+# This layer will only rebuild if solver/filo2/ changes
+COPY solver/filo2 ./solver/filo2
+RUN cd solver/filo2 && \
+    mkdir -p build && cd build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_VERBOSE=ON && \
+    make -j$(nproc)
+
 # Copy the rest of the project (includes gurobi.lic if present)
 COPY . .
 
