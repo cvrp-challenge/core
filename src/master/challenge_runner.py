@@ -1,17 +1,3 @@
-"""
-final_benchmark.py
-
-Benchmark script for running the probabilistic DRSCI solver on all 20 test instances.
-
-Pipeline of Probabilistic DRSCI:
-    - Probabilistic selection of clustering methods (VB/RB)
-    - Probabilistic routing solver selection
-    - Routing of subproblems
-    - Local Search
-    - Periodic Set Covering (SCP)
-    - Iterates until convergence or max iterations
-"""
-
 import argparse
 import json
 import sys
@@ -38,7 +24,107 @@ from master.utils.loader import load_instance
 # Instances to benchmark
 # ---------------------------------------------------------
 INSTANCES = [
-
+    # "XL-n10001-k1570.vrp",
+    # "XL-n1048-k237.vrp",
+    # "XL-n1094-k157.vrp",
+    # "XL-n1141-k112.vrp",
+    # "XL-n1188-k96.vrp",
+    # "XL-n1234-k55.vrp",
+    "XL-n1281-k29.vrp", #!
+    "XL-n1328-k19.vrp", #!
+    # "XL-n1374-k278.vrp",
+    # "XL-n1421-k232.vrp",
+    # "XL-n1468-k151.vrp",
+    # "XL-n1514-k106.vrp",
+    # "XL-n1561-k75.vrp",
+    # "XL-n1608-k39.vrp",
+    # "XL-n1654-k11.vrp",
+    # "XL-n1701-k562.vrp",
+    # "XL-n1748-k271.vrp",
+    # "XL-n1794-k163.vrp",
+    # "XL-n1841-k126.vrp",
+    # "XL-n1888-k82.vrp",
+    # "XL-n1934-k46.vrp",
+    # "XL-n1981-k13.vrp",
+    # "XL-n2028-k617.vrp",
+    # "XL-n2074-k264.vrp",
+    # "XL-n2121-k186.vrp",
+    # "XL-n2168-k138.vrp",
+    # "XL-n2214-k131.vrp",
+    # "XL-n2261-k54.vrp",
+    # "XL-n2307-k34.vrp",
+    # "XL-n2354-k631.vrp",
+    # "XL-n2401-k408.vrp",
+    # "XL-n2447-k290.vrp",
+    # "XL-n2494-k194.vrp",
+    # "XL-n2541-k121.vrp",
+    "XL-n2587-k66.vrp", #!
+    "XL-n2634-k17.vrp", #!
+    # "XL-n2681-k540.vrp",
+    # "XL-n2727-k546.vrp",
+    # "XL-n2774-k286.vrp",
+    # "XL-n2821-k208.vrp",
+    # "XL-n2867-k120.vrp",
+    # "XL-n2914-k95.vrp",
+    # "XL-n2961-k55.vrp",
+    # "XL-n3007-k658.vrp",
+    # "XL-n3054-k461.vrp",
+    # "XL-n3101-k311.vrp",
+    # "XL-n3147-k232.vrp",
+    # "XL-n3194-k161.vrp",
+    # "XL-n3241-k115.vrp",
+    # "XL-n3287-k30.vrp",
+    # "XL-n3334-k934.vrp",
+    # "XL-n3408-k524.vrp",
+    "XL-n3484-k436.vrp",
+    "XL-n3561-k229.vrp",
+    "XL-n3640-k211.vrp",
+    "XL-n3721-k77.vrp",
+    "XL-n3804-k29.vrp",
+    "XL-n3888-k1010.vrp",
+    "XL-n3975-k687.vrp",
+    "XL-n4063-k347.vrp",
+    "XL-n4153-k291.vrp",
+    "XL-n4245-k203.vrp",
+    "XL-n4340-k148.vrp",
+    "XL-n4436-k48.vrp",
+    "XL-n4535-k1134.vrp",
+    "XL-n4635-k790.vrp",
+    "XL-n4738-k487.vrp",
+    "XL-n4844-k321.vrp",
+    "XL-n4951-k203.vrp",
+    "XL-n5061-k184.vrp",
+    "XL-n5174-k55.vrp",
+    "XL-n5288-k1246.vrp",
+    "XL-n5406-k783.vrp",
+    "XL-n5526-k553.vrp",
+    "XL-n5649-k401.vrp",
+    "XL-n5774-k290.vrp",
+    "XL-n5902-k122.vrp",
+    "XL-n6034-k61.vrp", #!
+    # "XL-n6168-k1922.vrp",
+    # "XL-n6305-k1042.vrp",
+    # "XL-n6445-k628.vrp",
+    # "XL-n6588-k473.vrp",
+    # "XL-n6734-k330.vrp",
+    # "XL-n6884-k148.vrp",
+    # "XL-n7037-k38.vrp",
+    # "XL-n7193-k1683.vrp",
+    # "XL-n7353-k1471.vrp",
+    # "XL-n7516-k859.vrp",
+    # "XL-n7683-k602.vrp",
+    # "XL-n7854-k365.vrp",
+    # "XL-n8028-k294.vrp",
+    # "XL-n8207-k108.vrp",
+    # "XL-n8389-k2028.vrp",
+    # "XL-n8575-k1297.vrp",
+    # "XL-n8766-k1032.vrp",
+    # "XL-n8960-k634.vrp",
+    # "XL-n9160-k379.vrp",
+    "XL-n9363-k209.vrp", #!
+    "XL-n9571-k55.vrp", #!
+    # "XL-n9784-k2774.vrp",
+    # "XL-n10001-k1570.vrp"
 ]
 
 
@@ -52,7 +138,7 @@ def _load_bks_from_file(instance_name: str) -> Optional[int]:
     Returns:
         BKS cost as int if found, None otherwise
     """
-    bks_file = PROJECT_ROOT / "instances" / "test-instances" / "test-bks.json"
+    bks_file = PROJECT_ROOT / "instances" / "challenge-instances" / "challenge-bks.json"
     
     if not bks_file.exists():
         return None
@@ -328,7 +414,7 @@ def main():
     parser.add_argument("--routing_no_improvement", type=int, default=None)
     parser.add_argument("--ls_neighbourhood", type=str, default="dri_spatial")
     parser.add_argument("--ls_after_routing_max_neighbours", type=int, default=250)
-    parser.add_argument("--ls_max_neighbours_restricted", type=int, default=250)
+    parser.add_argument("--ls_max_neighbours_restricted", type=int, default=100)
     parser.add_argument("--randomize_polar_angle", action="store_true", default=True)
     parser.add_argument("--no_randomize_polar_angle", dest="randomize_polar_angle", action="store_false")
     parser.add_argument("--bks_output_dir", type=str, default="output")

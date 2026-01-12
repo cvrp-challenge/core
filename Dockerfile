@@ -66,5 +66,5 @@ ENV PYTHONPATH=/app:/app/src
 ENV GRB_LICENSE_FILE=/app/gurobi.lic
 
 # Default entry point: run final_benchmark.py
-ENTRYPOINT ["python", "-m", "master.benchmarking.final_benchmark"]
+ENTRYPOINT ["python", "-m", "master.challenge_runner"]
 
