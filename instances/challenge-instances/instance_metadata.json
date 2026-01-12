@@ -1,0 +1,802 @@
+{
+  "XL-n10001-k1570.vrp": {
+    "n_nodes": 10001,
+    "capacity": 479,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n1048-k237.vrp": {
+    "n_nodes": 1048,
+    "capacity": 128,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n1094-k157.vrp": {
+    "n_nodes": 1094,
+    "capacity": 7,
+    "depot_positioning": "centered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n1141-k112.vrp": {
+    "n_nodes": 1141,
+    "capacity": 761,
+    "depot_positioning": "random",
+    "customer_positioning": "clustered",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n1188-k96.vrp": {
+    "n_nodes": 1188,
+    "capacity": 782,
+    "depot_positioning": "random",
+    "customer_positioning": "clustered",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n1234-k55.vrp": {
+    "n_nodes": 1234,
+    "capacity": 126,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n1281-k29.vrp": {
+    "n_nodes": 1281,
+    "capacity": 2267,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n1328-k19.vrp": {
+    "n_nodes": 1328,
+    "capacity": 542,
+    "depot_positioning": "random",
+    "customer_positioning": "clustered",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n1374-k278.vrp": {
+    "n_nodes": 1374,
+    "capacity": 248,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n1421-k232.vrp": {
+    "n_nodes": 1421,
+    "capacity": 309,
+    "depot_positioning": "cornered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n1468-k151.vrp": {
+    "n_nodes": 1468,
+    "capacity": 726,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n1514-k106.vrp": {
+    "n_nodes": 1514,
+    "capacity": 107,
+    "depot_positioning": "centered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n1561-k75.vrp": {
+    "n_nodes": 1561,
+    "capacity": 21,
+    "depot_positioning": "random",
+    "customer_positioning": "clustered",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n1608-k39.vrp": {
+    "n_nodes": 1608,
+    "capacity": 337,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n1654-k11.vrp": {
+    "n_nodes": 1654,
+    "capacity": 845,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n1701-k562.vrp": {
+    "n_nodes": 1701,
+    "capacity": 227,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n1748-k271.vrp": {
+    "n_nodes": 1748,
+    "capacity": 270,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n1794-k163.vrp": {
+    "n_nodes": 1794,
+    "capacity": 11,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n1841-k126.vrp": {
+    "n_nodes": 1841,
+    "capacity": 186,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n1888-k82.vrp": {
+    "n_nodes": 1888,
+    "capacity": 173,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n1934-k46.vrp": {
+    "n_nodes": 1934,
+    "capacity": 2166,
+    "depot_positioning": "centered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n1981-k13.vrp": {
+    "n_nodes": 1981,
+    "capacity": 832,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n2028-k617.vrp": {
+    "n_nodes": 2028,
+    "capacity": 247,
+    "depot_positioning": "centered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n2074-k264.vrp": {
+    "n_nodes": 2074,
+    "capacity": 401,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n2121-k186.vrp": {
+    "n_nodes": 2121,
+    "capacity": 62,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n2168-k138.vrp": {
+    "n_nodes": 2168,
+    "capacity": 800,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n2214-k131.vrp": {
+    "n_nodes": 2214,
+    "capacity": 17,
+    "depot_positioning": "random",
+    "customer_positioning": "clustered",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n2261-k54.vrp": {
+    "n_nodes": 2261,
+    "capacity": 319,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n2307-k34.vrp": {
+    "n_nodes": 2307,
+    "capacity": 479,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n2354-k631.vrp": {
+    "n_nodes": 2354,
+    "capacity": 28,
+    "depot_positioning": "cornered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n2401-k408.vrp": {
+    "n_nodes": 2401,
+    "capacity": 303,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n2447-k290.vrp": {
+    "n_nodes": 2447,
+    "capacity": 150,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n2494-k194.vrp": {
+    "n_nodes": 2494,
+    "capacity": 661,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n2541-k121.vrp": {
+    "n_nodes": 2541,
+    "capacity": 21,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n2587-k66.vrp": {
+    "n_nodes": 2587,
+    "capacity": 2986,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "long"
+  },
+  "XL-n2634-k17.vrp": {
+    "n_nodes": 2634,
+    "capacity": 898,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n2681-k540.vrp": {
+    "n_nodes": 2681,
+    "capacity": 251,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n2727-k546.vrp": {
+    "n_nodes": 2727,
+    "capacity": 5,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n2774-k286.vrp": {
+    "n_nodes": 2774,
+    "capacity": 731,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n2821-k208.vrp": {
+    "n_nodes": 2821,
+    "capacity": 179,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n2867-k120.vrp": {
+    "n_nodes": 2867,
+    "capacity": 180,
+    "depot_positioning": "random",
+    "customer_positioning": "clustered",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n2914-k95.vrp": {
+    "n_nodes": 2914,
+    "capacity": 1663,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "long"
+  },
+  "XL-n2961-k55.vrp": {
+    "n_nodes": 2961,
+    "capacity": 297,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n3007-k658.vrp": {
+    "n_nodes": 3007,
+    "capacity": 25,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n3054-k461.vrp": {
+    "n_nodes": 3054,
+    "capacity": 497,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n3101-k311.vrp": {
+    "n_nodes": 3101,
+    "capacity": 159,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n3147-k232.vrp": {
+    "n_nodes": 3147,
+    "capacity": 102,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n3194-k161.vrp": {
+    "n_nodes": 3194,
+    "capacity": 1012,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n3241-k115.vrp": {
+    "n_nodes": 3241,
+    "capacity": 1404,
+    "depot_positioning": "cornered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "long"
+  },
+  "XL-n3287-k30.vrp": {
+    "n_nodes": 3287,
+    "capacity": 111,
+    "depot_positioning": "centered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n3334-k934.vrp": {
+    "n_nodes": 3334,
+    "capacity": 20,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n3408-k524.vrp": {
+    "n_nodes": 3408,
+    "capacity": 353,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n3484-k436.vrp": {
+    "n_nodes": 3484,
+    "capacity": 8,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n3561-k229.vrp": {
+    "n_nodes": 3561,
+    "capacity": 779,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n3640-k211.vrp": {
+    "n_nodes": 3640,
+    "capacity": 130,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n3721-k77.vrp": {
+    "n_nodes": 3721,
+    "capacity": 371,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n3804-k29.vrp": {
+    "n_nodes": 3804,
+    "capacity": 10064,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n3888-k1010.vrp": {
+    "n_nodes": 3888,
+    "capacity": 128,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n3975-k687.vrp": {
+    "n_nodes": 3975,
+    "capacity": 32,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n4063-k347.vrp": {
+    "n_nodes": 4063,
+    "capacity": 598,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n4153-k291.vrp": {
+    "n_nodes": 4153,
+    "capacity": 726,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n4245-k203.vrp": {
+    "n_nodes": 4245,
+    "capacity": 21,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n4340-k148.vrp": {
+    "n_nodes": 4340,
+    "capacity": 2204,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "long"
+  },
+  "XL-n4436-k48.vrp": {
+    "n_nodes": 4436,
+    "capacity": 706,
+    "depot_positioning": "centered",
+    "customer_positioning": "clustered",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n4535-k1134.vrp": {
+    "n_nodes": 4535,
+    "capacity": 4,
+    "depot_positioning": "random",
+    "customer_positioning": "clustered",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n4635-k790.vrp": {
+    "n_nodes": 4635,
+    "capacity": 294,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n4738-k487.vrp": {
+    "n_nodes": 4738,
+    "capacity": 499,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n4844-k321.vrp": {
+    "n_nodes": 4844,
+    "capacity": 188,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n4951-k203.vrp": {
+    "n_nodes": 4951,
+    "capacity": 1848,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n5061-k184.vrp": {
+    "n_nodes": 5061,
+    "capacity": 206,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "long"
+  },
+  "XL-n5174-k55.vrp": {
+    "n_nodes": 5174,
+    "capacity": 520,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n5288-k1246.vrp": {
+    "n_nodes": 5288,
+    "capacity": 318,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n5406-k783.vrp": {
+    "n_nodes": 5406,
+    "capacity": 38,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n5526-k553.vrp": {
+    "n_nodes": 5526,
+    "capacity": 10,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n5649-k401.vrp": {
+    "n_nodes": 5649,
+    "capacity": 181,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n5774-k290.vrp": {
+    "n_nodes": 5774,
+    "capacity": 1012,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n5902-k122.vrp": {
+    "n_nodes": 5902,
+    "capacity": 2663,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n6034-k61.vrp": {
+    "n_nodes": 6034,
+    "capacity": 744,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n6168-k1922.vrp": {
+    "n_nodes": 6168,
+    "capacity": 162,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n6305-k1042.vrp": {
+    "n_nodes": 6305,
+    "capacity": 268,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n6445-k628.vrp": {
+    "n_nodes": 6445,
+    "capacity": 77,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n6588-k473.vrp": {
+    "n_nodes": 6588,
+    "capacity": 76,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n6734-k330.vrp": {
+    "n_nodes": 6734,
+    "capacity": 1534,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n6884-k148.vrp": {
+    "n_nodes": 6884,
+    "capacity": 357,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n7037-k38.vrp": {
+    "n_nodes": 7037,
+    "capacity": 187,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n7193-k1683.vrp": {
+    "n_nodes": 7193,
+    "capacity": 32,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n7353-k1471.vrp": {
+    "n_nodes": 7353,
+    "capacity": 5,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n7516-k859.vrp": {
+    "n_nodes": 7516,
+    "capacity": 439,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n7683-k602.vrp": {
+    "n_nodes": 7683,
+    "capacity": 957,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n7854-k365.vrp": {
+    "n_nodes": 7854,
+    "capacity": 223,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n8028-k294.vrp": {
+    "n_nodes": 8028,
+    "capacity": 1386,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "long"
+  },
+  "XL-n8207-k108.vrp": {
+    "n_nodes": 8207,
+    "capacity": 415,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n8389-k2028.vrp": {
+    "n_nodes": 8389,
+    "capacity": 208,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "ultra-short"
+  },
+  "XL-n8575-k1297.vrp": {
+    "n_nodes": 8575,
+    "capacity": 36,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n8766-k1032.vrp": {
+    "n_nodes": 8766,
+    "capacity": 637,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "large-only",
+    "avg_route_size_estimate": "very-short"
+  },
+  "XL-n8960-k634.vrp": {
+    "n_nodes": 8960,
+    "capacity": 106,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "short"
+  },
+  "XL-n9160-k379.vrp": {
+    "n_nodes": 9160,
+    "capacity": 237,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "mixed",
+    "avg_route_size_estimate": "medium"
+  },
+  "XL-n9363-k209.vrp": {
+    "n_nodes": 9363,
+    "capacity": 45,
+    "depot_positioning": "centered",
+    "customer_positioning": "random",
+    "demand_distribution": "unitary",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n9571-k55.vrp": {
+    "n_nodes": 9571,
+    "capacity": 8773,
+    "depot_positioning": "random",
+    "customer_positioning": "random",
+    "demand_distribution": "few-large-many-small",
+    "avg_route_size_estimate": "very-long"
+  },
+  "XL-n9784-k2774.vrp": {
+    "n_nodes": 9784,
+    "capacity": 19,
+    "depot_positioning": "cornered",
+    "customer_positioning": "random",
+    "demand_distribution": "small-demands",
+    "avg_route_size_estimate": "ultra-short"
+  }
+}
