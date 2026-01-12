@@ -9,6 +9,7 @@ import json
 import sys
 from pathlib import Path
 import os
+import signal
 from collections import Counter
 
 # ---------------------------------------------------------
@@ -308,6 +309,63 @@ def _write_sol_unconditional(
     )
 
 
+# Global state for signal handler to access current solution
+_interrupt_state = {
+    "instance_name": None,
+    "best_routes": None,
+    "best_cost": None,
+    "output_dir": None,
+    "interrupted": False,
+}
+
+
+def _signal_handler(signum, frame):
+    """Signal handler that writes the current best solution."""
+    global _interrupt_state
+    
+    # Safety check: if state not initialized, just raise KeyboardInterrupt
+    if _interrupt_state.get("instance_name") is None:
+        raise KeyboardInterrupt
+    
+    if _interrupt_state.get("interrupted", False):
+        # Already handling interrupt, force exit
+        print("\n\033[91m[FORCE EXIT] Multiple interrupts received, exiting immediately\033[0m", flush=True)
+        os._exit(1)
+    
+    _interrupt_state["interrupted"] = True
+    
+    instance_name = _interrupt_state.get("instance_name")
+    best_routes = _interrupt_state.get("best_routes")
+    best_cost = _interrupt_state.get("best_cost")
+    output_dir = _interrupt_state.get("output_dir", "output")
+    
+    if instance_name and best_routes is not None and best_cost is not None and math.isfinite(best_cost):
+        instance_base = Path(instance_name).stem
+        print(
+            f"\n\033[91m[{instance_base} SIGNAL {signum}] Interrupt received, writing solution...\033[0m",
+            flush=True,
+        )
+        try:
+            _write_sol_unconditional(
+                instance_name=instance_name,
+                routes=best_routes,
+                cost=int(best_cost),
+                output_dir=output_dir,
+                suffix="INTERRUPTED",
+            )
+        except Exception as e:
+            print(f"\033[91m[{instance_base} ERROR] Failed to write solution: {e}\033[0m", flush=True)
+    else:
+        instance_base = Path(instance_name).stem if instance_name else "UNKNOWN"
+        print(
+            f"\n\033[91m[{instance_base} SIGNAL {signum}] No solution to write (best_routes={best_routes is not None}, best_cost={best_cost})\033[0m",
+            flush=True,
+        )
+    
+    # Re-raise KeyboardInterrupt to allow normal exception handling
+    raise KeyboardInterrupt
+
+
 def print_final_route_summary(
     *,
     best_routes: Routes,
@@ -383,6 +441,22 @@ def run_drsci_probabilistic(
     
     # Load BKS for gap calculation
     bks_cost = _load_bks_from_file(instance_name)
+    
+    # Initialize interrupt state and register signal handlers
+    global _interrupt_state
+    _interrupt_state = {
+        "instance_name": instance_name,
+        "best_routes": None,
+        "best_cost": float("inf"),
+        "output_dir": bks_output_dir,
+        "interrupted": False,
+    }
+    
+    # Register signal handlers for SIGTERM and SIGINT
+    # SIGTERM may not be available on Windows
+    signal.signal(signal.SIGINT, _signal_handler)
+    if hasattr(signal, 'SIGTERM'):
+        signal.signal(signal.SIGTERM, _signal_handler)
 
     # --------------------------------------------------------
     # Adaptive k-range based on instance size
@@ -579,6 +653,9 @@ def run_drsci_probabilistic(
                 best_cost = candidate_cost
                 best_routes = candidate_routes
                 improved_this_iter = True
+                # Update global state for signal handler
+                _interrupt_state["best_routes"] = best_routes
+                _interrupt_state["best_cost"] = best_cost
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
                 print(f"[{instance_base} IMPROVED-VB/RB] best_cost={best_cost}{gap_str}", flush=True)
 
@@ -656,6 +733,9 @@ def run_drsci_probabilistic(
                     best_cost = scp_cost
                     best_routes = scp_routes
                     improved_this_iter = True
+                    # Update global state for signal handler
+                    _interrupt_state["best_routes"] = best_routes
+                    _interrupt_state["best_cost"] = best_cost
                     gap_str = _format_gap_to_bks(best_cost, bks_cost)
                     print(f"[{instance_base} IMPROVED-SCP] best_cost={best_cost}{gap_str}", flush=True)
 
@@ -682,18 +762,26 @@ def run_drsci_probabilistic(
                 print(f"[{instance_base} NO-IMPROVEMENT] best_cost={best_cost} | streak={no_improvement_iters}{gap_str}", flush=True)
 
     except KeyboardInterrupt:
+        # The signal handler may have already written the solution
+        # But we check again here as a fallback
         print(
             f"\n\033[91m[{instance_base} INTERRUPT] Keyboard interrupt received.\033[0m",
             flush=True,
         )
 
-        if best_routes is not None and math.isfinite(best_cost):
-            _write_sol_unconditional(
-                instance_name=instance_name,
-                routes=best_routes,
-                cost=int(best_cost),
-                output_dir=bks_output_dir,
-            )
+        # Use global state if local variables are not set (shouldn't happen, but safe)
+        routes_to_write = best_routes if best_routes is not None else _interrupt_state.get("best_routes")
+        cost_to_write = best_cost if math.isfinite(best_cost) else _interrupt_state.get("best_cost")
+        
+        if routes_to_write is not None and cost_to_write is not None and math.isfinite(cost_to_write):
+            # Only write if signal handler hasn't already written (check if interrupted flag is set)
+            if not _interrupt_state.get("interrupted", False):
+                _write_sol_unconditional(
+                    instance_name=instance_name,
+                    routes=routes_to_write,
+                    cost=int(cost_to_write),
+                    output_dir=bks_output_dir,
+                )
         else:
             print(
                 f"[{instance_base} INTERRUPT] No incumbent solution to write.",
@@ -764,6 +852,9 @@ def run_drsci_probabilistic(
         if final_cost < best_cost:
             best_cost = final_cost
             best_routes = final_routes
+            # Update global state for signal handler
+            _interrupt_state["best_routes"] = best_routes
+            _interrupt_state["best_cost"] = best_cost
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
             print(f"[{instance_base} FINAL IMPROVED] best_cost={best_cost}{gap_str}", flush=True)
             _write_sol_if_bks_beaten(

@@ -25,42 +25,42 @@ from master.utils.loader import load_instance
 # Instances to benchmark
 # ---------------------------------------------------------
 INSTANCES = [
-    # "XL-n1048-k237.vrp",
-    # "XL-n1094-k157.vrp",
-    # "XL-n1141-k112.vrp",
-    # "XL-n1188-k96.vrp",
-    # "XL-n1234-k55.vrp",
-    "XL-n1281-k29.vrp", #!
-    "XL-n1328-k19.vrp", #!
-    # "XL-n1374-k278.vrp",
-    # "XL-n1421-k232.vrp",
-    # "XL-n1468-k151.vrp",
-    # "XL-n1514-k106.vrp",
-    # "XL-n1561-k75.vrp",
-    # "XL-n1608-k39.vrp",
-    # "XL-n1654-k11.vrp",
-    # "XL-n1701-k562.vrp",
-    # "XL-n1748-k271.vrp",
-    # "XL-n1794-k163.vrp",
-    # "XL-n1841-k126.vrp",
-    # "XL-n1888-k82.vrp",
-    # "XL-n1934-k46.vrp",
-    # "XL-n1981-k13.vrp",
-    # "XL-n2028-k617.vrp",
-    # "XL-n2074-k264.vrp",
-    # "XL-n2121-k186.vrp",
-    # "XL-n2168-k138.vrp",
-    # "XL-n2214-k131.vrp",
-    # "XL-n2261-k54.vrp",
-    # "XL-n2307-k34.vrp",
-    # "XL-n2354-k631.vrp",
-    # "XL-n2401-k408.vrp",
-    # "XL-n2447-k290.vrp",
-    # "XL-n2494-k194.vrp",
-    # "XL-n2541-k121.vrp",
-    "XL-n2587-k66.vrp", #!
-    "XL-n2634-k17.vrp", #!
-    # "XL-n2681-k540.vrp",
+    "XL-n1048-k237.vrp",
+    "XL-n1094-k157.vrp",
+    "XL-n1141-k112.vrp",
+    "XL-n1188-k96.vrp",
+    "XL-n1234-k55.vrp",
+    # "XL-n1281-k29.vrp", ### bad
+    # "XL-n1328-k19.vrp", ###
+    "XL-n1374-k278.vrp",
+    "XL-n1421-k232.vrp",
+    "XL-n1468-k151.vrp",
+    "XL-n1514-k106.vrp",
+    "XL-n1561-k75.vrp",
+    "XL-n1608-k39.vrp",
+    "XL-n1654-k11.vrp",
+    "XL-n1701-k562.vrp",
+    "XL-n1748-k271.vrp",
+    "XL-n1794-k163.vrp",
+    "XL-n1841-k126.vrp",
+    "XL-n1888-k82.vrp",
+    "XL-n1934-k46.vrp",
+    "XL-n1981-k13.vrp",
+    "XL-n2028-k617.vrp",
+    "XL-n2074-k264.vrp",
+    "XL-n2121-k186.vrp",
+    "XL-n2168-k138.vrp",
+    "XL-n2214-k131.vrp",
+    "XL-n2261-k54.vrp",
+    "XL-n2307-k34.vrp",
+    "XL-n2354-k631.vrp",
+    "XL-n2401-k408.vrp",
+    "XL-n2447-k290.vrp",
+    "XL-n2494-k194.vrp",
+    "XL-n2541-k121.vrp",
+    # "XL-n2587-k66.vrp", ### good
+    # "XL-n2634-k17.vrp", ###
+    "XL-n2681-k540.vrp",
     # "XL-n2727-k546.vrp",
     # "XL-n2774-k286.vrp",
     # "XL-n2821-k208.vrp",
@@ -76,32 +76,32 @@ INSTANCES = [
     # "XL-n3287-k30.vrp",
     # "XL-n3334-k934.vrp",
     # "XL-n3408-k524.vrp",
-    "XL-n3484-k436.vrp",
-    "XL-n3561-k229.vrp",
-    "XL-n3640-k211.vrp",
-    "XL-n3721-k77.vrp",
-    "XL-n3804-k29.vrp",
-    "XL-n3888-k1010.vrp",
-    "XL-n3975-k687.vrp",
-    "XL-n4063-k347.vrp",
-    "XL-n4153-k291.vrp",
-    "XL-n4245-k203.vrp",
-    "XL-n4340-k148.vrp",
-    "XL-n4436-k48.vrp",
-    "XL-n4535-k1134.vrp",
-    "XL-n4635-k790.vrp",
-    "XL-n4738-k487.vrp",
-    "XL-n4844-k321.vrp",
-    "XL-n4951-k203.vrp",
-    "XL-n5061-k184.vrp",
-    "XL-n5174-k55.vrp",
-    "XL-n5288-k1246.vrp",
-    "XL-n5406-k783.vrp",
-    "XL-n5526-k553.vrp",
-    "XL-n5649-k401.vrp",
-    "XL-n5774-k290.vrp",
-    "XL-n5902-k122.vrp",
-    "XL-n6034-k61.vrp", #!
+    # "XL-n3484-k436.vrp", ### good
+    # "XL-n3561-k229.vrp", ###
+    # "XL-n3640-k211.vrp", ###
+    # "XL-n3721-k77.vrp", ### bad
+    # "XL-n3804-k29.vrp", ###
+    # "XL-n3888-k1010.vrp" ### bad
+    # "XL-n3975-k687.vrp", ### good
+    # "XL-n4063-k347.vrp", ###
+    # "XL-n4153-k291.vrp", ###
+    # "XL-n4245-k203.vrp", ### good
+    # "XL-n4340-k148.vrp", ###
+    # "XL-n4436-k48.vrp", ### good
+    # "XL-n4535-k1134.vrp", ### good
+    # "XL-n4635-k790.vrp", ###
+    # "XL-n4738-k487.vrp", ###
+    # "XL-n4844-k321.vrp", ###
+    # "XL-n4951-k203.vrp", ###
+    # "XL-n5061-k184.vrp", ###
+    # "XL-n5174-k55.vrp", ### bad
+    # "XL-n5288-k1246.vrp", ### bad
+    # "XL-n5406-k783.vrp", ### good
+    # "XL-n5526-k553.vrp", ### good
+    # "XL-n5649-k401.vrp", ###
+    # "XL-n5774-k290.vrp", ###
+    # "XL-n5902-k122.vrp", ### good
+    # "XL-n6034-k61.vrp", ### bad
     # "XL-n6168-k1922.vrp",
     # "XL-n6305-k1042.vrp",
     # "XL-n6445-k628.vrp",
@@ -121,8 +121,8 @@ INSTANCES = [
     # "XL-n8766-k1032.vrp",
     # "XL-n8960-k634.vrp",
     # "XL-n9160-k379.vrp",
-    "XL-n9363-k209.vrp", #!
-    "XL-n9571-k55.vrp", #!
+    # "XL-n9363-k209.vrp", ###
+    #"XL-n9571-k55.vrp", ### bad
     # "XL-n9784-k2774.vrp",
     # "XL-n10001-k1570.vrp"
 ]
