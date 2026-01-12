@@ -21,112 +21,6 @@ from master.utils.solution_helpers import (
 )
 from master.utils.loader import load_instance
 
-# ---------------------------------------------------------
-# Instances to benchmark
-# ---------------------------------------------------------
-INSTANCES = [
-    # "XL-n1048-k237.vrp",
-    # "XL-n1094-k157.vrp",
-    # "XL-n1141-k112.vrp",
-    # "XL-n1188-k96.vrp",
-    # "XL-n1234-k55.vrp",
-    "XL-n1281-k29.vrp", #!
-    "XL-n1328-k19.vrp", #!
-    # "XL-n1374-k278.vrp",
-    # "XL-n1421-k232.vrp",
-    # "XL-n1468-k151.vrp",
-    # "XL-n1514-k106.vrp",
-    # "XL-n1561-k75.vrp",
-    # "XL-n1608-k39.vrp",
-    # "XL-n1654-k11.vrp",
-    # "XL-n1701-k562.vrp",
-    # "XL-n1748-k271.vrp",
-    # "XL-n1794-k163.vrp",
-    # "XL-n1841-k126.vrp",
-    # "XL-n1888-k82.vrp",
-    # "XL-n1934-k46.vrp",
-    # "XL-n1981-k13.vrp",
-    # "XL-n2028-k617.vrp",
-    # "XL-n2074-k264.vrp",
-    # "XL-n2121-k186.vrp",
-    # "XL-n2168-k138.vrp",
-    # "XL-n2214-k131.vrp",
-    # "XL-n2261-k54.vrp",
-    # "XL-n2307-k34.vrp",
-    # "XL-n2354-k631.vrp",
-    # "XL-n2401-k408.vrp",
-    # "XL-n2447-k290.vrp",
-    # "XL-n2494-k194.vrp",
-    # "XL-n2541-k121.vrp",
-    "XL-n2587-k66.vrp", #!
-    "XL-n2634-k17.vrp", #!
-    # "XL-n2681-k540.vrp",
-    # "XL-n2727-k546.vrp",
-    # "XL-n2774-k286.vrp",
-    # "XL-n2821-k208.vrp",
-    # "XL-n2867-k120.vrp",
-    # "XL-n2914-k95.vrp",
-    # "XL-n2961-k55.vrp",
-    # "XL-n3007-k658.vrp",
-    # "XL-n3054-k461.vrp",
-    # "XL-n3101-k311.vrp",
-    # "XL-n3147-k232.vrp",
-    # "XL-n3194-k161.vrp",
-    # "XL-n3241-k115.vrp",
-    # "XL-n3287-k30.vrp",
-    # "XL-n3334-k934.vrp",
-    # "XL-n3408-k524.vrp",
-    "XL-n3484-k436.vrp",
-    "XL-n3561-k229.vrp",
-    "XL-n3640-k211.vrp",
-    "XL-n3721-k77.vrp",
-    "XL-n3804-k29.vrp",
-    "XL-n3888-k1010.vrp",
-    "XL-n3975-k687.vrp",
-    "XL-n4063-k347.vrp",
-    "XL-n4153-k291.vrp",
-    "XL-n4245-k203.vrp",
-    "XL-n4340-k148.vrp",
-    "XL-n4436-k48.vrp",
-    "XL-n4535-k1134.vrp",
-    "XL-n4635-k790.vrp",
-    "XL-n4738-k487.vrp",
-    "XL-n4844-k321.vrp",
-    "XL-n4951-k203.vrp",
-    "XL-n5061-k184.vrp",
-    "XL-n5174-k55.vrp",
-    "XL-n5288-k1246.vrp",
-    "XL-n5406-k783.vrp",
-    "XL-n5526-k553.vrp",
-    "XL-n5649-k401.vrp",
-    "XL-n5774-k290.vrp",
-    "XL-n5902-k122.vrp",
-    "XL-n6034-k61.vrp", #!
-    # "XL-n6168-k1922.vrp",
-    # "XL-n6305-k1042.vrp",
-    # "XL-n6445-k628.vrp",
-    # "XL-n6588-k473.vrp",
-    # "XL-n6734-k330.vrp",
-    # "XL-n6884-k148.vrp",
-    # "XL-n7037-k38.vrp",
-    # "XL-n7193-k1683.vrp",
-    # "XL-n7353-k1471.vrp",
-    # "XL-n7516-k859.vrp",
-    # "XL-n7683-k602.vrp",
-    # "XL-n7854-k365.vrp",
-    # "XL-n8028-k294.vrp",
-    # "XL-n8207-k108.vrp",
-    # "XL-n8389-k2028.vrp",
-    # "XL-n8575-k1297.vrp",
-    # "XL-n8766-k1032.vrp",
-    # "XL-n8960-k634.vrp",
-    # "XL-n9160-k379.vrp",
-    "XL-n9363-k209.vrp", #!
-    "XL-n9571-k55.vrp", #!
-    # "XL-n9784-k2774.vrp",
-    # "XL-n10001-k1570.vrp"
-]
-
 
 def _load_bks_from_file(instance_name: str) -> Optional[int]:
     """
@@ -176,6 +70,7 @@ def _init_worker():
 # ---------------------------------------------------------
 def solve_instance_probabilistic(
     instance_name: str,
+    run_id: int,
     output_dir: Path,
     scp_solvers: list,
     scp_switch_prob: float,
@@ -201,7 +96,7 @@ def solve_instance_probabilistic(
         seed = random.randint(0, 2**31 - 1)
         
         output_dir.mkdir(parents=True, exist_ok=True)
-        print(f"{instance_name} is starting with seed {seed}.", flush=True)
+        print(f"{instance_name} (run {run_id}) is starting with seed {seed}.", flush=True)
 
         result = run_drsci_probabilistic(
             instance_name=instance_name,
@@ -235,7 +130,7 @@ def solve_instance_probabilistic(
         gap = calculate_gap(best_cost, bks_cost) if bks_cost else None
 
         inst = load_instance(instance_name)
-        sol_name = f"{Path(instance_name).stem}_probabilistic"
+        sol_name = f"{Path(instance_name).stem}_probabilistic_run{run_id}"
 
         _write_solution(
             where=output_dir,
@@ -244,13 +139,15 @@ def solve_instance_probabilistic(
             result=routes,
             solver="Probabilistic-DRSCI",
             runtime=runtime,
-            stopping_criteria=f"Probabilistic-DRSCI({iterations} iterations)",
+            stopping_criteria=f"Probabilistic-DRSCI({iterations} iterations, seed={seed})",
             gap_percent=gap,
             cost=best_cost,
         )
 
         return {
             "instance": instance_name,
+            "run_id": run_id,
+            "seed": seed,
             "success": True,
             "cost": best_cost,
             "runtime": runtime,
@@ -263,19 +160,22 @@ def solve_instance_probabilistic(
     except Exception as e:
         import traceback
         tb = traceback.format_exc()
-        print(f"[ERROR] {instance_name}: {e}", flush=True)
+        print(f"[ERROR] {instance_name} (run {run_id}): {e}", flush=True)
         print(tb, flush=True)
         return {
             "instance": instance_name,
+            "run_id": run_id,
             "success": False,
             "error": str(e),
             "traceback": tb,
         }
 
 # ---------------------------------------------------------
-# Run benchmark
+# Run intensify benchmark
 # ---------------------------------------------------------
-def run_benchmark(
+def run_intensify(
+    instance_name: str,
+    num_runs: int,
     output_path: str,
     max_workers: Optional[int],
     scp_solvers: list,
@@ -298,7 +198,7 @@ def run_benchmark(
     output_dir = Path(output_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Running Probabilistic DRSCI benchmark on {len(INSTANCES)} instances.")
+    print(f"Running Probabilistic DRSCI intensify on {instance_name} ({num_runs} runs).")
     print(f"SCP solvers            : {scp_solvers}")
     print(f"SCP switch probability : {scp_switch_prob}")
     print(f"Time limit (total)     : {time_limit_total}s")
@@ -315,7 +215,8 @@ def run_benchmark(
         futures = {
             executor.submit(
                 solve_instance_probabilistic,
-                inst,
+                instance_name,
+                run_id,
                 output_dir,
                 scp_solvers,
                 scp_switch_prob,
@@ -333,8 +234,8 @@ def run_benchmark(
                 ls_max_neighbours_restricted,
                 randomize_polar_angle,
                 bks_output_dir,
-            ): inst
-            for inst in INSTANCES
+            ): run_id
+            for run_id in range(1, num_runs + 1)
         }
 
         for future in as_completed(futures):
@@ -353,31 +254,42 @@ def run_benchmark(
                     else ""
                 )
                 print(
-                    f"✓ {r['instance']:<30} "
+                    f"✓ Run {r['run_id']:>3} "
                     f"Cost={r['cost']:>10} "
                     f"Time={r['runtime']:>8.2f}s "
-                    f"Iters={r['iterations']:>4}{gap_txt}{bks_txt}"
+                    f"Iters={r['iterations']:>4} "
+                    f"Seed={r['seed']:>10}{gap_txt}{bks_txt}"
                 )
             else:
-                print(f"✗ {r['instance']} ERROR: {r['error']}")
+                print(f"✗ Run {r['run_id']} ERROR: {r['error']}")
 
     print("-" * 80)
-    print("Benchmark complete.\n")
+    print("Intensify complete.\n")
 
     # Print summary statistics
     successful = [r for r in results if r["success"]]
     if successful:
-        avg_cost = sum(r["cost"] for r in successful) / len(successful)
-        avg_runtime = sum(r["runtime"] for r in successful) / len(successful)
-        avg_iterations = sum(r["iterations"] for r in successful) / len(successful)
+        costs = [r["cost"] for r in successful]
+        runtimes = [r["runtime"] for r in successful]
+        iterations = [r["iterations"] for r in successful]
         gaps = [r["gap_percent"] for r in successful if r["gap_percent"] is not None]
+        
+        best_run = min(successful, key=lambda x: x["cost"])
+        worst_run = max(successful, key=lambda x: x["cost"])
+        
+        avg_cost = sum(costs) / len(costs)
+        avg_runtime = sum(runtimes) / len(runtimes)
+        avg_iterations = sum(iterations) / len(iterations)
         avg_gap = sum(gaps) / len(gaps) if gaps else None
 
         print("Summary Statistics:")
         print(f"  Successful runs    : {len(successful)}/{len(results)}")
+        print(f"  Best cost          : {best_run['cost']} (run {best_run['run_id']}, seed {best_run['seed']})")
+        print(f"  Worst cost         : {worst_run['cost']} (run {worst_run['run_id']}, seed {worst_run['seed']})")
+        print(f"  Average cost       : {avg_cost:.2f}")
+        print(f"  Cost std dev       : {((sum((c - avg_cost) ** 2 for c in costs) / len(costs)) ** 0.5):.2f}")
         if avg_gap is not None:
             print(f"  Average gap        : {avg_gap:+.2f}%")
-        print(f"  Average cost       : {avg_cost:.2f}")
         print(f"  Average runtime    : {avg_runtime:.2f}s")
         print(f"  Average iterations : {avg_iterations:.1f}")
 
@@ -386,9 +298,11 @@ def run_benchmark(
 # ---------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="Benchmark the Probabilistic DRSCI algorithm on 20 test instances."
+        description="Intensify the Probabilistic DRSCI algorithm by running a single instance multiple times with different seeds."
     )
 
+    parser.add_argument("instance_name", type=str, help="Name of the instance to run (e.g., 'XL-n1281-k29.vrp')")
+    parser.add_argument("num_runs", type=int, help="Number of parallel runs to execute")
     parser.add_argument("output_path", type=str)
     parser.add_argument("--max_workers", type=int, default=None)
     parser.add_argument(
@@ -423,7 +337,9 @@ def main():
     # Parse routing_solver_options if needed (for future extension)
     routing_solver_options = None
 
-    run_benchmark(
+    run_intensify(
+        instance_name=args.instance_name,
+        num_runs=args.num_runs,
         output_path=args.output_path,
         max_workers=args.max_workers,
         scp_solvers=args.scp_solvers,

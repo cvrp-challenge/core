@@ -69,22 +69,19 @@ Routes = List[Route]
 
 def _resolve_instance_path(instance_name: str) -> str:
     """
-    Reconstructs the path to the instance file, consistent with loader.py:
-      core/instances/test-instances/x
-      core/instances/test-instances/xl
+    Resolves the path to a challenge instance file.
+    Searches in: core/instances/challenge-instances/
     """
     base_dir = os.path.dirname(__file__)  # .../core/src/master/improve
     core_root = os.path.abspath(os.path.join(base_dir, "../../../"))
-    instances_root = os.path.join(core_root, "instances", "test-instances")
+    instances_root = os.path.join(core_root, "instances", "challenge-instances")
 
-    for sub in ("x", "xl"):
-        p = os.path.join(instances_root, sub, instance_name)
-        if os.path.exists(p):
-            return p
+    p = os.path.join(instances_root, instance_name)
+    if os.path.exists(p):
+        return p
 
     raise FileNotFoundError(
-        f"Instance '{instance_name}' not found in: "
-        f"[{os.path.join(instances_root, 'x')}, {os.path.join(instances_root, 'xl')}]"
+        f"Instance '{instance_name}' not found in: {instances_root}"
     )
 
 

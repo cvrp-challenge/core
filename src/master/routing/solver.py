@@ -27,7 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_INSTANCE_SUBDIRS = (
     REPO_ROOT,
     REPO_ROOT / "instances",
-    REPO_ROOT / "instances" / "test-instances",
+    REPO_ROOT / "instances" / "challenge-instances",
     REPO_ROOT / "instances" / "test-instances" / "x",
     REPO_ROOT / "instances" / "test-instances" / "xl",
 )
