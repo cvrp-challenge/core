@@ -278,6 +278,35 @@ def _write_sol_if_bks_beaten(
         f"→ wrote {sol_path}\033[0m",
         flush=True,
     )
+    
+def _write_sol_unconditional(
+    *,
+    instance_name: str,
+    routes: Routes,
+    cost: int,
+    output_dir: str,
+    suffix: str = "INTERRUPTED",
+):
+    """
+    Always write a .sol file, regardless of BKS.
+    Used for interrupts / emergency checkpoints.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    base = Path(instance_name).stem
+    sol_path = Path(output_dir) / f"{base}_{suffix}_{cost}.sol"
+
+    with open(sol_path, "w") as f:
+        for idx, r in enumerate(routes, start=1):
+            customers_vrplib = [v for v in r if v != 1]
+            customers = _convert_customer_ids_for_output(customers_vrplib)
+            f.write(f"Route #{idx}: " + " ".join(map(str, customers)) + "\n")
+        f.write(f"Cost: {cost}\n")
+
+    print(
+        f"\033[93m[{base} INTERRUPT] wrote best-so-far solution → {sol_path}\033[0m",
+        flush=True,
+    )
+
 
 def print_final_route_summary(
     *,
@@ -408,226 +437,150 @@ def run_drsci_probabilistic(
     # ========================================================
     # MAIN LOOP
     # ========================================================
-    while True:
-        # stopping criteria fulfilled?
-        if time.time() - start_time >= time_limit_total:
-            print(f"\033[91m[{instance_base} STOP] time limit reached\033[0m", flush=True)
-            break
+    try:
+        while True:
+            # stopping criteria fulfilled?
+            if time.time() - start_time >= time_limit_total:
+                print(f"\033[91m[{instance_base} STOP] time limit reached\033[0m", flush=True)
+                break
 
-        if no_improvement_iters >= max_no_improvement_iters:
-            print(f"\033[91m[{instance_base} STOP] no improvement limit reached\033[0m", flush=True)
-            break
+            if no_improvement_iters >= max_no_improvement_iters:
+                print(f"\033[91m[{instance_base} STOP] no improvement limit reached\033[0m", flush=True)
+                break
 
-        iteration += 1
+            iteration += 1
 
-        if randomize_polar_angle:
-            angle_offset = rng.uniform(0.0, 2 * math.pi)
-        else:
-            angle_offset = 0.0
+            if randomize_polar_angle:
+                angle_offset = rng.uniform(0.0, 2 * math.pi)
+            else:
+                angle_offset = 0.0
 
-        improved_this_iter = False
+            improved_this_iter = False
 
-        # select mode (vb or rb)
-        mode = "vb" if rng.random() < 0.5 else "rb"
+            # select mode (vb or rb)
+            mode = "vb" if rng.random() < 0.5 else "rb"
 
-        # select number of clusters 
-        k = rng.choices(values, weights=k_weights, k=1)[0]
+            # select number of clusters 
+            k = rng.choices(values, weights=k_weights, k=1)[0]
 
-        # select routing solver (weighted: 20% pyvrp, 40% filo1, 40% filo2) <- finetune here
-        solver_weights = {"pyvrp": 0.2, "filo1": 0.4, "filo2": 0.4}
-        weights = [solver_weights.get(s.lower(), 1.0 / len(available_solvers)) for s in available_solvers]
-        routing_solver_key = rng.choices(available_solvers, weights=weights, k=1)[0].lower()
+            # select routing solver (weighted: 20% pyvrp, 40% filo1, 40% filo2) <- finetune here
+            solver_weights = {"pyvrp": 0.2, "filo1": 0.4, "filo2": 0.4}
+            weights = [solver_weights.get(s.lower(), 1.0 / len(available_solvers)) for s in available_solvers]
+            routing_solver_key = rng.choices(available_solvers, weights=weights, k=1)[0].lower()
 
-        # select clustering method
-        if mode == "vb":
-            method = rng.choice(VB_METHODS)   # 1/6 each
-        else:
-            method = rng.choice(RB_METHODS)   # 1/4 each
+            # select clustering method
+            if mode == "vb":
+                method = rng.choice(VB_METHODS)   # 1/6 each
+            else:
+                method = rng.choice(RB_METHODS)   # 1/4 each
 
-        # special selection for first iteration
-        if iteration == 1:
-            mode = "vb"
-            method = "sk_kmeans"
-            routing_solver_key = "filo2"
-            k = 1
+            # special selection for first iteration
+            if iteration == 1:
+                mode = "vb"
+                method = "sk_kmeans"
+                routing_solver_key = "filo2"
+                k = 1
 
-        print(f"\033[94m[{instance_base} ITERATION {iteration}] mode={mode.upper()} method={method} k={k} solver={routing_solver_key}\033[0m", flush=True)
+            print(f"\033[94m[{instance_base} ITERATION {iteration}] mode={mode.upper()} method={method} k={k} solver={routing_solver_key}\033[0m", flush=True)
 
-        # is scp running this iteration:
-        run_scp_now = (iteration % scp_every == 0)
+            # is scp running this iteration:
+            run_scp_now = (iteration % scp_every == 0)
 
-        # DECOMPOSITION
-        if mode == "vb":
-            clusters, _ = run_clustering(
-                method=method,
-                instance_name=instance_name,
-                k=k,
-                use_combined=False,
-                angle_offset=angle_offset,
+            # DECOMPOSITION
+            if mode == "vb":
+                clusters, _ = run_clustering(
+                    method=method,
+                    instance_name=instance_name,
+                    k=k,
+                    use_combined=False,
+                    angle_offset=angle_offset,
+                )
+            else:
+                if best_routes is None:
+                    print(f"[{instance_base} RB-SKIP] no incumbent solution yet", flush=True)
+                    no_improvement_iters += 1
+                    continue
+
+                clusters = route_based_decomposition(
+                    instance_name=instance_name,
+                    global_routes=best_routes,
+                    k=k,
+                    method=method,
+                    use_angle=False,   # x,y only
+                    use_load=False,    # x,y only
+                )
+
+            # Print cluster sizes for THIS iteration (customers-only, matches routing)
+            print(
+                f"[{instance_base} CLUSTER] method={method} k={k} | {_format_cluster_sizes(clusters, depot_id=1)}",
+                flush=True,
             )
-        else:
-            if best_routes is None:
-                print(f"[{instance_base} RB-SKIP] no incumbent solution yet", flush=True)
+
+            # ROUTING
+
+            # Note: We do NOT attempt any PyVRP stall stopping here. Any solver-specific early-stop behavior 
+            # (e.g., Hexaly stall_time) belongs to routing_controller + solver adapters 
+            # Routing solvers now use adaptive no-improvement iterations based on cluster size.
+            # The value scales from 10000 (n<=100) to 100000 (n>=1000), linear in between.
+            # If routing_no_improvement is provided, it overrides the adaptive behavior for all clusters.
+            # If routing_solver_options contains "no_improvement", it also overrides.
+            # Otherwise, no_improvement=None means use fully adaptive behavior per cluster.
+            override_no_improvement = None
+            if _routing_solver_options and "no_improvement" in _routing_solver_options:
+                override_no_improvement = _routing_solver_options["no_improvement"]
+            elif routing_no_improvement is not None:
+                override_no_improvement = routing_no_improvement
+            
+            
+            print(f"[{instance_base} ROUTING] Solving Clusters with {routing_solver_key}", flush=True)
+            routing = solve_clusters(
+                instance_name=instance_name,
+                clusters=clusters,
+                solver=routing_solver_key,
+                solver_options=(_routing_solver_options if routing_solver_key != "pyvrp" else None),
+                seed=seed,
+                no_improvement=override_no_improvement,  # None = fully adaptive, value = override
+            )
+
+            routes = _result_to_vrplib_routes(routing)
+            if not routes:
+                print(f"[{instance_base} SKIP] routing produced no routes", flush=True)
                 no_improvement_iters += 1
                 continue
 
-            clusters = route_based_decomposition(
+            # IMPROVEMENT:LOCAL SEARCH (POST-ROUTING)
+            ls_res = improve_with_local_search(
                 instance_name=instance_name,
-                global_routes=best_routes,
-                k=k,
-                method=method,
-                use_angle=False,   # x,y only
-                use_load=False,    # x,y only
-            )
-
-        # Print cluster sizes for THIS iteration (customers-only, matches routing)
-        print(
-            f"[{instance_base} CLUSTER] method={method} k={k} | {_format_cluster_sizes(clusters, depot_id=1)}",
-            flush=True,
-        )
-
-        # ROUTING
-
-        # Note: We do NOT attempt any PyVRP stall stopping here. Any solver-specific early-stop behavior 
-        # (e.g., Hexaly stall_time) belongs to routing_controller + solver adapters 
-        # Routing solvers now use adaptive no-improvement iterations based on cluster size.
-        # The value scales from 10000 (n<=100) to 100000 (n>=1000), linear in between.
-        # If routing_no_improvement is provided, it overrides the adaptive behavior for all clusters.
-        # If routing_solver_options contains "no_improvement", it also overrides.
-        # Otherwise, no_improvement=None means use fully adaptive behavior per cluster.
-        override_no_improvement = None
-        if _routing_solver_options and "no_improvement" in _routing_solver_options:
-            override_no_improvement = _routing_solver_options["no_improvement"]
-        elif routing_no_improvement is not None:
-            override_no_improvement = routing_no_improvement
-        
-        
-        print(f"[{instance_base} ROUTING] Solving Clusters with {routing_solver_key}", flush=True)
-        routing = solve_clusters(
-            instance_name=instance_name,
-            clusters=clusters,
-            solver=routing_solver_key,
-            solver_options=(_routing_solver_options if routing_solver_key != "pyvrp" else None),
-            seed=seed,
-            no_improvement=override_no_improvement,  # None = fully adaptive, value = override
-        )
-
-        routes = _result_to_vrplib_routes(routing)
-        if not routes:
-            print(f"[{instance_base} SKIP] routing produced no routes", flush=True)
-            no_improvement_iters += 1
-            continue
-
-        # IMPROVEMENT:LOCAL SEARCH (POST-ROUTING)
-        ls_res = improve_with_local_search(
-            instance_name=instance_name,
-            routes_vrplib=routes,
-            neighbourhood=ls_neighbourhood,
-            max_neighbours=ls_after_routing_max_neighbours,
-            seed=seed,
-        )
-
-        candidate_routes = ls_res["routes_improved"]
-        candidate_cost = _compute_integer_cost(inst, candidate_routes)
-
-        # ---------------- TAGGING: VB/RB produced routes ----------------
-        _tag_new_routes(
-            route_tags,
-            candidate_routes,
-            tag={
-                "mode": mode,
-                "method": method,
-                "solver": routing_solver_key,
-                "iteration": iteration,
-                "stage": "post_ls",
-            },
-            depot_id=1,
-        )
-
-        # Update incumbent immediately if VB/RB candidate improves
-        if candidate_cost < best_cost:
-            best_cost = candidate_cost
-            best_routes = candidate_routes
-            improved_this_iter = True
-            gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[{instance_base} IMPROVED-VB/RB] best_cost={best_cost}{gap_str}", flush=True)
-
-            _write_sol_if_bks_beaten(
-                instance_name=instance_name,
-                routes=best_routes,
-                cost=best_cost,
-                output_dir=bks_output_dir,
-            )
-
-        global_route_pool.extend(candidate_routes)
-        global_route_pool = filter_route_pool(
-            global_route_pool,
-            depot_id=1,
-            verbose=False,
-        )
-
-        # ====================================================
-        # PERIODIC SCP (every scp_every iterations)
-        # ====================================================
-        if run_scp_now:
-            scp_solver_name = _select_scp_solver_name(rng, scp_solvers, scp_switch_prob)
-            solve_scp = lazy_import_scp(scp_solver_name)
-            print(f"[{instance_base} SCP] solver={scp_solver_name} | Route Pool Size={len(global_route_pool)}", flush=True)
-
-            scp_res = solve_scp(
-                instance_name=instance_name,
-                route_pool=global_route_pool,
-                time_limit=time_limit_scp,
-                verbose=False,
-            )
-
-            repaired = remove_duplicates(
-                instance_name=instance_name,
-                routes=scp_res["selected_routes"],
-                max_iters=50,
-                ls_neighbourhood=ls_neighbourhood,
-                ls_max_neighbours_restricted=ls_max_neighbours_restricted,
-                seed=seed,
-            )["routes"]
-
-            final_ls = improve_with_local_search(
-                instance_name=instance_name,
-                routes_vrplib=repaired,
+                routes_vrplib=routes,
                 neighbourhood=ls_neighbourhood,
-                max_neighbours=ls_max_neighbours_restricted,
+                max_neighbours=ls_after_routing_max_neighbours,
                 seed=seed,
             )
 
-            scp_routes = final_ls["routes_improved"]
-            scp_cost = _compute_integer_cost(inst, scp_routes)
+            candidate_routes = ls_res["routes_improved"]
+            candidate_cost = _compute_integer_cost(inst, candidate_routes)
 
-            global_route_pool.extend(scp_routes)
-            global_route_pool = filter_route_pool(
-                global_route_pool,
-                depot_id=1,
-                verbose=False,
-            )
-
-            # ---------------- TAGGING: SCP-produced routes ----------------
-            # These routes are not tied to a single clustering method anymore.
+            # ---------------- TAGGING: VB/RB produced routes ----------------
             _tag_new_routes(
                 route_tags,
-                scp_routes,
+                candidate_routes,
                 tag={
-                    "mode": "scp",
-                    "method": scp_solver_name,
+                    "mode": mode,
+                    "method": method,
+                    "solver": routing_solver_key,
                     "iteration": iteration,
-                    "stage": "scp_post_ls",
+                    "stage": "post_ls",
                 },
                 depot_id=1,
             )
 
-            if scp_cost < best_cost:
-                best_cost = scp_cost
-                best_routes = scp_routes
+            # Update incumbent immediately if VB/RB candidate improves
+            if candidate_cost < best_cost:
+                best_cost = candidate_cost
+                best_routes = candidate_routes
                 improved_this_iter = True
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                print(f"[{instance_base} IMPROVED-SCP] best_cost={best_cost}{gap_str}", flush=True)
+                print(f"[{instance_base} IMPROVED-VB/RB] best_cost={best_cost}{gap_str}", flush=True)
 
                 _write_sol_if_bks_beaten(
                     instance_name=instance_name,
@@ -635,21 +588,121 @@ def run_drsci_probabilistic(
                     cost=best_cost,
                     output_dir=bks_output_dir,
                 )
-            else:
-                gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                print(f"[{instance_base} SCP-NO-IMPROVEMENT] cost={scp_cost} (best={best_cost}){gap_str}", flush=True)
-        else:
-            print(f"[{instance_base} SCP-SKIP] accumulating routes only", flush=True)
 
-        # ----------------------------------------------------
-        # Stagnation counter (based on entire iteration result)
-        # ----------------------------------------------------
-        if improved_this_iter:
-            no_improvement_iters = 0
+            global_route_pool.extend(candidate_routes)
+            global_route_pool = filter_route_pool(
+                global_route_pool,
+                depot_id=1,
+                verbose=False,
+            )
+
+            # ====================================================
+            # PERIODIC SCP (every scp_every iterations)
+            # ====================================================
+            if run_scp_now:
+                scp_solver_name = _select_scp_solver_name(rng, scp_solvers, scp_switch_prob)
+                solve_scp = lazy_import_scp(scp_solver_name)
+                print(f"[{instance_base} SCP] solver={scp_solver_name} | Route Pool Size={len(global_route_pool)}", flush=True)
+
+                scp_res = solve_scp(
+                    instance_name=instance_name,
+                    route_pool=global_route_pool,
+                    time_limit=time_limit_scp,
+                    verbose=False,
+                )
+
+                repaired = remove_duplicates(
+                    instance_name=instance_name,
+                    routes=scp_res["selected_routes"],
+                    max_iters=50,
+                    ls_neighbourhood=ls_neighbourhood,
+                    ls_max_neighbours_restricted=ls_max_neighbours_restricted,
+                    seed=seed,
+                )["routes"]
+
+                final_ls = improve_with_local_search(
+                    instance_name=instance_name,
+                    routes_vrplib=repaired,
+                    neighbourhood=ls_neighbourhood,
+                    max_neighbours=ls_max_neighbours_restricted,
+                    seed=seed,
+                )
+
+                scp_routes = final_ls["routes_improved"]
+                scp_cost = _compute_integer_cost(inst, scp_routes)
+
+                global_route_pool.extend(scp_routes)
+                global_route_pool = filter_route_pool(
+                    global_route_pool,
+                    depot_id=1,
+                    verbose=False,
+                )
+
+                # ---------------- TAGGING: SCP-produced routes ----------------
+                # These routes are not tied to a single clustering method anymore.
+                _tag_new_routes(
+                    route_tags,
+                    scp_routes,
+                    tag={
+                        "mode": "scp",
+                        "method": scp_solver_name,
+                        "iteration": iteration,
+                        "stage": "scp_post_ls",
+                    },
+                    depot_id=1,
+                )
+
+                if scp_cost < best_cost:
+                    best_cost = scp_cost
+                    best_routes = scp_routes
+                    improved_this_iter = True
+                    gap_str = _format_gap_to_bks(best_cost, bks_cost)
+                    print(f"[{instance_base} IMPROVED-SCP] best_cost={best_cost}{gap_str}", flush=True)
+
+                    _write_sol_if_bks_beaten(
+                        instance_name=instance_name,
+                        routes=best_routes,
+                        cost=best_cost,
+                        output_dir=bks_output_dir,
+                    )
+                else:
+                    gap_str = _format_gap_to_bks(best_cost, bks_cost)
+                    print(f"[{instance_base} SCP-NO-IMPROVEMENT] cost={scp_cost} (best={best_cost}){gap_str}", flush=True)
+            else:
+                print(f"[{instance_base} SCP-SKIP] accumulating routes only", flush=True)
+
+            # ----------------------------------------------------
+            # Stagnation counter (based on entire iteration result)
+            # ----------------------------------------------------
+            if improved_this_iter:
+                no_improvement_iters = 0
+            else:
+                no_improvement_iters += 1
+                gap_str = _format_gap_to_bks(best_cost, bks_cost)
+                print(f"[{instance_base} NO-IMPROVEMENT] best_cost={best_cost} | streak={no_improvement_iters}{gap_str}", flush=True)
+
+    except KeyboardInterrupt:
+        print(
+            f"\n\033[91m[{instance_base} INTERRUPT] Keyboard interrupt received.\033[0m",
+            flush=True,
+        )
+
+        if best_routes is not None and math.isfinite(best_cost):
+            _write_sol_unconditional(
+                instance_name=instance_name,
+                routes=best_routes,
+                cost=int(best_cost),
+                output_dir=bks_output_dir,
+            )
         else:
-            no_improvement_iters += 1
-            gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[{instance_base} NO-IMPROVEMENT] best_cost={best_cost} | streak={no_improvement_iters}{gap_str}", flush=True)
+            print(
+                f"[{instance_base} INTERRUPT] No incumbent solution to write.",
+                flush=True,
+            )
+
+        # Important: re-raise so multiprocessing / caller handles shutdown
+        raise
+
 
     # ========================================================
     # FINAL SCP (always run once before returning)
