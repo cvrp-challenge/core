@@ -277,19 +277,19 @@ def solve_clusters(
         if no_improvement is not None:
             effective_no_improvement = no_improvement
 
-        if solver_key == "pyvrp":
-            print(
-                f"[ROUTING] solver={solver_key} | cluster={cid} | "
-                f"n={n} | no_improvement={effective_no_improvement} | "
-                f"time_limit={cluster_time:.2f}s",
-                flush=True,
-            )
-        else:
-            print(
-                f"[ROUTING] solver={solver_key} | cluster={cid} | "
-                f"n={n} | no_improvement={effective_no_improvement}",
-                flush=True,
-            )
+        # if solver_key == "pyvrp":
+        #     # print(
+        #     #     f"[ROUTING] solver={solver_key} | cluster={cid} | "
+        #     #     f"n={n} | no_improvement={effective_no_improvement} | "
+        #     #     f"time_limit={cluster_time:.2f}s",
+        #     #     flush=True,
+        #     # )
+        # else:
+        #     print(
+        #         f"[ROUTING] solver={solver_key} | cluster={cid} | "
+        #         f"n={n} | no_improvement={effective_no_improvement}",
+        #         flush=True,
+        #     )
 
         t0 = time.time()
 
