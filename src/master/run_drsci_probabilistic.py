@@ -467,7 +467,7 @@ def run_drsci_probabilistic(
             )
         else:
             if best_routes is None:
-                print("[RB-SKIP] no incumbent solution yet", flush=True)
+                print(f"[{instance_base} RB-SKIP] no incumbent solution yet", flush=True)
                 no_improvement_iters += 1
                 continue
 
@@ -482,7 +482,7 @@ def run_drsci_probabilistic(
 
         # Print cluster sizes for THIS iteration (customers-only, matches routing)
         print(
-            f"[CLUSTER] method={method} k={k} | {_format_cluster_sizes(clusters, depot_id=1)}",
+            f"[{instance_base} CLUSTER] method={method} k={k} | {_format_cluster_sizes(clusters, depot_id=1)}",
             flush=True,
         )
 
@@ -501,6 +501,8 @@ def run_drsci_probabilistic(
         elif routing_no_improvement is not None:
             override_no_improvement = routing_no_improvement
         
+        
+        print(f"[{instance_base} ROUTING] Solving Clusters with {routing_solver_key}", flush=True)
         routing = solve_clusters(
             instance_name=instance_name,
             clusters=clusters,
@@ -512,7 +514,7 @@ def run_drsci_probabilistic(
 
         routes = _result_to_vrplib_routes(routing)
         if not routes:
-            print("[SKIP] routing produced no routes", flush=True)
+            print(f"[{instance_base} SKIP] routing produced no routes", flush=True)
             no_improvement_iters += 1
             continue
 
@@ -548,7 +550,7 @@ def run_drsci_probabilistic(
             best_routes = candidate_routes
             improved_this_iter = True
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[IMPROVED-VB/RB] best_cost={best_cost}{gap_str}", flush=True)
+            print(f"[{instance_base} IMPROVED-VB/RB] best_cost={best_cost}{gap_str}", flush=True)
 
             _write_sol_if_bks_beaten(
                 instance_name=instance_name,
@@ -570,7 +572,7 @@ def run_drsci_probabilistic(
         if run_scp_now:
             scp_solver_name = _select_scp_solver_name(rng, scp_solvers, scp_switch_prob)
             solve_scp = lazy_import_scp(scp_solver_name)
-            print(f"[SCP] solver={scp_solver_name} | Route Pool Size={len(global_route_pool)}", flush=True)
+            print(f"[{instance_base} SCP] solver={scp_solver_name} | Route Pool Size={len(global_route_pool)}", flush=True)
 
             scp_res = solve_scp(
                 instance_name=instance_name,
@@ -625,7 +627,7 @@ def run_drsci_probabilistic(
                 best_routes = scp_routes
                 improved_this_iter = True
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                print(f"[IMPROVED-SCP] best_cost={best_cost}{gap_str}", flush=True)
+                print(f"[{instance_base} IMPROVED-SCP] best_cost={best_cost}{gap_str}", flush=True)
 
                 _write_sol_if_bks_beaten(
                     instance_name=instance_name,
@@ -635,9 +637,9 @@ def run_drsci_probabilistic(
                 )
             else:
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                print(f"[SCP-NO-IMPROVEMENT] cost={scp_cost} (best={best_cost}){gap_str}", flush=True)
+                print(f"[{instance_base} SCP-NO-IMPROVEMENT] cost={scp_cost} (best={best_cost}){gap_str}", flush=True)
         else:
-            print("[SCP-SKIP] accumulating routes only", flush=True)
+            print(f"[{instance_base} SCP-SKIP] accumulating routes only", flush=True)
 
         # ----------------------------------------------------
         # Stagnation counter (based on entire iteration result)
@@ -647,17 +649,17 @@ def run_drsci_probabilistic(
         else:
             no_improvement_iters += 1
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[NO-IMPROVEMENT] best_cost={best_cost} | streak={no_improvement_iters}{gap_str}", flush=True)
+            print(f"[{instance_base} NO-IMPROVEMENT] best_cost={best_cost} | streak={no_improvement_iters}{gap_str}", flush=True)
 
     # ========================================================
     # FINAL SCP (always run once before returning)
     # ========================================================
     if global_route_pool:
-        print("[FINAL SCP] running final consolidation", flush=True)
+        print(f"[{instance_base} FINAL SCP] running final consolidation", flush=True)
 
         scp_solver_name = _select_scp_solver_name(rng, scp_solvers, scp_switch_prob)
         solve_scp = lazy_import_scp(scp_solver_name)
-        print(f"[FINAL SCP] solver={scp_solver_name}", flush=True)
+        print(f"[{instance_base} FINAL SCP] solver={scp_solver_name}", flush=True)
 
         scp_res = solve_scp(
             instance_name=instance_name,
@@ -710,7 +712,7 @@ def run_drsci_probabilistic(
             best_cost = final_cost
             best_routes = final_routes
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[FINAL IMPROVED] best_cost={best_cost}{gap_str}", flush=True)
+            print(f"[{instance_base} FINAL IMPROVED] best_cost={best_cost}{gap_str}", flush=True)
             _write_sol_if_bks_beaten(
                     instance_name=instance_name,
                     routes=best_routes,
@@ -719,7 +721,7 @@ def run_drsci_probabilistic(
             )
         else:
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[FINAL NO-IMPROVEMENT] cost={final_cost} (best={best_cost}){gap_str}", flush=True)
+            print(f"[{instance_base} FINAL NO-IMPROVEMENT] cost={final_cost} (best={best_cost}){gap_str}", flush=True)
 
     # ========================================================
     # PRINT ROUTE TAGGING SUMMARY + FINAL ROUTES WITH TAGS
@@ -738,13 +740,13 @@ def run_drsci_probabilistic(
 
     counter = Counter(pool_tags)
 
-    print("\n[ROUTE SUMMARY]")
+    print(f"\n[{instance_base} ROUTE SUMMARY]")
     for (mode, method, solver, stage), count in counter.items():
         print(f"  {count:4d} routes | {mode.upper()} | {method} | solver={solver} | stage={stage}")
 
     # Print final returned routes in sol-like format, with tags.
     print("\n" + "-" * 80)
-    print("[FINAL ROUTES WITH TAGS]")
+    print(f"[{instance_base} FINAL ROUTES WITH TAGS]")
 
     if best_routes:
         for i, r in enumerate(best_routes, 1):
