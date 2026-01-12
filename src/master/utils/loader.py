@@ -15,25 +15,25 @@ def load_instance(instance_name: str) -> Dict[str, Any]:
     Automatically searches for the instance in:
         core/instances/test-instances/x
         core/instances/test-instances/xl
+        core/instances/challenge-instances
     """
     base_dir = os.path.dirname(__file__)
     core_root = os.path.abspath(os.path.join(base_dir, "../../../"))
-    instances_root = os.path.join(core_root, "instances", "test-instances")
 
-    # Try both possible subfolders
-    for sub in ("x", "xl"):
-        p = os.path.join(instances_root, sub, instance_name)
+    # Define all search locations (order matters!)
+    search_paths = [
+        os.path.join(core_root, "instances", "test-instances", "x"),
+        os.path.join(core_root, "instances", "test-instances", "xl"),
+        os.path.join(core_root, "instances", "challenge-instances"),
+    ]
+
+    for path in search_paths:
+        p = os.path.join(path, instance_name)
         if os.path.exists(p):
             return vrplib.read_instance(p)
 
     raise FileNotFoundError(
-        f"Instance '{instance_name}' not found in: "
-        f"[{os.path.join(instances_root, 'x')}, {os.path.join(instances_root, 'xl')}]"
+        f"Instance '{instance_name}' not found in any of:\n  "
+        + "\n  ".join(search_paths)
     )
 
-
-if __name__ == "__main__":
-    # Example standalone test
-    instance = load_instance("X-n101-k25.vrp")
-    print(f"Loaded instance '{instance['name']}' with {len(instance['node_coord']) - 1} customers.")
-    print(f"Vehicle capacity Q = {instance['capacity']}")
