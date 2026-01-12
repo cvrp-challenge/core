@@ -172,7 +172,7 @@ def _load_bks_from_file(instance_name: str) -> Optional[int]:
     """
     # Get the path to bks.json file
     # CURRENT is src/master, so we go up to core, then instances/test-instances
-    bks_file = CURRENT.parent.parent / "instances" / "test-instances" / "test-bks.json"
+    bks_file = CURRENT.parent.parent / "instances" / "challenge-instances" / "challenge-bks.json"
     
     if not bks_file.exists():
         return None
