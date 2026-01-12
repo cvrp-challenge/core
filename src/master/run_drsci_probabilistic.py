@@ -361,10 +361,22 @@ def run_drsci_probabilistic(
     num_customers = len(inst["demand"]) - 1  # exclude depot
 
     k_min_auto = math.ceil(num_customers / max_avg_cluster_size)
-    k_max_auto = math.floor(num_customers / min_avg_cluster_size)
+    k_max_auto = min(math.floor(num_customers * 0.05), 25)
+    k_peak = 10
 
     k_min_auto = max(2, k_min_auto)
     k_max_auto = max(k_min_auto, k_max_auto)
+
+    values = list(range(k_min_auto, k_max_auto + 1))
+
+    k_weights = []
+    for k in values:
+        if k <= k_peak:
+            w = 1.0
+        else:
+            # linear decay from 1 at k=10 to 0 at k=25
+            w = (k_max_auto - k) / (k_max_auto - k_peak)
+        k_weights.append(w)
 
     print(
         f"[K-RANGE] customers={num_customers} | "
@@ -419,7 +431,7 @@ def run_drsci_probabilistic(
         mode = "vb" if rng.random() < 0.5 else "rb"
 
         # select number of clusters 
-        k = rng.randint(k_min_auto, k_max_auto)
+        k = rng.choices(values, weights=k_weights, k=1)[0]
 
         # select routing solver (weighted: 20% pyvrp, 40% filo1, 40% filo2) <- finetune here
         solver_weights = {"pyvrp": 0.2, "filo1": 0.4, "filo2": 0.4}
@@ -436,7 +448,7 @@ def run_drsci_probabilistic(
         if iteration == 1:
             mode = "vb"
             method = "sk_kmeans"
-            routing_solver_key = "filo1"
+            routing_solver_key = "filo2"
             k = 1
 
         print(f"\033[94m[{instance_base} ITERATION {iteration}] mode={mode.upper()} method={method} k={k} solver={routing_solver_key}\033[0m", flush=True)
