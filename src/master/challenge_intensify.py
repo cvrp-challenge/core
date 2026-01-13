@@ -88,6 +88,12 @@ def solve_instance_probabilistic(
     ls_max_neighbours_restricted: int,
     randomize_polar_angle: bool,
     bks_output_dir: str,
+    enable_logging: bool,
+    log_mode: str,
+    log_to_console: bool,
+    run_log_name: Optional[str],
+    periodic_sol_dump: bool,
+    sol_dump_interval: float,
 ) -> dict:
     try:
         from master.run_drsci_probabilistic import run_drsci_probabilistic
@@ -117,6 +123,12 @@ def solve_instance_probabilistic(
             ls_max_neighbours_restricted=ls_max_neighbours_restricted,
             randomize_polar_angle=randomize_polar_angle,
             bks_output_dir=bks_output_dir,
+            enable_logging=enable_logging,
+            log_mode=log_mode,
+            log_to_console=log_to_console,
+            run_log_name=run_log_name,
+            periodic_sol_dump=periodic_sol_dump,
+            sol_dump_interval=sol_dump_interval,
         )
 
         best_cost = result["best_cost"]
@@ -194,6 +206,12 @@ def run_intensify(
     ls_max_neighbours_restricted: int,
     randomize_polar_angle: bool,
     bks_output_dir: str,
+    enable_logging: bool,
+    log_mode: str,
+    log_to_console: bool,
+    run_log_name: Optional[str],
+    periodic_sol_dump: bool,
+    sol_dump_interval: float,
 ):
     output_dir = Path(output_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -234,6 +252,12 @@ def run_intensify(
                 ls_max_neighbours_restricted,
                 randomize_polar_angle,
                 bks_output_dir,
+                enable_logging,
+                log_mode,
+                log_to_console,
+                run_log_name,
+                periodic_sol_dump,
+                sol_dump_interval,
             ): run_id
             for run_id in range(1, num_runs + 1)
         }
@@ -314,8 +338,8 @@ def main():
     parser.add_argument("--scp_switch_prob", type=float, default=0.0)
     parser.add_argument("--time_limit_scp", type=float, default=600.0)
     parser.add_argument("--scp_every", type=int, default=3)
-    parser.add_argument("--time_limit_total", type=float, default=100000.0)
-    parser.add_argument("--max_no_improvement_iters", type=int, default=50)
+    parser.add_argument("--time_limit_total", type=float, default=50000.0)
+    parser.add_argument("--max_no_improvement_iters", type=int, default=75)
     parser.add_argument("--min_avg_cluster_size", type=int, default=100)
     parser.add_argument("--max_avg_cluster_size", type=int, default=2500)
     parser.add_argument(
@@ -331,6 +355,15 @@ def main():
     parser.add_argument("--randomize_polar_angle", action="store_true", default=True)
     parser.add_argument("--no_randomize_polar_angle", dest="randomize_polar_angle", action="store_false")
     parser.add_argument("--bks_output_dir", type=str, default="output")
+    # ---------------- Logging options ----------------
+    parser.add_argument("--enable_logging", action="store_true", default=True)
+    parser.add_argument("--log_mode", choices=["run", "instance"], default="instance")
+    parser.add_argument("--log_to_console", action="store_true", default=True)
+    parser.add_argument("--run_log_name", type=str, default=None)
+
+    # -------------- Periodic .sol dump options --------------
+    parser.add_argument("--periodic_sol_dump", action="store_true", default=True)
+    parser.add_argument("--sol_dump_interval", type=float, default=3600.0)
 
     args = parser.parse_args()
 
@@ -358,6 +391,12 @@ def main():
         ls_max_neighbours_restricted=args.ls_max_neighbours_restricted,
         randomize_polar_angle=args.randomize_polar_angle,
         bks_output_dir=args.output_path,
+        enable_logging=args.enable_logging,
+        log_mode=args.log_mode,
+        log_to_console=args.log_to_console,
+        run_log_name=args.run_log_name,
+        periodic_sol_dump=args.periodic_sol_dump,
+        sol_dump_interval=args.sol_dump_interval,
     )
 
 

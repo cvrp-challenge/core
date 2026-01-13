@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 import re
 
 # Ensure project root packages
@@ -94,125 +94,106 @@ def _write_solution(
     cost: Optional[float] = None,
 ) -> None:
     """
-    Write solution file in VRPLIB format with additional metadata.
-    
-    Supports two formats:
-    1. PyVRP Result object: result.best.routes() and result.cost()
-    2. List of routes: result is a list of lists (VRPLIB node IDs), cost must be calculated separately
-    
-    Format:
-    1. Routes (standard VRPLIB format)
-    2. Cost (standard VRPLIB format)
-    3. Empty row
-    4. Clustering Method, Dissimilarity, Solver
-    5. Empty row
-    6. Runtime, Stopping Criteria, Gap
-    
-    Args:
-        where: Path where the .sol file should be written
-        instance_name: Name of the instance (for filename: instance_name.sol)
-        data: ProblemData object from pyvrp OR instance dict from load_instance
-        result: Result object from pyvrp OR list of routes (list of lists of node IDs)
-        solver: Name of the solver used
-        runtime: Time used to get the solution (in seconds)
-        stopping_criteria: Description of the stopping criteria
-        gap_percent: Gap percentage if reference solution exists, None otherwise
-        clustering_method: Clustering method used (e.g., "sk_ac_avg", "fcm")
-        dissimilarity: Dissimilarity matrix used ("spatial" or "combined")
-    """
-    # Ensure the instance_name is just the stem (no extension)
-    instance_stem = Path(instance_name).stem
-    
-    # Use instance_name.sol naming convention
-    sol_path = where / f"{instance_stem}.sol"
-    
-    # Check if result is a list of routes (from solve_clusters_with_pyvrp) or PyVRP Result object
-    is_list_of_routes = isinstance(result, list) and len(result) > 0 and isinstance(result[0], list)
-    
-    with open(sol_path, "w", encoding="utf-8") as handle:
-        if is_list_of_routes:
-            # Handle list of routes format (from solve_clusters_with_pyvrp)
-            # Routes are already in VRPLIB format: [[depot, node1, node2, ..., depot], ...]
-            # Remove depot markers (first and last element) for each route
-            for idx, route in enumerate(result, 1):
-                # Remove depot markers if present
-                if len(route) > 0 and route[0] == route[-1]:
-                    # Depot at start and end - use it to determine depot node ID
-                    # Supports both VRPLIB format (depot=1) and new format (depot=0)
-                    depot_node = route[0]
-                    visits = route[1:-1]
-                else:
-                    # No matching depot markers - check route content to infer format
-                    # If route contains 0, assume new format (depot=0); otherwise VRPLIB (depot=1)
-                    if len(route) > 0 and 0 in route:
-                        depot_node = 0
-                    else:
-                        depot_node = 1  # Default to VRPLIB format for backward compatibility
-                    visits = route
-                # Convert to strings and write, filtering out depot node
-                visit_strs = [str(v) for v in visits if v != depot_node]
-                if visit_strs:  # Only write non-empty routes
-                    handle.write(f"Route #{idx}: {' '.join(visit_strs)}\n")
-            
-            # Cost needs to be passed separately for list of routes format
-            if cost is not None:
-                handle.write(f"Cost: {round(cost, 2)}\n")
-            else:
-                handle.write(f"Cost: 0.00\n")  # Placeholder if cost not provided
-        else:
-            # Handle PyVRP Result object format
-            # Write standard VRPLIB format: routes
-            # data can be ProblemData object or dict (from load_instance)
-            num_vehicle_types = 1
-            if not isinstance(data, dict):
-                num_vehicle_types = data.num_vehicle_types
-            
-            if num_vehicle_types == 1:
-                for idx, route in enumerate(result.best.routes(), 1):
-                    visits = [str(visit.location) for visit in route.schedule()]
-                    visits = visits[1:-1]  # drop depot markers
-                    handle.write(f"Route #{idx}: {' '.join(visits)}\n")
-            else:
-                # Multiple vehicle types (only if data is ProblemData)
-                type2vehicle = [
-                    (int(vehicle) for vehicle in vehicle_type.name.split(","))
-                    for vehicle_type in data.vehicle_types()
-                ]
-                
-                routes = [f"Route #{idx + 1}:" for idx in range(data.num_vehicles)]
-                for route in result.best.routes():
-                    visits = [str(visit.location) for visit in route.schedule()]
-                    visits = visits[1:-1]  # drop depot markers
-                    
-                    vehicle = next(type2vehicle[route.vehicle_type()])
-                    routes[vehicle] += " " + " ".join(visits)
-                
-                handle.writelines(route + "\n" for route in routes)
-            
-            # Write standard VRPLIB format: cost
-            handle.write(f"Cost: {round(result.cost(), 2)}\n")
+    Write solution file in OFFICIAL CHECKER FORMAT.
 
-        # Empty row
+    INTERNAL ASSUMPTION (CRITICAL):
+    - All routes are in VRPLIB format:
+        depot = 1
+        customers = 2 .. n+1
+
+    OUTPUT FORMAT:
+    - depot is NOT written
+    - customers are 1 .. n  (i.e. VRPLIB node - 1)
+    """
+
+    instance_stem = Path(instance_name).stem
+    sol_path = where / f"{instance_stem}.sol"
+    where.mkdir(parents=True, exist_ok=True)
+
+    # number of customers for validation
+    if isinstance(data, dict):
+        n_customers = len(data["demand"]) - 1
+    else:
+        n_customers = data.num_locations - 1
+
+    # detect route format
+    is_list_of_routes = (
+        isinstance(result, list)
+        and len(result) > 0
+        and isinstance(result[0], list)
+    )
+
+    def write_route(idx: int, vrplib_route: List[int]) -> None:
+        """
+        Convert VRPLIB route -> official checker route.
+        """
+        # VRPLIB invariant: depot == 1
+        customers_vrplib = [v for v in vrplib_route if v != 1]
+
+        # Convert to checker format: customer_id = vrplib_id - 1
+        customers = [v - 1 for v in customers_vrplib]
+
+        # Safety check (THIS would have caught your bug immediately)
+        for c in customers:
+            if not (1 <= c <= n_customers):
+                raise ValueError(
+                    f"Invalid customer id {c} in route #{idx} "
+                    f"(instance has {n_customers} customers)"
+                )
+
+        handle.write(
+            f"Route #{idx}: {' '.join(map(str, customers))}\n"
+        )
+
+    with open(sol_path, "w", encoding="utf-8") as handle:
+
+        # --------------------------------------------------
+        # CASE 1: list of VRPLIB routes
+        # --------------------------------------------------
+        if is_list_of_routes:
+            for idx, route in enumerate(result, 1):
+                if not route:
+                    continue
+                write_route(idx, route)
+
+            if cost is None:
+                raise ValueError("Cost must be provided when result is a list of routes")
+
+            handle.write(f"Cost: {int(round(cost))}\n")
+
+        # --------------------------------------------------
+        # CASE 2: PyVRP Result object
+        # --------------------------------------------------
+        else:
+            idx = 1
+            for route in result.best.routes():
+                visits = list(route.visits())  # locations, 0 = depot
+                if not visits:
+                    continue
+
+                # convert PyVRP -> VRPLIB
+                vrplib_route = [1] + [v + 1 for v in visits if v > 0] + [1]
+                write_route(idx, vrplib_route)
+                idx += 1
+
+            handle.write(f"Cost: {int(round(result.cost()))}\n")
+
+        # --------------------------------------------------
+        # Metadata
+        # --------------------------------------------------
         handle.write("\n")
-        
-        # Clustering Method, Dissimilarity, Solver
-        clustering_str = clustering_method if clustering_method is not None else "n/a"
-        k_clusters_str = k_clusters if k_clusters is not None else "n/a"
-        dissimilarity_str = dissimilarity if dissimilarity is not None else "n/a"
-        handle.write(f"Clustering: {clustering_str}\n")
-        handle.write(f"# Clusters: {k_clusters_str}\n")
-        handle.write(f"Dissimilarity: {dissimilarity_str}\n")
+
+        handle.write(f"Clustering: {clustering_method or 'n/a'}\n")
+        handle.write(f"# Clusters: {k_clusters if k_clusters is not None else 'n/a'}\n")
+        handle.write(f"Dissimilarity: {dissimilarity or 'n/a'}\n")
         handle.write(f"Solver: {solver}\n")
-        
-        # Empty row
+
         handle.write("\n")
-        
-        # Runtime, Stopping Criteria, Gap
+
         gap_str = f"{gap_percent:+.2f}%" if gap_percent is not None else "n/a"
         handle.write(f"Runtime: {runtime:.2f}s\n")
         handle.write(f"Stopping Criteria: {stopping_criteria}\n")
         handle.write(f"Gap: {gap_str}\n")
-
 
 def _write_solution_2(
     where: Path,

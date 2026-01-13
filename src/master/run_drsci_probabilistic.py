@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import time
 import random
-from typing import Dict, List, Optional, Any, Mapping, Tuple
 import math
 import json
-
 import sys
-from pathlib import Path
 import os
-import signal
+from pathlib import Path
+from typing import Dict, List, Optional, Any, Mapping, Tuple
 from collections import Counter
 
 # ---------------------------------------------------------
@@ -17,7 +15,6 @@ from collections import Counter
 # ---------------------------------------------------------
 CURRENT = Path(__file__).parent
 SRC_ROOT = CURRENT.parent
-
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
@@ -28,10 +25,30 @@ from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.setcover.route_dominance_filter import filter_route_pool
 from master.utils.loader import load_instance
+from master.utils.termination import Checkpoint, install_termination_handlers
+from master.utils.logging_utils import get_run_logger, get_instance_logger
+
+from master.utils.helpers_run_probabilistic import (
+    Route,
+    Routes,
+    RouteKey,
+    Tag,
+    _route_key,
+    _tag_new_routes,
+    _result_to_vrplib_routes,
+    _compute_integer_cost,
+    _select_scp_solver_name,
+    _load_bks_from_file,
+    _format_gap_to_bks,
+    _convert_customer_ids_for_output,
+    _write_sol_if_bks_beaten,
+    _write_sol_unconditional,
+    print_final_route_summary,
+)
 
 
 # ============================================================
-# SCP SOLVER DISPATCHER (same pattern as run_drsci.py)
+# SCP SOLVER DISPATCHER
 # ============================================================
 
 def lazy_import_scp(scp_solver: str):
@@ -46,7 +63,9 @@ def lazy_import_scp(scp_solver: str):
     return solve_scp
 
 
-def _format_cluster_sizes(clusters: Dict[Any, List[int]], *, depot_id: int = 1) -> str:
+def _format_cluster_sizes(
+    clusters: Dict[Any, List[int]], *, depot_id: int = 1
+) -> str:
     sizes = [len([nid for nid in v if nid != depot_id]) for v in clusters.values()]
     if not sizes:
         return "sizes=[] | min=0 max=0 avg=0.0"
@@ -74,338 +93,14 @@ RB_METHODS = [
     "sk_kmeans",
 ]
 
-SOLVERS = [
-    "pyvrp",
-    "filo1",
-    "filo2",
-]
-
+SOLVERS = ["pyvrp", "filo1", "filo2"]
 
 Route = List[int]
 Routes = List[Route]
 
-# ---------------- TAGGING TYPES ----------------
-RouteKey = Tuple[int, ...]   # depot stripped, order preserved
-Tag = Dict[str, Any]         # keep flexible for debugging / extra metadata
+RouteKey = Tuple[int, ...]
+Tag = Dict[str, Any]
 
-
-# ============================================================
-# HELPERS
-# ============================================================
-
-def _route_key(route: Route, *, depot_id: int = 1) -> RouteKey:
-    """
-    Canonical key for tagging:
-    - remove depot visits
-    - keep order (do NOT sort)
-    """
-    return tuple(n for n in route if n != depot_id)
-
-
-def _tag_new_routes(
-    route_tags: Dict[RouteKey, Tag],
-    routes: Routes,
-    *,
-    tag: Tag,
-    depot_id: int = 1,
-) -> None:
-    """
-    Attach tag to each route if it doesn't already have one.
-    We use setdefault so we preserve the first-known origin for that exact route.
-    """
-    for r in routes:
-        key = _route_key(r, depot_id=depot_id)
-        if not key:
-            continue
-        route_tags.setdefault(key, dict(tag))
-
-
-def _result_to_vrplib_routes(result) -> Routes:
-    best = result.best
-    if best is None:
-        return []
-
-    routes: Routes = []
-    for r in best.routes():
-        # PyVRP returns location indices; keep non-negative visits.
-        visits = [v for v in r.visits() if v >= 0]
-        if visits:
-            routes.append([1] + [v + 1 for v in visits] + [1])
-    return routes
-
-
-def _compute_integer_cost(instance: dict, routes: Routes) -> int:
-    coords = instance["node_coord"]
-    edge_mat = instance.get("edge_weight")
-
-    def dist(u: int, v: int) -> int:
-        u_idx, v_idx = u - 1, v - 1
-        if edge_mat is not None:
-            return int(round(float(edge_mat[u_idx, v_idx])))
-        dx = coords[u_idx][0] - coords[v_idx][0]
-        dy = coords[u_idx][1] - coords[v_idx][1]
-        return int(round((dx * dx + dy * dy) ** 0.5))
-
-    total = 0
-    for r in routes:
-        for a, b in zip(r, r[1:]):
-            total += dist(a, b)
-    return total
-
-
-def _select_scp_solver_name(rng: random.Random, scp_solvers: List[str], scp_switch_prob: float) -> str:
-    if not scp_solvers:
-        raise ValueError("scp_solvers must contain at least one solver name.")
-    if rng.random() < scp_switch_prob and len(scp_solvers) > 1:
-        return rng.choice(scp_solvers)
-    return scp_solvers[0]
-
-
-def _load_bks_from_file(instance_name: str) -> Optional[int]:
-    """
-    Load BKS (Best Known Solution) cost for an instance from bks.json file.
-    
-    Args:
-        instance_name: Name of the instance (e.g., "X-n916-k207.vrp")
-        
-    Returns:
-        BKS cost as int if found, None otherwise
-    """
-    # Get the path to bks.json file
-    # CURRENT is src/master, so we go up to core, then instances/test-instances
-    bks_file = CURRENT.parent.parent / "instances" / "challenge-instances" / "challenge-bks.json"
-    
-    if not bks_file.exists():
-        return None
-    
-    try:
-        with open(bks_file, "r") as f:
-            bks_data = json.load(f)
-        
-        instance_stem = Path(instance_name).stem
-        bks_cost = bks_data.get(instance_stem)
-        
-        # Return None if BKS is null or not found
-        if bks_cost is None:
-            return None
-        
-        return int(bks_cost)
-    except (json.JSONDecodeError, KeyError, ValueError, FileNotFoundError):
-        return None
-
-
-def _format_gap_to_bks(current_cost: float, bks_cost: Optional[int]) -> str:
-    """
-    Format the gap to BKS as a percentage string.
-    
-    Args:
-        current_cost: Current solution cost
-        bks_cost: Best Known Solution cost, or None if not available
-        
-    Returns:
-        Formatted gap string like " | Gap: 10.0000%" or " | Gap: -10.0000%"
-        Returns empty string if BKS is not available
-        Negative gaps (better than BKS) are displayed in green
-    """
-    if bks_cost is None:
-        return ""
-    
-    gap = ((current_cost - bks_cost) / bks_cost) * 100
-    if gap < 0:
-        # Green color for negative gaps (better than BKS)
-        return f" | Gap: \033[38;2;41;209;47m{gap:.4f}%\033[0m"
-    return f" | Gap: {gap:.4f}%"
-
-
-def _convert_customer_ids_for_output(customers: List[int]) -> List[int]:
-    """
-    Convert customer IDs from VRPLIB format (2 to n) to official checker format (1 to n-1).
-    This is a display-only conversion that doesn't affect calculations.
-    
-    Args:
-        customers: List of customer IDs in VRPLIB format (2, 3, ..., n)
-        
-    Returns:
-        List of customer IDs in official checker format (1, 2, ..., n-1)
-    """
-    return [c - 1 for c in customers]
-
-
-def _write_sol_if_bks_beaten(
-    *,
-    instance_name: str,
-    routes: Routes,
-    cost: int,
-    output_dir: str,
-):
-    """
-    Write solution file if the current cost beats the BKS from bks.json.
-    
-    Args:
-        instance_name: Name of the instance (e.g., "X-n916-k207.vrp")
-        routes: List of routes (VRPLIB format)
-        cost: Current solution cost
-        output_dir: Directory to write the solution file
-    """
-    bks_cost = _load_bks_from_file(instance_name)
-    
-    # If BKS is not found or current cost doesn't beat BKS, return early
-    if bks_cost is None or cost >= bks_cost:
-        return
-
-    os.makedirs(output_dir, exist_ok=True)
-    base = Path(instance_name).stem
-    sol_path = Path(output_dir) / f"BKS_{base}_{cost}.sol"
-
-    # Official checker format: depot not mentioned, customers from 1 to n-1
-    with open(sol_path, "w") as f:
-        for idx, r in enumerate(routes, start=1):
-            # Remove depot (assumes VRPLIB format [1, ..., 1])
-            customers_vrplib = [v for v in r if v != 1]
-            # Convert to official checker format (1 to n-1)
-            customers = _convert_customer_ids_for_output(customers_vrplib)
-
-            f.write(
-                f"Route #{idx}: " + " ".join(map(str, customers)) + "\n"
-            )
-
-        f.write(f"Cost: {cost}\n")
-
-    instance_base = Path(instance_name).stem
-
-    print(
-        # making the print appear in green for better visibility
-        f"\033[38;2;41;209;47m[{instance_base} BKS] 🎉 BKS beaten! cost={cost} < BKS={bks_cost} "
-        f"→ wrote {sol_path}\033[0m",
-        flush=True,
-    )
-    
-def _write_sol_unconditional(
-    *,
-    instance_name: str,
-    routes: Routes,
-    cost: int,
-    output_dir: str,
-    suffix: str = "INTERRUPTED",
-):
-    """
-    Always write a .sol file, regardless of BKS.
-    Used for interrupts / emergency checkpoints.
-    """
-    os.makedirs(output_dir, exist_ok=True)
-    base = Path(instance_name).stem
-    sol_path = Path(output_dir) / f"{base}_{suffix}_{cost}.sol"
-
-    with open(sol_path, "w") as f:
-        for idx, r in enumerate(routes, start=1):
-            customers_vrplib = [v for v in r if v != 1]
-            customers = _convert_customer_ids_for_output(customers_vrplib)
-            f.write(f"Route #{idx}: " + " ".join(map(str, customers)) + "\n")
-        f.write(f"Cost: {cost}\n")
-
-    print(
-        f"\033[93m[{base} INTERRUPT] wrote best-so-far solution → {sol_path}\033[0m",
-        flush=True,
-    )
-
-
-# Global state for signal handler to access current solution
-_interrupt_state = {
-    "instance_name": None,
-    "best_routes": None,
-    "best_cost": None,
-    "output_dir": None,
-    "interrupted": False,
-}
-
-
-def _signal_handler(signum, frame):
-    """Signal handler that writes the current best solution."""
-    global _interrupt_state
-    
-    # Safety check: if state not initialized, just raise KeyboardInterrupt
-    if _interrupt_state.get("instance_name") is None:
-        raise KeyboardInterrupt
-    
-    if _interrupt_state.get("interrupted", False):
-        # Already handling interrupt, force exit
-        print("\n\033[91m[FORCE EXIT] Multiple interrupts received, exiting immediately\033[0m", flush=True)
-        os._exit(1)
-    
-    _interrupt_state["interrupted"] = True
-    
-    instance_name = _interrupt_state.get("instance_name")
-    best_routes = _interrupt_state.get("best_routes")
-    best_cost = _interrupt_state.get("best_cost")
-    output_dir = _interrupt_state.get("output_dir", "output")
-    
-    if instance_name and best_routes is not None and best_cost is not None and math.isfinite(best_cost):
-        instance_base = Path(instance_name).stem
-        print(
-            f"\n\033[91m[{instance_base} SIGNAL {signum}] Interrupt received, writing solution...\033[0m",
-            flush=True,
-        )
-        try:
-            _write_sol_unconditional(
-                instance_name=instance_name,
-                routes=best_routes,
-                cost=int(best_cost),
-                output_dir=output_dir,
-                suffix="INTERRUPTED",
-            )
-        except Exception as e:
-            print(f"\033[91m[{instance_base} ERROR] Failed to write solution: {e}\033[0m", flush=True)
-    else:
-        instance_base = Path(instance_name).stem if instance_name else "UNKNOWN"
-        print(
-            f"\n\033[91m[{instance_base} SIGNAL {signum}] No solution to write (best_routes={best_routes is not None}, best_cost={best_cost})\033[0m",
-            flush=True,
-        )
-    
-    # Re-raise KeyboardInterrupt to allow normal exception handling
-    raise KeyboardInterrupt
-
-
-def print_final_route_summary(
-    *,
-    best_routes: Routes,
-    route_tags: Dict[RouteKey, Tag],
-    depot_id: int = 1,
-) -> None:
-    """
-    Summarize ONLY the routes that appear in the final solution.
-    """
-    final_tags = []
-
-    for r in best_routes:
-        key = _route_key(r, depot_id=depot_id)
-        tag = route_tags.get(key)
-
-        if tag is None:
-            final_tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"))
-        else:
-            final_tags.append(
-                (
-                    str(tag.get("mode")).upper(),
-                    str(tag.get("method")),
-                    str(tag.get("solver", "UNKNOWN")),
-                    str(tag.get("stage")),
-                )
-            )
-
-    counter = Counter(final_tags)
-
-    print("\n[FINAL ROUTE SUMMARY]")
-    for (mode, method, solver, stage), count in sorted(
-        counter.items(), key=lambda x: (-x[1], x[0])
-    ):
-        print(f"  {count:4d} routes | {mode} | {method} | solver={solver} | stage={stage}")
-
-# ============================================================
-# MAIN PROBABILISTIC DRSCI DRIVER
-# ============================================================
-
-# LUCCA: What about dissimilarity metrics?
 def run_drsci_probabilistic(
     instance_name: str,
     *,
@@ -416,8 +111,8 @@ def run_drsci_probabilistic(
     scp_every: int = 5,
     time_limit_total: float = 600.0,
     max_no_improvement_iters: int = 20,
-    k_min: int = 2,                     # kept for backward compatibility
-    k_max: int = 8,                     # kept for backward compatibility
+    k_min: int = 2,  # backward compatibility
+    k_max: int = 8,  # backward compatibility
     min_avg_cluster_size: int = 100,
     max_avg_cluster_size: int = 2500,
     routing_solvers: Optional[List[str]] = None,
@@ -428,6 +123,12 @@ def run_drsci_probabilistic(
     ls_max_neighbours_restricted: int = 100,
     randomize_polar_angle: bool = True,
     bks_output_dir: str = "output",
+    periodic_sol_dump: bool = True,
+    sol_dump_interval: float = 3600.0,
+    enable_logging: bool = True,
+    log_mode: str = "instance",  # "run" or "instance"
+    log_to_console: bool = True,
+    run_log_name: Optional[str] = None,
 ) -> Dict[str, Any]:
 
     if scp_every <= 0:
@@ -438,48 +139,54 @@ def run_drsci_probabilistic(
 
     inst = load_instance(instance_name)
     instance_base = Path(instance_name).stem
-    
-    # Load BKS for gap calculation
+
+    ckpt = Checkpoint(
+        instance_name=instance_name,
+        output_dir=bks_output_dir,
+        write_sol_fn=_write_sol_unconditional,
+    )
+    install_termination_handlers(ckpt)
+
+    logger = None
+    if enable_logging:
+        if log_mode == "run":
+            logger = get_run_logger(
+                output_dir=bks_output_dir,
+                run_log_name=run_log_name,
+                to_console=log_to_console,
+            )
+        elif log_mode == "instance":
+            logger = get_instance_logger(
+                instance_name=instance_name,
+                output_dir=bks_output_dir,
+                to_console=log_to_console,
+            )
+        else:
+            raise ValueError(f"Unknown log_mode: {log_mode}")
+
+    # ----------------------------------------------------
+    # Unified logging helper (print + optional logger)
+    # ----------------------------------------------------
+    def _log(msg: str, level: str = "info") -> None:
+        if logger:
+            getattr(logger, level)(msg)
+
+    # Load BKS
     bks_cost = _load_bks_from_file(instance_name)
-    
-    # Initialize interrupt state and register signal handlers
-    global _interrupt_state
-    _interrupt_state = {
-        "instance_name": instance_name,
-        "best_routes": None,
-        "best_cost": float("inf"),
-        "output_dir": bks_output_dir,
-        "interrupted": False,
-    }
-    
-    # Register signal handlers for SIGTERM and SIGINT
-    # SIGTERM may not be available on Windows
-    signal.signal(signal.SIGINT, _signal_handler)
-    if hasattr(signal, 'SIGTERM'):
-        signal.signal(signal.SIGTERM, _signal_handler)
 
     # --------------------------------------------------------
-    # Adaptive k-range based on instance size
+    # Adaptive k-range
     # --------------------------------------------------------
-    num_customers = len(inst["demand"]) - 1  # exclude depot
-
-    k_min_auto = math.ceil(num_customers / max_avg_cluster_size)
-    k_max_auto = 16
+    num_customers = len(inst["demand"]) - 1
+    k_min_auto = max(2, math.ceil(num_customers / max_avg_cluster_size))
+    k_max_auto = max(k_min_auto, 16)
     k_peak = 10
 
-    k_min_auto = max(2, k_min_auto)
-    k_max_auto = max(k_min_auto, k_max_auto)
-
     values = list(range(k_min_auto, k_max_auto + 1))
-
-    k_weights = []
-    for k in values:
-        if k <= k_peak:
-            w = 1.0
-        else:
-            # linear decay from 1 at k=10 to 0 at k=25
-            w = (k_max_auto - k) / (k_max_auto - k_peak)
-        k_weights.append(w)
+    k_weights = [
+        1.0 if k <= k_peak else (k_max_auto - k) / (k_max_auto - k_peak)
+        for k in values
+    ]
 
     print(
         f"[K-RANGE] customers={num_customers} | "
@@ -488,79 +195,99 @@ def run_drsci_probabilistic(
     )
 
     global_route_pool: Routes = []
-
-    # ---------------- TAGGING STORAGE (parallel to pool) ----------------
     route_tags: Dict[RouteKey, Tag] = {}
 
     best_routes: Optional[Routes] = None
     best_cost = float("inf")
 
-    no_improvement_iters = 0
     iteration = 0
+    no_improvement_iters = 0
+    last_dump = time.time()
 
-    # Default to SOLVERS list if not provided
-    available_solvers = routing_solvers if routing_solvers is not None else SOLVERS
+    def maybe_checkpoint():
+        nonlocal last_dump
+        if not periodic_sol_dump:
+            return
+        if ckpt.dirty and time.time() - last_dump >= sol_dump_interval:
+            ckpt.dump(suffix="PERIODIC")
+            last_dump = time.time()
+
+    available_solvers = routing_solvers or SOLVERS
     if not available_solvers:
-        raise ValueError("routing_solvers must contain at least one solver name.")
+        raise ValueError("routing_solvers must contain at least one solver")
 
-    # !!!!!Hexaly stalling enabling!!!!!
-    # Keep user-provided options, but default use_stall=False if not given.
-    _routing_solver_options = dict(routing_solver_options or {})
-    _routing_solver_options.setdefault("use_stall", False)
+    solver_opts = dict(routing_solver_options or {})
+    solver_opts.setdefault("use_stall", False)
 
     # ========================================================
     # MAIN LOOP
     # ========================================================
     try:
         while True:
-            # stopping criteria fulfilled?
-            if time.time() - start_time >= time_limit_total:
-                print(f"\033[91m[{instance_base} STOP] time limit reached\033[0m", flush=True)
-                break
+            # Check gap at beginning of iteration - overrule termination if gap < 0.01%
+            gap_override = False
+            if bks_cost is not None and best_cost != float("inf"):
+                gap_percent = ((best_cost - bks_cost) / bks_cost) * 100
+                if gap_percent < 0.01:
+                    gap_override = True
+                    msg = (
+                        f"[{instance_base} GAP-OVERRIDE] "
+                        f"gap={gap_percent:.4f}% < 0.01% - continuing despite termination criteria"
+                    )
+                    print(f"\033[92m{msg}\033[0m", flush=True)
+                    _log(msg, level="info")
+            
+            # Termination criteria (skipped if gap override is active)
+            if not gap_override:
+                if time.time() - start_time >= time_limit_total:
+                    msg = f"[{instance_base} STOP] time limit reached"
+                    print(f"\033[91m{msg}\033[0m", flush=True)
+                    _log(msg, level="warning")
+                    break
 
-            if no_improvement_iters >= max_no_improvement_iters:
-                print(f"\033[91m[{instance_base} STOP] no improvement limit reached\033[0m", flush=True)
-                break
+                if no_improvement_iters >= max_no_improvement_iters:
+                    msg = f"[{instance_base} STOP] no improvement limit reached"
+                    print(f"\033[91m{msg}\033[0m", flush=True)
+                    _log(msg, level="warning")
+                    break
 
             iteration += 1
-
-            if randomize_polar_angle:
-                angle_offset = rng.uniform(0.0, 2 * math.pi)
-            else:
-                angle_offset = 0.0
-
             improved_this_iter = False
 
-            # select mode (vb or rb)
-            mode = "vb" if rng.random() < 0.5 else "rb"
+            angle_offset = (
+                rng.uniform(0, 2 * math.pi) if randomize_polar_angle else 0.0
+            )
 
-            # select number of clusters 
+            mode = "vb" if rng.random() < 0.5 else "rb"
             k = rng.choices(values, weights=k_weights, k=1)[0]
 
-            # select routing solver (weighted: 20% pyvrp, 40% filo1, 40% filo2) <- finetune here
             solver_weights = {"pyvrp": 0.2, "filo1": 0.4, "filo2": 0.4}
-            weights = [solver_weights.get(s.lower(), 1.0 / len(available_solvers)) for s in available_solvers]
-            routing_solver_key = rng.choices(available_solvers, weights=weights, k=1)[0].lower()
+            weights = [
+                solver_weights.get(s.lower(), 1.0 / len(available_solvers))
+                for s in available_solvers
+            ]
+            routing_solver_key = rng.choices(
+                available_solvers, weights=weights, k=1
+            )[0].lower()
 
-            # select clustering method
-            if mode == "vb":
-                method = rng.choice(VB_METHODS)   # 1/6 each
-            else:
-                method = rng.choice(RB_METHODS)   # 1/4 each
+            method = rng.choice(VB_METHODS if mode == "vb" else RB_METHODS)
 
-            # special selection for first iteration
             if iteration == 1:
                 mode = "vb"
                 method = "sk_kmeans"
                 routing_solver_key = "filo2"
                 k = 1
 
-            print(f"\033[94m[{instance_base} ITERATION {iteration}] mode={mode.upper()} method={method} k={k} solver={routing_solver_key}\033[0m", flush=True)
+            msg = (
+                f"[{instance_base} ITERATION {iteration}] "
+                f"mode={mode.upper()} method={method} k={k} solver={routing_solver_key}"
+            )
+            print(f"\033[94m{msg}\033[0m", flush=True)
+            _log(msg)
 
-            # is scp running this iteration:
             run_scp_now = (iteration % scp_every == 0)
 
-            # DECOMPOSITION
+            # ---------------- DECOMPOSITION ----------------
             if mode == "vb":
                 clusters, _ = run_clustering(
                     method=method,
@@ -571,7 +298,9 @@ def run_drsci_probabilistic(
                 )
             else:
                 if best_routes is None:
-                    print(f"[{instance_base} RB-SKIP] no incumbent solution yet", flush=True)
+                    msg = f"[{instance_base} RB-SKIP] no incumbent solution yet"
+                    print(msg, flush=True)
+                    _log(msg)
                     no_improvement_iters += 1
                     continue
 
@@ -580,49 +309,39 @@ def run_drsci_probabilistic(
                     global_routes=best_routes,
                     k=k,
                     method=method,
-                    use_angle=False,   # x,y only
-                    use_load=False,    # x,y only
+                    use_angle=False,
+                    use_load=False,
                 )
 
-            # Print cluster sizes for THIS iteration (customers-only, matches routing)
-            print(
-                f"[{instance_base} CLUSTER] method={method} k={k} | {_format_cluster_sizes(clusters, depot_id=1)}",
-                flush=True,
+            msg = (
+                f"[{instance_base} CLUSTER] method={method} k={k} | "
+                f"{_format_cluster_sizes(clusters, depot_id=1)}"
+            )
+            print(msg, flush=True)
+            _log(msg)
+
+            msg = f"[{instance_base} ROUTING] Solving clusters with {routing_solver_key}"
+            print(msg, flush=True)
+            _log(msg)
+
+            override_no_improvement = (
+                solver_opts.get("no_improvement", routing_no_improvement)
             )
 
-            # ROUTING
-
-            # Note: We do NOT attempt any PyVRP stall stopping here. Any solver-specific early-stop behavior 
-            # (e.g., Hexaly stall_time) belongs to routing_controller + solver adapters 
-            # Routing solvers now use adaptive no-improvement iterations based on cluster size.
-            # The value scales from 10000 (n<=100) to 100000 (n>=1000), linear in between.
-            # If routing_no_improvement is provided, it overrides the adaptive behavior for all clusters.
-            # If routing_solver_options contains "no_improvement", it also overrides.
-            # Otherwise, no_improvement=None means use fully adaptive behavior per cluster.
-            override_no_improvement = None
-            if _routing_solver_options and "no_improvement" in _routing_solver_options:
-                override_no_improvement = _routing_solver_options["no_improvement"]
-            elif routing_no_improvement is not None:
-                override_no_improvement = routing_no_improvement
-            
-            
-            print(f"[{instance_base} ROUTING] Solving Clusters with {routing_solver_key}", flush=True)
             routing = solve_clusters(
                 instance_name=instance_name,
                 clusters=clusters,
                 solver=routing_solver_key,
-                solver_options=(_routing_solver_options if routing_solver_key != "pyvrp" else None),
+                solver_options=(solver_opts if routing_solver_key != "pyvrp" else None),
                 seed=seed,
-                no_improvement=override_no_improvement,  # None = fully adaptive, value = override
+                no_improvement=override_no_improvement,
             )
 
             routes = _result_to_vrplib_routes(routing)
             if not routes:
-                print(f"[{instance_base} SKIP] routing produced no routes", flush=True)
                 no_improvement_iters += 1
                 continue
 
-            # IMPROVEMENT:LOCAL SEARCH (POST-ROUTING)
             ls_res = improve_with_local_search(
                 instance_name=instance_name,
                 routes_vrplib=routes,
@@ -634,7 +353,6 @@ def run_drsci_probabilistic(
             candidate_routes = ls_res["routes_improved"]
             candidate_cost = _compute_integer_cost(inst, candidate_routes)
 
-            # ---------------- TAGGING: VB/RB produced routes ----------------
             _tag_new_routes(
                 route_tags,
                 candidate_routes,
@@ -645,19 +363,18 @@ def run_drsci_probabilistic(
                     "iteration": iteration,
                     "stage": "post_ls",
                 },
-                depot_id=1,
             )
 
-            # Update incumbent immediately if VB/RB candidate improves
             if candidate_cost < best_cost:
                 best_cost = candidate_cost
                 best_routes = candidate_routes
+                ckpt.update(best_routes, best_cost)
                 improved_this_iter = True
-                # Update global state for signal handler
-                _interrupt_state["best_routes"] = best_routes
-                _interrupt_state["best_cost"] = best_cost
+
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                print(f"[{instance_base} IMPROVED-VB/RB] best_cost={best_cost}{gap_str}", flush=True)
+                msg = f"[{instance_base} IMPROVED-VB/RB] best_cost={best_cost}{gap_str}"
+                print(msg, flush=True)
+                _log(msg)
 
                 _write_sol_if_bks_beaten(
                     instance_name=instance_name,
@@ -667,19 +384,21 @@ def run_drsci_probabilistic(
                 )
 
             global_route_pool.extend(candidate_routes)
-            global_route_pool = filter_route_pool(
-                global_route_pool,
-                depot_id=1,
-                verbose=False,
-            )
+            global_route_pool = filter_route_pool(global_route_pool, depot_id=1, verbose=False)
 
-            # ====================================================
-            # PERIODIC SCP (every scp_every iterations)
-            # ====================================================
+            # ---------------- SCP ----------------
             if run_scp_now:
-                scp_solver_name = _select_scp_solver_name(rng, scp_solvers, scp_switch_prob)
+                scp_solver_name = _select_scp_solver_name(
+                    rng, scp_solvers, scp_switch_prob
+                )
                 solve_scp = lazy_import_scp(scp_solver_name)
-                print(f"[{instance_base} SCP] solver={scp_solver_name} | Route Pool Size={len(global_route_pool)}", flush=True)
+
+                msg = (
+                    f"[{instance_base} SCP] solver={scp_solver_name} | "
+                    f"route_pool={len(global_route_pool)}"
+                )
+                print(msg, flush=True)
+                _log(msg)
 
                 scp_res = solve_scp(
                     instance_name=instance_name,
@@ -688,6 +407,16 @@ def run_drsci_probabilistic(
                     verbose=False,
                 )
 
+                # Optimality logging
+                if logger:
+                    if scp_res.get("optimal", False):
+                        logger.info(f"[{instance_base} SCP] optimal solution found")
+                    else:
+                        logger.warning(
+                            f"[{instance_base} SCP] not optimal (status={scp_res.get('status')})"
+                        )
+
+                # Duplicate removal + repair LS
                 repaired = remove_duplicates(
                     instance_name=instance_name,
                     routes=scp_res["selected_routes"],
@@ -708,15 +437,11 @@ def run_drsci_probabilistic(
                 scp_routes = final_ls["routes_improved"]
                 scp_cost = _compute_integer_cost(inst, scp_routes)
 
+                # Enrich route pool
                 global_route_pool.extend(scp_routes)
-                global_route_pool = filter_route_pool(
-                    global_route_pool,
-                    depot_id=1,
-                    verbose=False,
-                )
+                global_route_pool = filter_route_pool(global_route_pool, depot_id=1, verbose=False)
 
-                # ---------------- TAGGING: SCP-produced routes ----------------
-                # These routes are not tied to a single clustering method anymore.
+                # Tag SCP-produced routes
                 _tag_new_routes(
                     route_tags,
                     scp_routes,
@@ -726,18 +451,18 @@ def run_drsci_probabilistic(
                         "iteration": iteration,
                         "stage": "scp_post_ls",
                     },
-                    depot_id=1,
                 )
 
                 if scp_cost < best_cost:
                     best_cost = scp_cost
                     best_routes = scp_routes
+                    ckpt.update(best_routes, best_cost)
                     improved_this_iter = True
-                    # Update global state for signal handler
-                    _interrupt_state["best_routes"] = best_routes
-                    _interrupt_state["best_cost"] = best_cost
+
                     gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                    print(f"[{instance_base} IMPROVED-SCP] best_cost={best_cost}{gap_str}", flush=True)
+                    msg = f"[{instance_base} IMPROVED-SCP] best_cost={best_cost}{gap_str}"
+                    print(msg, flush=True)
+                    _log(msg)
 
                     _write_sol_if_bks_beaten(
                         instance_name=instance_name,
@@ -747,60 +472,47 @@ def run_drsci_probabilistic(
                     )
                 else:
                     gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                    print(f"[{instance_base} SCP-NO-IMPROVEMENT] cost={scp_cost} (best={best_cost}){gap_str}", flush=True)
-            else:
-                print(f"[{instance_base} SCP-SKIP] accumulating routes only", flush=True)
+                    print(
+                        f"[{instance_base} SCP-NO-IMPROVEMENT] "
+                        f"cost={scp_cost} (best={best_cost}){gap_str}",
+                        flush=True,
+                    )
 
-            # ----------------------------------------------------
-            # Stagnation counter (based on entire iteration result)
-            # ----------------------------------------------------
             if improved_this_iter:
                 no_improvement_iters = 0
             else:
                 no_improvement_iters += 1
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                print(f"[{instance_base} NO-IMPROVEMENT] best_cost={best_cost} | streak={no_improvement_iters}{gap_str}", flush=True)
+                print(
+                    f"[{instance_base} NO-IMPROVEMENT] "
+                    f"best_cost={best_cost} | streak={no_improvement_iters}{gap_str}",
+                    flush=True,
+                )
 
     except KeyboardInterrupt:
-        # The signal handler may have already written the solution
-        # But we check again here as a fallback
-        print(
-            f"\n\033[91m[{instance_base} INTERRUPT] Keyboard interrupt received.\033[0m",
-            flush=True,
-        )
-
-        # Use global state if local variables are not set (shouldn't happen, but safe)
-        routes_to_write = best_routes if best_routes is not None else _interrupt_state.get("best_routes")
-        cost_to_write = best_cost if math.isfinite(best_cost) else _interrupt_state.get("best_cost")
-        
-        if routes_to_write is not None and cost_to_write is not None and math.isfinite(cost_to_write):
-            # Only write if signal handler hasn't already written (check if interrupted flag is set)
-            if not _interrupt_state.get("interrupted", False):
-                _write_sol_unconditional(
-                    instance_name=instance_name,
-                    routes=routes_to_write,
-                    cost=int(cost_to_write),
-                    output_dir=bks_output_dir,
-                )
-        else:
-            print(
-                f"[{instance_base} INTERRUPT] No incumbent solution to write.",
-                flush=True,
-            )
-
-        # Important: re-raise so multiprocessing / caller handles shutdown
+        msg = f"[{instance_base} INTERRUPT] Keyboard interrupt received"
+        print(f"\033[91m{msg}\033[0m", flush=True)
+        _log(msg, level="warning")
         raise
-
-
+    
     # ========================================================
     # FINAL SCP (always run once before returning)
     # ========================================================
     if global_route_pool:
-        print(f"[{instance_base} FINAL SCP] running final consolidation", flush=True)
+        print(
+            f"[{instance_base} FINAL SCP] running final consolidation",
+            flush=True,
+        )
 
-        scp_solver_name = _select_scp_solver_name(rng, scp_solvers, scp_switch_prob)
+        scp_solver_name = _select_scp_solver_name(
+            rng, scp_solvers, scp_switch_prob
+        )
         solve_scp = lazy_import_scp(scp_solver_name)
-        print(f"[{instance_base} FINAL SCP] solver={scp_solver_name}", flush=True)
+
+        print(
+            f"[{instance_base} FINAL SCP] solver={scp_solver_name}",
+            flush=True,
+        )
 
         scp_res = solve_scp(
             instance_name=instance_name,
@@ -808,6 +520,14 @@ def run_drsci_probabilistic(
             time_limit=time_limit_scp,
             verbose=False,
         )
+
+        if logger:
+            if scp_res.get("optimal", False):
+                logger.info(f"[{instance_base} SCP] optimal solution found")
+            else:
+                logger.warning(
+                    f"[{instance_base} SCP] not optimal (status={scp_res.get('status')})"
+                )
 
         repaired = remove_duplicates(
             instance_name=instance_name,
@@ -830,13 +550,8 @@ def run_drsci_probabilistic(
         final_cost = _compute_integer_cost(inst, final_routes)
 
         global_route_pool.extend(final_routes)
-        global_route_pool = filter_route_pool(
-            global_route_pool,
-            depot_id=1,
-            verbose=False,
-        )
+        global_route_pool = filter_route_pool(global_route_pool, depot_id=1, verbose=False)
 
-        # ---------------- TAGGING: FINAL SCP routes ----------------
         _tag_new_routes(
             route_tags,
             final_routes,
@@ -846,58 +561,140 @@ def run_drsci_probabilistic(
                 "iteration": iteration,
                 "stage": "final_scp_post_ls",
             },
-            depot_id=1,
         )
 
         if final_cost < best_cost:
             best_cost = final_cost
             best_routes = final_routes
-            # Update global state for signal handler
-            _interrupt_state["best_routes"] = best_routes
-            _interrupt_state["best_cost"] = best_cost
+            ckpt.update(best_routes, best_cost)
+            maybe_checkpoint()
+
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[{instance_base} FINAL IMPROVED] best_cost={best_cost}{gap_str}", flush=True)
+            print(
+                f"[{instance_base} FINAL IMPROVED] best_cost={best_cost}{gap_str}",
+                flush=True,
+            )
+
             _write_sol_if_bks_beaten(
-                    instance_name=instance_name,
-                    routes=best_routes,
-                    cost=best_cost,
-                    output_dir=bks_output_dir,
+                instance_name=instance_name,
+                routes=best_routes,
+                cost=best_cost,
+                output_dir=bks_output_dir,
             )
         else:
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
-            print(f"[{instance_base} FINAL NO-IMPROVEMENT] cost={final_cost} (best={best_cost}){gap_str}", flush=True)
+            print(
+                f"[{instance_base} FINAL NO-IMPROVEMENT] "
+                f"cost={final_cost} (best={best_cost}){gap_str}",
+                flush=True,
+            )
 
+
+        # ========================================================
+    # FINAL LOGGING OUTPUT (mirrors console output)
     # ========================================================
-    # PRINT ROUTE TAGGING SUMMARY + FINAL ROUTES WITH TAGS
-    # ========================================================
+    if logger:
 
-    # Summary should reflect the routes currently present in the pool (not all ever seen).
-    pool_keys = [_route_key(r, depot_id=1) for r in global_route_pool]
-    pool_tags = []
-    for k in pool_keys:
-        t = route_tags.get(k)
-        if t is None:
-            # Route in pool but not tagged (should be rare); keep visible.
-            pool_tags.append(("unknown", "unknown", "unknown", "unknown"))
-        else:
-            pool_tags.append((str(t.get("mode")), str(t.get("method")), str(t.get("solver", "unknown")), str(t.get("stage"))))
+        def log_section(title: str):
+            logger.info("")
+            logger.info("=" * 80)
+            logger.info(title)
+            logger.info("=" * 80)
 
-    counter = Counter(pool_tags)
+        # ----------------------------------------------------
+        # 1) FINAL BEST SOLUTION ROUTES WITH TAGS
+        # ----------------------------------------------------
+        if best_routes:
+            log_section(f"[{instance_base}] FINAL BEST ROUTES WITH TAGS")
 
-    print(f"\n[{instance_base} ROUTE SUMMARY]")
-    for (mode, method, solver, stage), count in counter.items():
-        print(f"  {count:4d} routes | {mode.upper()} | {method} | solver={solver} | stage={stage}")
+            for i, r in enumerate(best_routes, 1):
+                body_vrplib = [n for n in r if n != 1]
+                body = _convert_customer_ids_for_output(body_vrplib)
+                tag = route_tags.get(_route_key(r, depot_id=1))
 
-    # Print final returned routes in sol-like format, with tags.
-    print("\n" + "-" * 80)
-    print(f"[{instance_base} FINAL ROUTES WITH TAGS]")
+                if tag is None:
+                    tag_str = "mode=UNKNOWN method=UNKNOWN solver=UNKNOWN stage=UNKNOWN"
+                else:
+                    tag_str = (
+                        f"mode={str(tag.get('mode')).upper()} "
+                        f"method={tag.get('method')} "
+                        f"solver={tag.get('solver', 'UNKNOWN')} "
+                        f"iter={tag.get('iteration')} "
+                        f"stage={tag.get('stage')}"
+                    )
 
-    if best_routes:
-        for i, r in enumerate(best_routes, 1):
-            # Remove depot and convert to official checker format (1 to n-1)
+                logger.info(f"Route #{i}: {' '.join(map(str, body))} || {tag_str}")
+
+        # ----------------------------------------------------
+        # 2) SUMMARY: BEST SOLUTION ORIGINS
+        # ----------------------------------------------------
+        if best_routes:
+            log_section(f"[{instance_base}] SUMMARY — BEST SOLUTION ROUTE ORIGINS")
+
+            final_tags = []
+            for r in best_routes:
+                key = _route_key(r, depot_id=1)
+                tag = route_tags.get(key)
+                if tag is None:
+                    final_tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"))
+                else:
+                    final_tags.append(
+                        (
+                            str(tag.get("mode")).upper(),
+                            str(tag.get("method")),
+                            str(tag.get("solver", "UNKNOWN")),
+                            str(tag.get("stage")),
+                        )
+                    )
+
+            counter = Counter(final_tags)
+            for (mode, method, solver, stage), count in sorted(
+                counter.items(), key=lambda x: (-x[1], x[0])
+            ):
+                logger.info(
+                    f"{count:4d} routes | {mode} | {method} | solver={solver} | stage={stage}"
+                )
+
+        # ----------------------------------------------------
+        # 3) SUMMARY: ROUTE POOL COMPOSITION
+        # ----------------------------------------------------
+        log_section(f"[{instance_base}] SUMMARY — ROUTE POOL COMPOSITION")
+
+        pool_keys = [_route_key(r, depot_id=1) for r in global_route_pool]
+        pool_tags = []
+
+        for k in pool_keys:
+            t = route_tags.get(k)
+            if t is None:
+                pool_tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"))
+            else:
+                pool_tags.append(
+                    (
+                        str(t.get("mode")).upper(),
+                        str(t.get("method")),
+                        str(t.get("solver", "UNKNOWN")),
+                        str(t.get("stage")),
+                    )
+                )
+
+        pool_counter = Counter(pool_tags)
+        for (mode, method, solver, stage), count in sorted(
+            pool_counter.items(), key=lambda x: (-x[1], x[0])
+        ):
+            logger.info(
+                f"{count:4d} routes | {mode} | {method} | solver={solver} | stage={stage}"
+            )
+
+        # ----------------------------------------------------
+        # 4) FULL ROUTE POOL DUMP
+        # ----------------------------------------------------
+        log_section(f"[{instance_base}] FULL ROUTE POOL DUMP")
+
+        for i, r in enumerate(global_route_pool, 1):
             body_vrplib = [n for n in r if n != 1]
             body = _convert_customer_ids_for_output(body_vrplib)
             tag = route_tags.get(_route_key(r, depot_id=1))
+
             if tag is None:
                 tag_str = "mode=UNKNOWN method=UNKNOWN solver=UNKNOWN stage=UNKNOWN"
             else:
@@ -908,8 +705,11 @@ def run_drsci_probabilistic(
                     f"iter={tag.get('iteration')} "
                     f"stage={tag.get('stage')}"
                 )
-            print(f"Route #{i}: {' '.join(map(str, body))} || {tag_str}")
-    
+
+            logger.info(f"[POOL #{i:05d}] {' '.join(map(str, body))} || {tag_str}")
+    # ----------------------------------------------------
+    # CONSOLE SUMMARY — FINAL ROUTE ORIGINS
+    # ----------------------------------------------------
     if best_routes:
         print_final_route_summary(
             best_routes=best_routes,
@@ -917,7 +717,7 @@ def run_drsci_probabilistic(
             depot_id=1,
         )
 
-
+    
     return {
         "instance": instance_name,
         "best_cost": best_cost,
@@ -926,26 +726,3 @@ def run_drsci_probabilistic(
         "runtime": time.time() - start_time,
         "route_pool_size": len(global_route_pool),
     }
-
-
-# ============================================================
-# DEBUG ENTRY POINT
-# ============================================================
-
-if __name__ == "__main__":
-    res = run_drsci_probabilistic(
-        instance_name="X-n916-k207.vrp",
-        seed=321,
-        time_limit_total=1200.0,
-        time_limit_scp=300.0,
-        scp_every=3,
-        min_avg_cluster_size=125,
-        max_avg_cluster_size=2500,
-        max_no_improvement_iters=10,
-        ls_max_neighbours_restricted=200,
-        ls_after_routing_max_neighbours=200,
-    )
-
-    print("\n[DEBUG] Best cost:", res["best_cost"])
-    print("[DEBUG] #routes:", len(res["routes"]))
-    print("[DEBUG] Iterations:", res["iterations"])

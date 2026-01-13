@@ -6,8 +6,7 @@
             "root": "src",
             "pythonVersion": "3.10",
             "extraPaths": [
-                "src",
-                "."
+                "src"
             ]
         }
     ],
@@ -23,6 +22,7 @@
     "pythonVersion": "3.10",
     "typeCheckingMode": "off",
     "reportMissingImports": true,
-    "reportMissingTypeStubs": false
+    "reportMissingTypeStubs": false,
+    "pythonPlatform": "Linux"
 }
 
