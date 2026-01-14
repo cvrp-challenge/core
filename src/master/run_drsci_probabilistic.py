@@ -179,7 +179,7 @@ def run_drsci_probabilistic(
     # --------------------------------------------------------
     num_customers = len(inst["demand"]) - 1
     k_min_auto = max(2, math.ceil(num_customers / max_avg_cluster_size))
-    k_max_auto = max(k_min_auto, 16)
+    k_max_auto = max(k_min_auto, 11)
     k_peak = 10
 
     values = list(range(k_min_auto, k_max_auto + 1))
