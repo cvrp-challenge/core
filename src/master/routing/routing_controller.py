@@ -38,7 +38,7 @@ def _adaptive_cluster_time(
     n: int,
     *,
     base: float = 1.0,
-    alpha: float = 0.2,            #was 0.16
+    alpha: float = 0.25,            #was 0.16
     exponent: float = 0.9,
     min_time: float = 2.0,
     max_time: float = 180.0,
@@ -62,23 +62,15 @@ def _adaptive_stall_time(
 
 
 def _adaptive_no_improvement(n: int) -> int:
-    """
-    Adaptive no-improvement iterations based on cluster size.
-    
-    Scaling:
-    - n <= 100: 10000 iterations
-    - n >= 1000: 100000 iterations  
-    - 100 < n < 1000: linear interpolation between 10000 and 100000
-    """
     if n <= 100:
-        return 1000
-    elif n >= 1000:
-        return 15000
+        return 500
+    elif n >= 1500:
+        return 20000
     else:
         # Linear interpolation: 10000 + (100000 - 10000) * ((n - 100) / (10000 - 100))
         # = 10000 + 90000 * ((n - 100) / 9900)
-        ratio = (n - 100) / (1000 - 100)
-        return int(1000 + 14000 * ratio)
+        ratio = (n - 100) / (1500 - 100)
+        return int(500 + 19500 * ratio)
 
 
 # ---------------------------------------------------------------------------
