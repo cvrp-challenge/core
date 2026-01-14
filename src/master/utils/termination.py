@@ -45,10 +45,11 @@ def install_termination_handlers(ckpt: Checkpoint) -> None:
     """
     Install handlers so best-so-far solution is written on:
     - SIGINT  (Ctrl+C)
-    - SIGTERM (SLURM cancel / walltime)
+    - SIGHUP  (hangup)
     - SIGUSR1 (SLURM pre-timeout, if configured)
     - SIGXCPU (CPU time limit)
 
+    NOTE: SIGTERM is intentionally not handled (commented out).
     NOTE: SIGKILL cannot be caught.
     """
 
@@ -69,7 +70,7 @@ def install_termination_handlers(ckpt: Checkpoint) -> None:
 
     for sig in (
         signal.SIGINT,
-        signal.SIGTERM,
+        # signal.SIGTERM,
         signal.SIGHUP,
         signal.SIGUSR1,
         signal.SIGXCPU,

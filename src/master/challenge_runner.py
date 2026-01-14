@@ -117,14 +117,14 @@ INSTANCES = [
     "XL-n8028-k294.vrp",
     "XL-n8207-k108.vrp",
     "XL-n8389-k2028.vrp",
-    "XL-n8575-k1297.vrp",
-    "XL-n8766-k1032.vrp",
-    "XL-n8960-k634.vrp",
-    "XL-n9160-k379.vrp",
+    #"XL-n8575-k1297.vrp",
+    # "XL-n8766-k1032.vrp",
+    # "XL-n8960-k634.vrp",
+    # "XL-n9160-k379.vrp",
     # "XL-n9363-k209.vrp", ###
-    #"XL-n9571-k55.vrp", ### bad
-    "XL-n9784-k2774.vrp",
-    "XL-n10001-k1570.vrp"
+    # "XL-n9571-k55.vrp", ### bad
+    # "XL-n9784-k2774.vrp",
+    # "XL-n10001-k1570.vrp"
 ]
 
 
@@ -312,13 +312,12 @@ def run_benchmark(
     run_log_name: Optional[str],
     periodic_sol_dump: bool,
     sol_dump_interval: float,
-    instances: Optional[list] = None,
 ):
     output_dir = Path(output_path).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Use provided instances or default to INSTANCES list
-    instances_to_run = instances if instances is not None else INSTANCES
+    instances_to_run = INSTANCES
 
     print(f"Running Probabilistic DRSCI benchmark on {len(instances_to_run)} instances.")
     print(f"SCP solvers            : {scp_solvers}")
@@ -452,13 +451,7 @@ def main():
     parser.add_argument("--run_log_name", type=str, default=None)
     parser.add_argument("--periodic_sol_dump", action="store_true", default=True)
     parser.add_argument("--sol_dump_interval", type=float, default=3600.0)
-    parser.add_argument(
-        "--instances",
-        nargs="+",
-        type=str,
-        default=None,
-        help="Specific instances to run (e.g., 'XL-n1048-k237.vrp'). If not provided, runs all instances in INSTANCES list.",
-    )
+
 
     args = parser.parse_args()
 
@@ -490,7 +483,6 @@ def main():
         run_log_name=args.run_log_name,
         periodic_sol_dump=args.periodic_sol_dump,
         sol_dump_interval=args.sol_dump_interval,
-        instances=args.instances,
     )
 
 

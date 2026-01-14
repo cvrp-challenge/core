@@ -25,7 +25,7 @@ from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.setcover.route_dominance_filter import filter_route_pool
 from master.utils.loader import load_instance
-from master.utils.termination import Checkpoint, install_termination_handlers
+# from master.utils.termination import Checkpoint, install_termination_handlers
 from master.utils.logging_utils import get_run_logger, get_instance_logger
 
 from master.utils.helpers_run_probabilistic import (
@@ -140,12 +140,14 @@ def run_drsci_probabilistic(
     inst = load_instance(instance_name)
     instance_base = Path(instance_name).stem
 
-    ckpt = Checkpoint(
-        instance_name=instance_name,
-        output_dir=bks_output_dir,
-        write_sol_fn=_write_sol_unconditional,
-    )
-    install_termination_handlers(ckpt)
+    # TERMINATION LOGIC COMMENTED OUT
+    # ckpt = Checkpoint(
+    #     instance_name=instance_name,
+    #     output_dir=bks_output_dir,
+    #     write_sol_fn=_write_sol_unconditional,
+    # )
+    # install_termination_handlers(ckpt)
+    ckpt = None  # Dummy to avoid NameError
 
     logger = None
     if enable_logging:
@@ -204,13 +206,15 @@ def run_drsci_probabilistic(
     no_improvement_iters = 0
     last_dump = time.time()
 
+    # TERMINATION LOGIC COMMENTED OUT
     def maybe_checkpoint():
-        nonlocal last_dump
-        if not periodic_sol_dump:
-            return
-        if ckpt.dirty and time.time() - last_dump >= sol_dump_interval:
-            ckpt.dump(suffix="PERIODIC")
-            last_dump = time.time()
+        # nonlocal last_dump
+        # if not periodic_sol_dump:
+        #     return
+        # if ckpt.dirty and time.time() - last_dump >= sol_dump_interval:
+        #     ckpt.dump(suffix="PERIODIC")
+        #     last_dump = time.time()
+        pass
 
     available_solvers = routing_solvers or SOLVERS
     if not available_solvers:
@@ -368,7 +372,7 @@ def run_drsci_probabilistic(
             if candidate_cost < best_cost:
                 best_cost = candidate_cost
                 best_routes = candidate_routes
-                ckpt.update(best_routes, best_cost)
+                # ckpt.update(best_routes, best_cost)  # TERMINATION LOGIC COMMENTED OUT
                 improved_this_iter = True
 
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
@@ -456,7 +460,7 @@ def run_drsci_probabilistic(
                 if scp_cost < best_cost:
                     best_cost = scp_cost
                     best_routes = scp_routes
-                    ckpt.update(best_routes, best_cost)
+                    # ckpt.update(best_routes, best_cost)  # TERMINATION LOGIC COMMENTED OUT
                     improved_this_iter = True
 
                     gap_str = _format_gap_to_bks(best_cost, bks_cost)
@@ -566,7 +570,7 @@ def run_drsci_probabilistic(
         if final_cost < best_cost:
             best_cost = final_cost
             best_routes = final_routes
-            ckpt.update(best_routes, best_cost)
+            # ckpt.update(best_routes, best_cost)  # TERMINATION LOGIC COMMENTED OUT
             maybe_checkpoint()
 
             gap_str = _format_gap_to_bks(best_cost, bks_cost)
