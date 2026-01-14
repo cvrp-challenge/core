@@ -62,8 +62,10 @@ def _adaptive_stall_time(
 
 
 def _adaptive_no_improvement(n: int) -> int:
-    if n <= 100:
+    if n <= 100 and n >= 10:
         return 500
+    elif n <= 10: # edge case for ac_min
+        return 10
     elif n >= 1500:
         return 20000
     else:
