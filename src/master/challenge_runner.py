@@ -24,9 +24,15 @@ from master.utils.loader import load_instance
 # ---------------------------------------------------------
 # Instances to benchmark
 # ---------------------------------------------------------
+
+# Assessment Logic (Gap in %): 
+# - good: < 0.25
+# - bad: > 0.6
+# - ### -> in between
+
 INSTANCES = [
     # "XL-n1048-k237.vrp", ### good
-    # "XL-n1094-k157.vrp", ### good
+    # "XL-n1094-k157.vrp", ### good -- 0.03%
     # "XL-n1141-k112.vrp", ###
     # "XL-n1188-k96.vrp", ###
     # "XL-n1234-k55.vrp", ###
@@ -38,14 +44,14 @@ INSTANCES = [
     # "XL-n1514-k106.vrp", ### good
     # "XL-n1561-k75.vrp", ### good
     # "XL-n1608-k39.vrp", ###
-    "XL-n1654-k11.vrp",
+    "XL-n1654-k11.vrp", ###
     # "XL-n1701-k562.vrp", ### good
     # "XL-n1748-k271.vrp", ### bad
     # "XL-n1794-k163.vrp", ### good
     # "XL-n1841-k126.vrp", ###
     # "XL-n1888-k82.vrp", ###
     # "XL-n1934-k46.vrp", ### good
-    "XL-n1981-k13.vrp",
+    "XL-n1981-k13.vrp", ### bad
     # "XL-n2028-k617.vrp", ### bad
     # "XL-n2074-k264.vrp", ### bad
     # "XL-n2121-k186.vrp", ###
@@ -61,21 +67,21 @@ INSTANCES = [
     # "XL-n2587-k66.vrp", ### good
     # "XL-n2634-k17.vrp", ###
     # "XL-n2681-k540.vrp", ### bad
-    "XL-n2727-k546.vrp",
-    "XL-n2774-k286.vrp",
-    "XL-n2821-k208.vrp",
-    "XL-n2867-k120.vrp",
-    "XL-n2914-k95.vrp",
-    "XL-n2961-k55.vrp",
-    "XL-n3007-k658.vrp",
-    "XL-n3054-k461.vrp",
-    "XL-n3101-k311.vrp",
-    "XL-n3147-k232.vrp",
-    "XL-n3194-k161.vrp",
-    "XL-n3241-k115.vrp",
-    "XL-n3287-k30.vrp",
-    "XL-n3334-k934.vrp",
-    "XL-n3408-k524.vrp",
+    "XL-n2727-k546.vrp", ### good -- 0.03%
+    "XL-n2774-k286.vrp", ### bad
+    "XL-n2821-k208.vrp", ###
+    "XL-n2867-k120.vrp", ###
+    "XL-n2914-k95.vrp", ### bad
+    "XL-n2961-k55.vrp", ### bad
+    "XL-n3007-k658.vrp", ###
+    "XL-n3054-k461.vrp", ### bad
+    "XL-n3101-k311.vrp", ###
+    "XL-n3147-k232.vrp", ###
+    "XL-n3194-k161.vrp", ### bad
+    "XL-n3241-k115.vrp", ###
+    "XL-n3287-k30.vrp", ###
+    "XL-n3334-k934.vrp", ###
+    "XL-n3408-k524.vrp", ### bad
     # "XL-n3484-k436.vrp", ### good -- 0.01%
     # "XL-n3561-k229.vrp", ###
     # "XL-n3640-k211.vrp", ###
@@ -88,7 +94,7 @@ INSTANCES = [
     # "XL-n4245-k203.vrp", ### good
     # "XL-n4340-k148.vrp", ###
     # "XL-n4436-k48.vrp", ### good
-    # "XL-n4535-k1134.vrp", ### good -- 0.00003%
+    # "XL-n4535-k1134.vrp", ### good -- 0.003%
     # "XL-n4635-k790.vrp", ###
     # "XL-n4738-k487.vrp", ###
     # "XL-n4844-k321.vrp", ###
@@ -102,21 +108,21 @@ INSTANCES = [
     # "XL-n5774-k290.vrp", ###
     # "XL-n5902-k122.vrp", ### good
     # "XL-n6034-k61.vrp", ### bad
-    "XL-n6168-k1922.vrp",
-    "XL-n6305-k1042.vrp",
-    "XL-n6445-k628.vrp",
-    "XL-n6588-k473.vrp",
-    "XL-n6734-k330.vrp",
-    "XL-n6884-k148.vrp",
-    "XL-n7037-k38.vrp",
-    "XL-n7193-k1683.vrp",
-    "XL-n7353-k1471.vrp",
-    "XL-n7516-k859.vrp",
-    "XL-n7683-k602.vrp",
-    "XL-n7854-k365.vrp",
-    "XL-n8028-k294.vrp",
-    "XL-n8207-k108.vrp",
-    "XL-n8389-k2028.vrp",
+    "XL-n6168-k1922.vrp", ### bad
+    "XL-n6305-k1042.vrp", ### bad
+    "XL-n6445-k628.vrp", ###
+    "XL-n6588-k473.vrp", ### bad
+    "XL-n6734-k330.vrp", ###
+    "XL-n6884-k148.vrp", ### bad
+    "XL-n7037-k38.vrp", ### bad
+    "XL-n7193-k1683.vrp", ### bad
+    "XL-n7353-k1471.vrp", ### good -- 0.04%
+    "XL-n7516-k859.vrp", ### bad
+    "XL-n7683-k602.vrp", ###
+    "XL-n7854-k365.vrp", ###
+    "XL-n8028-k294.vrp", ### bad
+    "XL-n8207-k108.vrp", ### bad
+    "XL-n8389-k2028.vrp", ### bad
     #"XL-n8575-k1297.vrp",
     # "XL-n8766-k1032.vrp",
     # "XL-n8960-k634.vrp",
