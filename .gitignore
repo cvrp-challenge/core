@@ -12,6 +12,7 @@ venv/
 ENV/
 env/
 .virtualenv/
+.venv-wsl
 
 # Distribution / packaging
 build/
