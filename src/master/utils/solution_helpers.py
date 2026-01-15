@@ -304,3 +304,52 @@ def _write_solution_2(
         handle.write(f"Runtime: {runtime:.2f}s\n")
         handle.write(f"Stopping Criteria: {stopping_criteria}\n")
         handle.write(f"Gap: {gap_str}\n")
+
+def load_routes_from_sol_for_pool(
+    sol_path: Path,
+    *,
+    n_customers: int,
+    depot_id: int = 1,
+) -> list[list[int]]:
+    """
+    Convert .sol routes to INTERNAL VRPLIB routes.
+
+    .sol format:
+      - no depot
+      - customers numbered 1..n
+
+    Internal format:
+      - depot = 1
+      - customers = 2..n+1
+    """
+    routes = []
+
+    with open(sol_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line.startswith("Route"):
+                continue
+
+            body = line.split(":", 1)[1].strip()
+            customers_sol = list(map(int, body.split()))
+
+            if not customers_sol:
+                continue
+
+            # CRITICAL conversion
+            customers_vrplib = [c + 1 for c in customers_sol]
+            
+            for v in customers_vrplib:
+                if not (2 <= v <= n_customers + 1):
+                    raise ValueError(
+                        f"Invalid customer id {v} after conversion "
+                        f"(instance has {n_customers} customers)"
+                    )
+
+            route = [depot_id, *customers_vrplib, depot_id]
+            routes.append(route)
+
+    if not routes:
+        raise ValueError(f"No routes found in {sol_path}")
+
+    return routes

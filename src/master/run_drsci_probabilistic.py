@@ -25,6 +25,8 @@ from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.setcover.route_dominance_filter import filter_route_pool
 from master.utils.loader import load_instance
+from master.utils.solution_helpers import load_routes_from_sol_for_pool
+
 # from master.utils.termination import Checkpoint, install_termination_handlers
 from master.utils.logging_utils import get_run_logger, get_instance_logger
 
@@ -129,6 +131,7 @@ def run_drsci_probabilistic(
     log_mode: str = "instance",  # "run" or "instance"
     log_to_console: bool = True,
     run_log_name: Optional[str] = None,
+    warm_start_solutions: Optional[List[Path]] = None,
 ) -> Dict[str, Any]:
 
     if scp_every <= 0:
@@ -140,6 +143,9 @@ def run_drsci_probabilistic(
     inst = load_instance(instance_name)
     instance_base = Path(instance_name).stem
 
+    global_route_pool: Routes = []
+    route_tags: Dict[RouteKey, Tag] = {}
+    
     # TERMINATION LOGIC COMMENTED OUT
     # ckpt = Checkpoint(
     #     instance_name=instance_name,
@@ -162,6 +168,7 @@ def run_drsci_probabilistic(
                 instance_name=instance_name,
                 output_dir=bks_output_dir,
                 to_console=log_to_console,
+                instance_suffix=run_log_name,
             )
         else:
             raise ValueError(f"Unknown log_mode: {log_mode}")
@@ -172,6 +179,51 @@ def run_drsci_probabilistic(
     def _log(msg: str, level: str = "info") -> None:
         if logger:
             getattr(logger, level)(msg)
+
+    # ----------------------------------------------------
+    # WARM START: load routes from existing .sol files
+    # ----------------------------------------------------
+    if warm_start_solutions:
+        n_customers = len(inst["demand"]) - 1
+
+        for sol_path in warm_start_solutions:
+            sol_path = Path(sol_path)
+
+            routes_from_sol = load_routes_from_sol_for_pool(
+                sol_path,
+                n_customers=n_customers,
+                depot_id=1,
+            )
+
+            global_route_pool.extend(routes_from_sol)
+
+            _tag_new_routes(
+                route_tags,
+                routes_from_sol,
+                tag={
+                    "mode": "warm_start",
+                    "method": "sol",
+                    "solver": "external",
+                    "iteration": 0,
+                    "stage": "initial_pool",
+                },
+            )
+
+        # Safety: filter immediately
+        global_route_pool = filter_route_pool(
+            global_route_pool,
+            depot_id=1,
+            verbose=False,
+        )
+
+        msg = (
+            f"[{instance_base} WARM-START] "
+            f"loaded {len(global_route_pool)} routes from "
+            f"{len(warm_start_solutions)} .sol files"
+        )
+        print(msg, flush=True)
+        _log(msg)
+
 
     # Load BKS
     bks_cost = _load_bks_from_file(instance_name)
@@ -195,9 +247,6 @@ def run_drsci_probabilistic(
         f"k_min={k_min_auto} | k_max={k_max_auto}",
         flush=True,
     )
-
-    global_route_pool: Routes = []
-    route_tags: Dict[RouteKey, Tag] = {}
 
     best_routes: Optional[Routes] = None
     best_cost = float("inf")

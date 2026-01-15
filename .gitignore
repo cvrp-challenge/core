@@ -12,6 +12,7 @@ venv/
 ENV/
 env/
 .virtualenv/
+.venv-wsl
 
 # Distribution / packaging
 build/
@@ -96,3 +97,5 @@ setup.sh
 
 # TUM Gurobi License Server
 gurobi.lic
+
+output/
