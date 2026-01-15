@@ -97,3 +97,5 @@ setup.sh
 
 # TUM Gurobi License Server
 gurobi.lic
+
+output/

@@ -5,6 +5,7 @@ import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 from typing import Optional
+from datetime import datetime
 
 # ---------------------------------------------------------
 # Project path setup
@@ -87,13 +88,13 @@ def solve_instance_probabilistic(
     ls_after_routing_max_neighbours: int,
     ls_max_neighbours_restricted: int,
     randomize_polar_angle: bool,
-    bks_output_dir: str,
     enable_logging: bool,
     log_mode: str,
     log_to_console: bool,
     run_log_name: Optional[str],
     periodic_sol_dump: bool,
     sol_dump_interval: float,
+    warm_start_solutions: Optional[list[str]],
 ) -> dict:
     try:
         from master.run_drsci_probabilistic import run_drsci_probabilistic
@@ -103,6 +104,8 @@ def solve_instance_probabilistic(
         
         output_dir.mkdir(parents=True, exist_ok=True)
         print(f"{instance_name} (run {run_id}) is starting with seed {seed}.", flush=True)
+
+        run_log_name = f"run{run_id}"
 
         result = run_drsci_probabilistic(
             instance_name=instance_name,
@@ -122,13 +125,14 @@ def solve_instance_probabilistic(
             ls_after_routing_max_neighbours=ls_after_routing_max_neighbours,
             ls_max_neighbours_restricted=ls_max_neighbours_restricted,
             randomize_polar_angle=randomize_polar_angle,
-            bks_output_dir=bks_output_dir,
+            bks_output_dir=str(output_dir),
             enable_logging=enable_logging,
             log_mode=log_mode,
             log_to_console=log_to_console,
             run_log_name=run_log_name,
             periodic_sol_dump=periodic_sol_dump,
             sol_dump_interval=sol_dump_interval,
+            warm_start_solutions=warm_start_solutions,
         )
 
         best_cost = result["best_cost"]
@@ -205,17 +209,22 @@ def run_intensify(
     ls_after_routing_max_neighbours: int,
     ls_max_neighbours_restricted: int,
     randomize_polar_angle: bool,
-    bks_output_dir: str,
     enable_logging: bool,
     log_mode: str,
     log_to_console: bool,
     run_log_name: Optional[str],
     periodic_sol_dump: bool,
     sol_dump_interval: float,
+    warm_start_solutions: Optional[list[str]],
 ):
-    output_dir = Path(output_path).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    experiment_ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
+    output_dir = (
+        Path(output_path).resolve()
+        / f"intensify_{Path(instance_name).stem}_{experiment_ts}"
+    )
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
     print(f"Running Probabilistic DRSCI intensify on {instance_name} ({num_runs} runs).")
     print(f"SCP solvers            : {scp_solvers}")
     print(f"SCP switch probability : {scp_switch_prob}")
@@ -251,13 +260,13 @@ def run_intensify(
                 ls_after_routing_max_neighbours,
                 ls_max_neighbours_restricted,
                 randomize_polar_angle,
-                bks_output_dir,
                 enable_logging,
                 log_mode,
                 log_to_console,
                 run_log_name,
                 periodic_sol_dump,
                 sol_dump_interval,
+                warm_start_solutions,
             ): run_id
             for run_id in range(1, num_runs + 1)
         }
@@ -354,16 +363,24 @@ def main():
     parser.add_argument("--ls_max_neighbours_restricted", type=int, default=100)
     parser.add_argument("--randomize_polar_angle", action="store_true", default=True)
     parser.add_argument("--no_randomize_polar_angle", dest="randomize_polar_angle", action="store_false")
-    parser.add_argument("--bks_output_dir", type=str, default="output")
     # ---------------- Logging options ----------------
     parser.add_argument("--enable_logging", action="store_true", default=True)
     parser.add_argument("--log_mode", choices=["run", "instance"], default="instance")
-    parser.add_argument("--log_to_console", action="store_true", default=True)
+    parser.add_argument("--log_to_console", action="store_true", default=False)
     parser.add_argument("--run_log_name", type=str, default=None)
 
     # -------------- Periodic .sol dump options --------------
     parser.add_argument("--periodic_sol_dump", action="store_true", default=True)
     parser.add_argument("--sol_dump_interval", type=float, default=3600.0)
+    
+    # warm startup for route pool
+    parser.add_argument(
+        "--warm_start_solutions",
+        nargs="*",
+        type=str,
+        default=None,
+        help="Paths to .sol files whose routes are injected into the initial route pool",
+    )
 
     args = parser.parse_args()
 
@@ -390,13 +407,13 @@ def main():
         ls_after_routing_max_neighbours=args.ls_after_routing_max_neighbours,
         ls_max_neighbours_restricted=args.ls_max_neighbours_restricted,
         randomize_polar_angle=args.randomize_polar_angle,
-        bks_output_dir=args.output_path,
         enable_logging=args.enable_logging,
         log_mode=args.log_mode,
         log_to_console=args.log_to_console,
         run_log_name=args.run_log_name,
         periodic_sol_dump=args.periodic_sol_dump,
         sol_dump_interval=args.sol_dump_interval,
+        warm_start_solutions=args.warm_start_solutions,
     )
 
 

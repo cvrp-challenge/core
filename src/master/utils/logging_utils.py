@@ -68,12 +68,18 @@ def get_instance_logger(
     instance_name: str,
     output_dir: str,
     to_console: bool,
+    instance_suffix: Optional[str] = None,
 ) -> logging.Logger:
     """
     One log file per instance.
     """
     base = Path(instance_name).stem
+
+    if instance_suffix:
+        base = f"{base}_{instance_suffix}"
+
     log_path = Path(output_dir) / "logs" / f"{base}.log"
+
     return setup_logger(
         name=f"drsci.instance.{base}",
         log_file=log_path,
