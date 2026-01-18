@@ -253,7 +253,9 @@ def run_drsci_probabilistic(
 
     iteration = 0
     no_improvement_iters = 0
-    last_dump = time.time()
+    last_snapshot_time = start_time
+    snapshot_counter = 0
+
 
     # TERMINATION LOGIC COMMENTED OUT
     def maybe_checkpoint():
@@ -264,6 +266,107 @@ def run_drsci_probabilistic(
         #     ckpt.dump(suffix="PERIODIC")
         #     last_dump = time.time()
         pass
+
+    def log_best_route_summary():
+        if not best_routes or not logger:
+            return
+
+        logger.info("")
+        logger.info("[BEST SOLUTION ROUTE SUMMARY]")
+        logger.info("-" * 80)
+
+        tags = []
+        for r in best_routes:
+            key = _route_key(r, depot_id=1)
+            tag = route_tags.get(key)
+            if tag is None:
+                tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"))
+            else:
+                tags.append(
+                    (
+                        str(tag.get("mode")).upper(),
+                        str(tag.get("method")),
+                        str(tag.get("solver", "UNKNOWN")),
+                        str(tag.get("stage")),
+                    )
+                )
+
+        counter = Counter(tags)
+
+        for (mode, method, solver, stage), count in sorted(
+            counter.items(), key=lambda x: (-x[1], x[0])
+        ):
+            logger.info(
+                f"{count:4d} routes | {mode:<5} | {method:<15} | "
+                f"solver={solver:<10} | stage={stage}"
+            )
+
+
+    def maybe_periodic_snapshot(force: bool = False):
+        nonlocal last_snapshot_time, snapshot_counter
+
+        if not periodic_sol_dump:
+            return
+
+        now = time.time()
+        if not force and (now - last_snapshot_time) < sol_dump_interval:
+            return
+
+        if best_routes is None:
+            return
+
+        snapshot_counter += 1
+        last_snapshot_time = now
+
+        suffix = f"SNAPSHOT_{snapshot_counter:03d}"
+
+        # 1) Write solution snapshot
+        _write_sol_unconditional(
+            instance_name=instance_name,
+            routes=best_routes,
+            cost=best_cost,
+            output_dir=bks_output_dir,
+            suffix=suffix,
+        )
+
+        # 2) Log best routes with tags
+        if logger:
+            logger.info("")
+            logger.info("=" * 80)
+            logger.info(f"[{instance_base}] PERIODIC SNAPSHOT {suffix}")
+            logger.info("=" * 80)
+
+            for i, r in enumerate(best_routes, 1):
+                body = _convert_customer_ids_for_output([n for n in r if n != 1])
+                tag = route_tags.get(_route_key(r, depot_id=1), {})
+                logger.info(
+                    f"Route #{i}: {' '.join(map(str, body))} || "
+                    f"mode={tag.get('mode')} method={tag.get('method')} "
+                    f"solver={tag.get('solver')} stage={tag.get('stage')} "
+                    f"iter={tag.get('iteration')}"
+                )
+
+            log_best_route_summary()
+            
+            # 3) Route pool summary
+            counter = Counter(
+                (
+                    str(t.get("mode")).upper(),
+                    str(t.get("method")),
+                    str(t.get("solver", "UNKNOWN")),
+                    str(t.get("stage")),
+                )
+                for t in (
+                    route_tags.get(_route_key(r, depot_id=1), {})
+                    for r in global_route_pool
+                )
+            )
+
+            logger.info("")
+            logger.info("[ROUTE POOL SUMMARY]")
+            for k, v in sorted(counter.items(), key=lambda x: -x[1]):
+                logger.info(f"{v:5d} routes | {k}")
+
 
     available_solvers = routing_solvers or SOLVERS
     if not available_solvers:
@@ -507,6 +610,7 @@ def run_drsci_probabilistic(
                 )
 
                 if scp_cost < best_cost:
+                    maybe_periodic_snapshot()
                     best_cost = scp_cost
                     best_routes = scp_routes
                     # ckpt.update(best_routes, best_cost)  # TERMINATION LOGIC COMMENTED OUT
@@ -525,22 +629,27 @@ def run_drsci_probabilistic(
                     )
                 else:
                     gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                    print(
+                    msg = (
                         f"[{instance_base} SCP-NO-IMPROVEMENT] "
-                        f"cost={scp_cost} (best={best_cost}){gap_str}",
-                        flush=True,
+                        f"cost={scp_cost} (best={best_cost}){gap_str}"
                     )
+                    print(msg, flush=True)
+                    _log(msg)
 
+
+            maybe_periodic_snapshot()
             if improved_this_iter:
                 no_improvement_iters = 0
             else:
                 no_improvement_iters += 1
                 gap_str = _format_gap_to_bks(best_cost, bks_cost)
-                print(
+                msg = (
                     f"[{instance_base} NO-IMPROVEMENT] "
-                    f"best_cost={best_cost} | streak={no_improvement_iters}{gap_str}",
-                    flush=True,
+                    f"best_cost={best_cost} | streak={no_improvement_iters}{gap_str}"
                 )
+                print(msg, flush=True)
+                _log(msg)
+
 
     except KeyboardInterrupt:
         msg = f"[{instance_base} INTERRUPT] Keyboard interrupt received"
@@ -770,7 +879,7 @@ def run_drsci_probabilistic(
             depot_id=1,
         )
 
-    
+    maybe_periodic_snapshot(force=True)
     return {
         "instance": instance_name,
         "best_cost": best_cost,

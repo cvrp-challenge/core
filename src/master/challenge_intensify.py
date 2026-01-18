@@ -21,6 +21,19 @@ from master.utils.solution_helpers import (
     _write_solution,
 )
 from master.utils.loader import load_instance
+from master.utils.logging_utils import (
+    get_run_logger,
+    get_instance_logger,
+)
+
+
+def _log_run_configuration(logger, *, instance_name, run_id, seed, **params):
+    logger.init("=" * 80)
+    logger.init(f"[RUN CONFIGURATION] instance={instance_name} run={run_id}")
+    logger.init(f"seed = {seed}")
+    for k, v in params.items():
+        logger.init(f"{k} = {v}")
+    logger.init("=" * 80)
 
 
 def _load_bks_from_file(instance_name: str) -> Optional[int]:
@@ -106,6 +119,53 @@ def solve_instance_probabilistic(
         print(f"{instance_name} (run {run_id}) is starting with seed {seed}.", flush=True)
 
         run_log_name = f"run{run_id}"
+
+        if log_mode == "instance":
+            logger = get_instance_logger(
+                instance_name=instance_name,
+                output_dir=str(output_dir),
+                to_console=log_to_console,
+                instance_suffix=f"run{run_id}" if run_id is not None else None,
+            )
+        else:
+            logger = get_run_logger(
+                output_dir=str(output_dir),
+                run_log_name=run_log_name,
+                to_console=log_to_console,
+            )
+
+        _log_run_configuration(
+            logger,
+            instance_name=instance_name,
+            run_id=0,  # benchmark has no per-run index
+            seed=seed,
+
+            scp_solvers=scp_solvers,
+            scp_switch_prob=scp_switch_prob,
+            time_limit_scp=time_limit_scp,
+            scp_every=scp_every,
+            time_limit_total=time_limit_total,
+            max_no_improvement_iters=max_no_improvement_iters,
+
+            min_avg_cluster_size=min_avg_cluster_size,
+            max_avg_cluster_size=max_avg_cluster_size,
+
+            routing_solvers=routing_solvers or ["pyvrp", "filo1", "filo2"],
+            routing_no_improvement=routing_no_improvement,
+
+            ls_neighbourhood=ls_neighbourhood,
+            ls_after_routing_max_neighbours=ls_after_routing_max_neighbours,
+            ls_max_neighbours_restricted=ls_max_neighbours_restricted,
+
+            randomize_polar_angle=randomize_polar_angle,
+
+            warm_start_solutions=warm_start_solutions,
+
+            log_mode=log_mode,
+            log_to_console=log_to_console,
+            periodic_sol_dump=periodic_sol_dump,
+            sol_dump_interval=sol_dump_interval,
+        )
 
         result = run_drsci_probabilistic(
             instance_name=instance_name,
