@@ -4,6 +4,26 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+# ============================================================
+# NEW: custom INIT log level
+# ============================================================
+
+INIT_LEVEL = 25  # INFO=20, WARNING=30
+logging.addLevelName(INIT_LEVEL, "INIT")
+
+
+def init(self, message, *args, **kwargs):
+    if self.isEnabledFor(INIT_LEVEL):
+        self._log(INIT_LEVEL, message, args, **kwargs)
+
+
+# Attach method to Logger
+logging.Logger.init = init
+
+# ============================================================
+# Existing code below (unchanged)
+# ============================================================
+
 
 def setup_logger(
     *,
