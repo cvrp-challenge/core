@@ -26,6 +26,7 @@ from master.setcover.duplicate_removal import remove_duplicates
 from master.setcover.route_dominance_filter import filter_route_pool
 from master.utils.loader import load_instance
 from master.utils.solution_helpers import load_routes_from_sol_for_pool
+from master.setcover.route_pool_filtering import filter_route_pool_for_scp
 
 # from master.utils.termination import Checkpoint, install_termination_handlers
 from master.utils.logging_utils import get_run_logger, get_instance_logger
@@ -549,16 +550,40 @@ def run_drsci_probabilistic(
                 )
                 solve_scp = lazy_import_scp(scp_solver_name)
 
-                msg = (
-                    f"[{instance_base} SCP] solver={scp_solver_name} | "
-                    f"route_pool={len(global_route_pool)}"
+                scp_route_pool = filter_route_pool_for_scp(
+                    routes=global_route_pool,
+                    route_tags=route_tags,
+                    inst=inst,
+                    depot_id=1,
+                    max_routes=5000,
+                    min_utilization=0.30,
+                    scp_every=scp_every,
+                    elite_after_scp_rounds=2,
+                    min_pool_size_for_elite=1500,
+                    enable_step_b=True,
                 )
+
+                before = len(global_route_pool)
+                after = len(scp_route_pool)
+                removed = before - after
+
+                if removed > 0:
+                    msg = (
+                        f"[{instance_base} SCP] solver={scp_solver_name} | "
+                        f"route_pool={after} (removed {removed} / {before})"
+                    )
+                else:
+                    msg = (
+                        f"[{instance_base} SCP] solver={scp_solver_name} | "
+                        f"route_pool={after}"
+                    )
+
                 print(msg, flush=True)
                 _log(msg)
 
                 scp_res = solve_scp(
                     instance_name=instance_name,
-                    route_pool=global_route_pool,
+                    route_pool=scp_route_pool,
                     time_limit=time_limit_scp,
                     verbose=False,
                 )
@@ -671,17 +696,47 @@ def run_drsci_probabilistic(
         )
         solve_scp = lazy_import_scp(scp_solver_name)
 
-        print(
-            f"[{instance_base} FINAL SCP] solver={scp_solver_name}",
-            flush=True,
+        # ---- FILTER ROUTE POOL FOR SCP ----
+        before = len(global_route_pool)
+
+        scp_route_pool = filter_route_pool_for_scp(
+            routes=global_route_pool,
+            route_tags=route_tags,
+            inst=inst,
+            depot_id=1,
+            max_routes=5000,
+            min_utilization=0.30,
+            scp_every=scp_every,
+            elite_after_scp_rounds=2,
+            min_pool_size_for_elite=1500,
+            enable_step_b=True,
         )
 
+        after = len(scp_route_pool)
+        removed = before - after
+
+        if removed > 0:
+            msg = (
+                f"[{instance_base} FINAL SCP] solver={scp_solver_name} | "
+                f"route_pool={after} (removed {removed} / {before})"
+            )
+        else:
+            msg = (
+                f"[{instance_base} FINAL SCP] solver={scp_solver_name} | "
+                f"route_pool={after}"
+            )
+
+        print(msg, flush=True)
+        _log(msg)
+
+        # ---- SCP SOLVE (FILTERED POOL ONLY) ----
         scp_res = solve_scp(
             instance_name=instance_name,
-            route_pool=global_route_pool,
+            route_pool=scp_route_pool,
             time_limit=time_limit_scp,
             verbose=False,
         )
+
 
         if logger:
             if scp_res.get("optimal", False):
@@ -752,7 +807,7 @@ def run_drsci_probabilistic(
             )
 
 
-        # ========================================================
+    # ========================================================
     # FINAL LOGGING OUTPUT (mirrors console output)
     # ========================================================
     if logger:
