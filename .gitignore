@@ -75,7 +75,7 @@ build/
 compile_commands.json
 
 # Results and logs
-*.log
+# .log
 *.csv
 results/
 
@@ -98,4 +98,4 @@ setup.sh
 # TUM Gurobi License Server
 gurobi.lic
 
-output/
+# output/

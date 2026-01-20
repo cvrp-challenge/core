@@ -1,0 +1,853 @@
+2026-01-19 19:07:23 | INFO     | Logger initialized
+2026-01-19 19:07:23 | INIT     | ================================================================================
+2026-01-19 19:07:23 | INIT     | [RUN CONFIGURATION] instance=XL-n1048-k237.vrp run=0
+2026-01-19 19:07:23 | INIT     | seed = 995947620
+2026-01-19 19:07:23 | INIT     | scp_solvers = ['gurobi_mip']
+2026-01-19 19:07:23 | INIT     | scp_switch_prob = 0.0
+2026-01-19 19:07:23 | INIT     | time_limit_scp = 900.0
+2026-01-19 19:07:23 | INIT     | scp_every = 3
+2026-01-19 19:07:23 | INIT     | time_limit_total = 35000.0
+2026-01-19 19:07:23 | INIT     | max_no_improvement_iters = 50
+2026-01-19 19:07:23 | INIT     | min_avg_cluster_size = 100
+2026-01-19 19:07:23 | INIT     | max_avg_cluster_size = 2500
+2026-01-19 19:07:23 | INIT     | routing_solvers = ['pyvrp', 'filo1', 'filo2']
+2026-01-19 19:07:23 | INIT     | routing_no_improvement = None
+2026-01-19 19:07:23 | INIT     | ls_neighbourhood = dri_spatial
+2026-01-19 19:07:23 | INIT     | ls_after_routing_max_neighbours = 300
+2026-01-19 19:07:23 | INIT     | ls_max_neighbours_restricted = 200
+2026-01-19 19:07:23 | INIT     | randomize_polar_angle = True
+2026-01-19 19:07:23 | INIT     | warm_start_solutions = None
+2026-01-19 19:07:23 | INIT     | log_mode = instance
+2026-01-19 19:07:23 | INIT     | log_to_console = False
+2026-01-19 19:07:23 | INIT     | periodic_sol_dump = True
+2026-01-19 19:07:23 | INIT     | sol_dump_interval = 3600.0
+2026-01-19 19:07:23 | INIT     | ================================================================================
+2026-01-19 19:07:23 | INFO     | [XL-n1048-k237 ITERATION 1] mode=VB method=sk_kmeans k=1 solver=filo2
+2026-01-19 19:07:28 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=1 | sizes=[1047] | min=1047 max=1047 avg=1047.0
+2026-01-19 19:07:28 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:09:43 | INFO     | [XL-n1048-k237 IMPROVED-VB/RB] best_cost=385553 | Gap: 1.4191%
+2026-01-19 19:09:43 | INFO     | [XL-n1048-k237 ITERATION 2] mode=RB method=sk_ac_min k=4 solver=filo2
+2026-01-19 19:09:43 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=4 | sizes=[875, 9, 160, 3] | min=3 max=875 avg=261.8
+2026-01-19 19:09:43 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:11:46 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=385553 | streak=1 | Gap: 1.4191%
+2026-01-19 19:11:46 | INFO     | [XL-n1048-k237 ITERATION 3] mode=RB method=sk_kmeans k=10 solver=filo2
+2026-01-19 19:11:46 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=10 | sizes=[140, 88, 116, 128, 116, 141, 71, 107, 54, 86] | min=54 max=141 avg=104.7
+2026-01-19 19:11:46 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:13:00 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=522
+2026-01-19 19:13:00 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 19:13:04 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=385399 | Gap: 1.3786%
+2026-01-19 19:13:04 | INFO     | [XL-n1048-k237 ITERATION 4] mode=RB method=sk_kmeans k=9 solver=filo1
+2026-01-19 19:13:04 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=9 | sizes=[87, 109, 142, 120, 163, 146, 61, 114, 105] | min=61 max=163 avg=116.3
+2026-01-19 19:13:04 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:14:50 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=385399 | streak=1 | Gap: 1.3786%
+2026-01-19 19:14:50 | INFO     | [XL-n1048-k237 ITERATION 5] mode=VB method=sk_kmeans k=9 solver=filo2
+2026-01-19 19:14:53 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=9 | sizes=[148, 62, 114, 107, 122, 100, 146, 143, 105] | min=62 max=148 avg=116.3
+2026-01-19 19:14:53 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:15:52 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=385399 | streak=2 | Gap: 1.3786%
+2026-01-19 19:15:52 | INFO     | [XL-n1048-k237 ITERATION 6] mode=RB method=sk_ac_avg k=4 solver=filo1
+2026-01-19 19:15:52 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=4 | sizes=[408, 217, 255, 167] | min=167 max=408 avg=261.8
+2026-01-19 19:15:52 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:18:11 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=921
+2026-01-19 19:18:11 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 19:18:15 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=384963 | Gap: 1.2639%
+2026-01-19 19:18:15 | INFO     | [XL-n1048-k237 ITERATION 7] mode=VB method=sk_kmeans k=10 solver=filo2
+2026-01-19 19:18:19 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=10 | sizes=[116, 114, 124, 110, 145, 76, 89, 98, 98, 77] | min=76 max=145 avg=104.7
+2026-01-19 19:18:19 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:19:16 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=384963 | streak=1 | Gap: 1.2639%
+2026-01-19 19:19:16 | INFO     | [XL-n1048-k237 ITERATION 8] mode=VB method=sk_ac_min k=5 solver=filo2
+2026-01-19 19:19:17 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=5 | sizes=[1042, 2, 1, 1, 1] | min=1 max=1042 avg=209.4
+2026-01-19 19:19:17 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:21:22 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=384963 | streak=2 | Gap: 1.2639%
+2026-01-19 19:21:22 | INFO     | [XL-n1048-k237 ITERATION 9] mode=VB method=sk_ac_min k=5 solver=pyvrp
+2026-01-19 19:21:23 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=5 | sizes=[481, 562, 1, 2, 1] | min=1 max=562 avg=209.4
+2026-01-19 19:21:23 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with pyvrp
+2026-01-19 19:23:54 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=1370
+2026-01-19 19:24:00 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 19:24:04 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=384773 | Gap: 1.2140%
+2026-01-19 19:24:04 | INFO     | [XL-n1048-k237 ITERATION 10] mode=VB method=sk_kmeans k=10 solver=filo2
+2026-01-19 19:24:08 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=10 | sizes=[116, 114, 124, 110, 145, 76, 89, 98, 98, 77] | min=76 max=145 avg=104.7
+2026-01-19 19:24:08 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:25:05 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=384773 | streak=1 | Gap: 1.2140%
+2026-01-19 19:25:05 | INFO     | [XL-n1048-k237 ITERATION 11] mode=VB method=sk_kmeans k=5 solver=filo1
+2026-01-19 19:25:08 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=5 | sizes=[266, 230, 208, 183, 160] | min=160 max=266 avg=209.4
+2026-01-19 19:25:08 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:27:05 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=384773 | streak=2 | Gap: 1.2140%
+2026-01-19 19:27:05 | INFO     | [XL-n1048-k237 ITERATION 12] mode=RB method=sk_ac_avg k=5 solver=filo2
+2026-01-19 19:27:05 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=5 | sizes=[366, 169, 382, 105, 25] | min=25 max=382 avg=209.4
+2026-01-19 19:27:05 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:29:05 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=1614
+2026-01-19 19:29:25 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 19:29:31 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=384181 | Gap: 1.0582%
+2026-01-19 19:29:31 | INFO     | [XL-n1048-k237 ITERATION 13] mode=VB method=sk_ac_min k=9 solver=filo2
+2026-01-19 19:29:33 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=9 | sizes=[1038, 2, 1, 1, 1, 1, 1, 1, 1] | min=1 max=1038 avg=116.3
+2026-01-19 19:29:33 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:33:00 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=384181 | streak=1 | Gap: 1.0582%
+2026-01-19 19:33:00 | INFO     | [XL-n1048-k237 ITERATION 14] mode=RB method=sk_ac_avg k=9 solver=filo1
+2026-01-19 19:33:00 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=9 | sizes=[239, 65, 109, 53, 126, 134, 108, 119, 94] | min=53 max=239 avg=116.3
+2026-01-19 19:33:00 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:34:58 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=384181 | streak=2 | Gap: 1.0582%
+2026-01-19 19:34:58 | INFO     | [XL-n1048-k237 ITERATION 15] mode=VB method=sk_ac_complete k=8 solver=pyvrp
+2026-01-19 19:34:59 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=8 | sizes=[228, 124, 117, 172, 34, 140, 135, 97] | min=34 max=228 avg=130.9
+2026-01-19 19:34:59 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with pyvrp
+2026-01-19 19:37:52 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=1962
+2026-01-19 19:38:27 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 19:38:31 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=383861 | Gap: 0.9741%
+2026-01-19 19:38:31 | INFO     | [XL-n1048-k237 ITERATION 16] mode=VB method=fcm k=10 solver=filo1
+2026-01-19 19:38:34 | INFO     | [XL-n1048-k237 CLUSTER] method=fcm k=10 | sizes=[107, 80, 106, 120, 120, 89, 104, 130, 104, 87] | min=80 max=130 avg=104.7
+2026-01-19 19:38:34 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:39:52 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=383861 | streak=1 | Gap: 0.9741%
+2026-01-19 19:39:52 | INFO     | [XL-n1048-k237 ITERATION 17] mode=VB method=sk_ac_complete k=3 solver=filo1
+2026-01-19 19:39:54 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=3 | sizes=[492, 286, 269] | min=269 max=492 avg=349.0
+2026-01-19 19:39:54 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:42:31 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=383861 | streak=2 | Gap: 0.9741%
+2026-01-19 19:42:31 | INFO     | [XL-n1048-k237 ITERATION 18] mode=RB method=sk_ac_avg k=7 solver=filo2
+2026-01-19 19:42:31 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=7 | sizes=[311, 254, 95, 89, 148, 90, 60] | min=60 max=311 avg=149.6
+2026-01-19 19:42:31 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:43:55 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=2327
+2026-01-19 19:44:47 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 19:44:50 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=383636 | Gap: 0.9149%
+2026-01-19 19:44:50 | INFO     | [XL-n1048-k237 ITERATION 19] mode=VB method=fcm k=10 solver=filo2
+2026-01-19 19:44:53 | INFO     | [XL-n1048-k237 CLUSTER] method=fcm k=10 | sizes=[120, 87, 104, 107, 120, 89, 106, 80, 130, 104] | min=80 max=130 avg=104.7
+2026-01-19 19:44:53 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:45:50 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=383636 | streak=1 | Gap: 0.9149%
+2026-01-19 19:45:50 | INFO     | [XL-n1048-k237 ITERATION 20] mode=RB method=sk_ac_avg k=8 solver=filo1
+2026-01-19 19:45:50 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=8 | sizes=[224, 153, 163, 79, 158, 57, 123, 90] | min=57 max=224 avg=130.9
+2026-01-19 19:45:50 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:47:46 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=383636 | streak=2 | Gap: 0.9149%
+2026-01-19 19:47:46 | INFO     | [XL-n1048-k237 ITERATION 21] mode=RB method=sk_ac_avg k=5 solver=pyvrp
+2026-01-19 19:47:46 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=5 | sizes=[180, 248, 387, 79, 153] | min=79 max=387 avg=209.4
+2026-01-19 19:47:46 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with pyvrp
+2026-01-19 19:50:33 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=2649
+2026-01-19 19:51:55 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 19:52:04 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=383529 | Gap: 0.8867%
+2026-01-19 19:52:04 | INFO     | [XL-n1048-k237 ITERATION 22] mode=VB method=sk_ac_complete k=10 solver=filo2
+2026-01-19 19:52:06 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=10 | sizes=[172, 82, 117, 117, 42, 140, 135, 97, 111, 34] | min=34 max=172 avg=104.7
+2026-01-19 19:52:06 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:53:52 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=383529 | streak=1 | Gap: 0.8867%
+2026-01-19 19:53:52 | INFO     | [XL-n1048-k237 ITERATION 23] mode=VB method=k_medoids_pyclustering k=3 solver=filo2
+2026-01-19 19:54:00 | INFO     | [XL-n1048-k237 CLUSTER] method=k_medoids_pyclustering k=3 | sizes=[297, 385, 365] | min=297 max=385 avg=349.0
+2026-01-19 19:54:00 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 19:57:09 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=383529 | streak=2 | Gap: 0.8867%
+2026-01-19 19:57:09 | INFO     | [XL-n1048-k237 ITERATION 24] mode=RB method=sk_ac_avg k=4 solver=filo1
+2026-01-19 19:57:09 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=4 | sizes=[348, 315, 214, 170] | min=170 max=348 avg=261.8
+2026-01-19 19:57:09 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 19:59:48 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=2961
+2026-01-19 20:00:04 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 20:00:08 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=382815 | Gap: 0.6989%
+2026-01-19 20:00:08 | INFO     | [XL-n1048-k237 ITERATION 25] mode=RB method=sk_kmeans k=4 solver=filo1
+2026-01-19 20:00:08 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=4 | sizes=[318, 280, 149, 300] | min=149 max=318 avg=261.8
+2026-01-19 20:00:08 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:02:25 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382815 | streak=1 | Gap: 0.6989%
+2026-01-19 20:02:25 | INFO     | [XL-n1048-k237 ITERATION 26] mode=RB method=sk_ac_avg k=7 solver=filo1
+2026-01-19 20:02:25 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=7 | sizes=[247, 186, 181, 147, 169, 62, 55] | min=55 max=247 avg=149.6
+2026-01-19 20:02:25 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:04:57 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382815 | streak=2 | Gap: 0.6989%
+2026-01-19 20:04:57 | INFO     | [XL-n1048-k237 ITERATION 27] mode=VB method=sk_ac_min k=7 solver=filo1
+2026-01-19 20:05:00 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=7 | sizes=[1040, 2, 1, 1, 1, 1, 1] | min=1 max=1040 avg=149.6
+2026-01-19 20:05:00 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:07:51 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=3228
+2026-01-19 20:08:41 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 20:08:45 | INFO     | 
+2026-01-19 20:08:45 | INFO     | ================================================================================
+2026-01-19 20:08:45 | INFO     | [XL-n1048-k237] PERIODIC SNAPSHOT SNAPSHOT_001
+2026-01-19 20:08:45 | INFO     | ================================================================================
+2026-01-19 20:08:45 | INFO     | Route #1: 928 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #2: 498 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #3: 658 471 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #4: 971 819 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #5: 126 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #6: 968 240 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #7: 692 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #8: 429 724 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #9: 182 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #10: 94 725 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #11: 998 274 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #12: 573 864 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #13: 512 479 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #14: 798 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #15: 963 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #16: 1015 22 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #17: 993 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #18: 814 497 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #19: 712 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #20: 815 1027 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #21: 1029 110 533 59 911 473 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #22: 671 546 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #23: 567 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #24: 599 580 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #25: 557 821 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #26: 31 797 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #27: 343 43 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #28: 662 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #29: 839 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #30: 852 383 249 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #31: 879 788 501 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #32: 85 154 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #33: 779 729 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #34: 734 891 575 818 133 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #35: 236 337 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #36: 1041 830 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #37: 50 752 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #38: 128 503 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #39: 101 583 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #40: 494 61 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #41: 265 690 200 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #42: 203 12 537 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #43: 1004 304 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #44: 672 280 469 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #45: 823 466 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #46: 149 604 245 919 934 361 374 676 931 212 999 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #47: 329 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #48: 943 398 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #49: 363 555 248 986 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #50: 259 536 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #51: 685 168 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #52: 5 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #53: 767 276 717 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #54: 594 196 972 301 540 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #55: 711 771 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #56: 700 615 657 44 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #57: 96 331 799 263 667 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #58: 319 673 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #59: 947 918 293 1032 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #60: 773 581 491 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #61: 289 992 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #62: 217 543 282 89 330 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #63: 136 890 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #64: 108 576 1030 408 294 309 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #65: 961 804 52 592 102 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #66: 492 686 218 647 339 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #67: 445 643 418 60 74 99 161 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #68: 1017 646 914 617 691 442 563 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #69: 920 921 396 811 170 264 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #70: 636 955 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #71: 377 924 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #72: 781 664 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #73: 480 323 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #74: 730 290 482 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #75: 165 648 630 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #76: 530 257 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #77: 710 822 904 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #78: 303 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #79: 420 6 973 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #80: 334 114 27 181 24 585 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #81: 755 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #82: 382 893 787 772 708 242 863 449 946 796 633 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #83: 626 1025 300 935 366 895 786 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #84: 378 130 349 137 975 570 637 345 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #85: 759 1043 554 428 155 298 370 930 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #86: 46 121 159 103 360 681 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #87: 381 1007 977 183 227 14 660 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #88: 950 219 410 978 138 702 527 808 438 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 20:08:45 | INFO     | Route #89: 784 88 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #90: 175 851 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #91: 246 944 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #92: 485 1003 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #93: 454 838 613 695 669 380 582 562 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #94: 1044 66 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #95: 180 974 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #96: 224 1022 650 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 20:08:45 | INFO     | Route #97: 867 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 20:08:45 | INFO     | Route #98: 447 758 118 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 20:08:45 | INFO     | Route #99: 239 393 194 966 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 20:08:45 | INFO     | Route #100: 793 162 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 20:08:45 | INFO     | Route #101: 629 794 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 20:08:45 | INFO     | Route #102: 597 489 281 990 216 833 733 591 1001 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 20:08:45 | INFO     | Route #103: 127 775 699 746 622 988 166 432 653 638 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 20:08:45 | INFO     | Route #104: 609 8 769 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #105: 827 726 731 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #106: 279 70 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #107: 26 962 233 926 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #108: 113 910 800 761 272 969 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #109: 535 226 709 812 386 208 1005 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #110: 706 215 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #111: 834 656 1038 397 1042 954 614 677 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #112: 829 713 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #113: 35 578 868 913 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #114: 348 64 979 488 62 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 20:08:45 | INFO     | Route #115: 431 63 689 199 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #116: 86 813 42 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=6
+2026-01-19 20:08:45 | INFO     | Route #117: 507 744 1006 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=6
+2026-01-19 20:08:45 | INFO     | Route #118: 970 187 311 235 870 510 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=6
+2026-01-19 20:08:45 | INFO     | Route #119: 854 283 158 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=6
+2026-01-19 20:08:45 | INFO     | Route #120: 100 558 837 195 687 93 148 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=6
+2026-01-19 20:08:45 | INFO     | Route #121: 146 525 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #122: 81 176 625 693 164 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #123: 474 222 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #124: 7 776 268 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #125: 65 221 186 477 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #126: 441 347 403 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #127: 892 877 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #128: 869 718 743 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 20:08:45 | INFO     | Route #129: 139 244 297 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #130: 1011 1016 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #131: 452 335 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #132: 882 76 995 832 593 996 305 21 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #133: 19 373 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #134: 448 704 859 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #135: 28 991 201 318 358 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #136: 79 941 73 641 32 54 720 481 792 994 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #137: 846 856 538 618 696 589 749 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #138: 675 888 41 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 20:08:45 | INFO     | Route #139: 440 528 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #140: 989 174 461 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #141: 516 231 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #142: 774 684 434 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #143: 314 866 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #144: 623 193 590 843 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #145: 1028 444 661 949 875 522 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #146: 956 135 598 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 20:08:45 | INFO     | Route #147: 232 595 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #148: 871 670 523 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #149: 415 765 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #150: 805 371 256 169 23 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #151: 237 132 499 584 426 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #152: 908 569 508 395 751 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #153: 322 53 881 610 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #154: 587 275 97 1036 840 211 214 942 505 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #155: 456 909 782 299 2 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #156: 49 608 654 817 1018 390 723 736 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #157: 145 20 922 945 721 801 316 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #158: 876 296 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #159: 703 539 611 900 153 810 529 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #160: 790 327 376 356 1046 541 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #161: 150 267 634 198 806 548 1012 353 423 600 738 338 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 20:08:45 | INFO     | Route #162: 1023 982 741 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #163: 355 295 475 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #164: 464 424 457 679 980 602 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #165: 210 344 483 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=12
+2026-01-19 20:08:45 | INFO     | Route #166: 163 173 948 680 886 261 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=12
+2026-01-19 20:08:45 | INFO     | Route #167: 940 678 640 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=12
+2026-01-19 20:08:45 | INFO     | Route #168: 47 387 151 414 109 364 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=13
+2026-01-19 20:08:45 | INFO     | Route #169: 141 465 95 57 462 683 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=13
+2026-01-19 20:08:45 | INFO     | Route #170: 560 156 362 1031 247 402 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=13
+2026-01-19 20:08:45 | INFO     | Route #171: 836 189 83 317 446 1014 328 518 1009 515 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=13
+2026-01-19 20:08:45 | INFO     | Route #172: 36 545 487 644 372 925 122 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 20:08:45 | INFO     | Route #173: 768 241 737 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 20:08:45 | INFO     | Route #174: 495 71 514 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 20:08:45 | INFO     | Route #175: 809 556 229 1002 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 20:08:45 | INFO     | Route #176: 400 981 778 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 20:08:45 | INFO     | Route #177: 391 1035 588 51 459 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 20:08:45 | INFO     | Route #178: 645 455 561 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 20:08:45 | INFO     | Route #179: 1019 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 20:08:45 | INFO     | Route #180: 285 727 368 436 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 20:08:45 | INFO     | Route #181: 1021 140 770 605 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #182: 291 250 490 627 350 117 898 526 288 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 20:08:45 | INFO     | Route #183: 719 308 115 732 907 34 435 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=15
+2026-01-19 20:08:45 | INFO     | Route #184: 652 631 816 306 207 417 106 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=15
+2026-01-19 20:08:45 | INFO     | Route #185: 896 997 903 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=15
+2026-01-19 20:08:45 | INFO     | Route #186: 313 612 120 185 565 872 517 616 || mode=vb method=fcm solver=filo1 stage=post_ls iter=16
+2026-01-19 20:08:45 | INFO     | Route #187: 958 346 || mode=vb method=fcm solver=filo1 stage=post_ls iter=16
+2026-01-19 20:08:45 | INFO     | Route #188: 333 1034 269 225 72 754 577 880 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #189: 430 92 960 531 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #190: 307 191 722 825 354 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #191: 188 649 841 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #192: 586 18 271 783 470 701 665 651 351 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #193: 75 326 357 861 33 878 735 552 320 1045 312 762 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #194: 258 252 619 985 171 144 439 504 287 105 1024 912 763 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #195: 596 564 369 506 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #196: 824 707 223 472 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #197: 37 425 865 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #198: 984 160 413 807 476 324 468 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #199: 9 255 262 780 451 951 902 384 87 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 20:08:45 | INFO     | Route #200: 147 933 959 1026 952 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #201: 209 172 134 286 502 739 119 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #202: 714 204 11 927 572 547 254 705 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #203: 642 1 124 367 899 486 842 167 80 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #204: 409 129 1020 757 273 411 321 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #205: 55 620 392 421 496 84 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #206: 1039 157 906 639 742 450 957 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #207: 802 915 58 90 688 831 310 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #208: 251 965 416 553 38 458 905 48 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #209: 77 142 405 1008 69 953 885 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #210: 929 184 967 419 179 849 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #211: 513 484 884 542 901 178 789 190 987 571 635 4 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #212: 574 887 606 45 399 365 389 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=18
+2026-01-19 20:08:45 | INFO     | Route #213: 78 551 407 || mode=vb method=fcm solver=filo2 stage=post_ls iter=19
+2026-01-19 20:08:45 | INFO     | Route #214: 10 394 521 764 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #215: 385 1037 238 524 550 228 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #216: 375 131 56 205 740 116 791 795 747 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #217: 433 284 192 91 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #218: 632 511 143 777 579 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #219: 753 697 659 404 760 1010 68 628 828 359 803 25 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #220: 820 352 152 668 336 889 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #221: 277 666 197 478 13 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #222: 544 1000 655 39 270 332 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 20:08:45 | INFO     | Route #223: 766 463 82 292 549 983 213 848 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #224: 862 220 844 826 125 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #225: 278 104 621 855 341 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #226: 603 342 874 1040 694 1033 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #227: 493 715 897 853 234 835 756 379 748 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #228: 938 15 1013 1047 17 607 30 111 847 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #229: 388 520 845 427 682 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #230: 873 325 858 850 932 123 467 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #231: 107 939 894 698 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #232: 412 519 260 3 663 315 460 601 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #233: 923 728 883 785 964 230 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #234: 750 453 937 112 406 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=21
+2026-01-19 20:08:45 | INFO     | Route #235: 566 716 624 509 500 916 443 || mode=vb method=sk_ac_complete solver=filo2 stage=post_ls iter=22
+2026-01-19 20:08:45 | INFO     | Route #236: 67 559 976 860 || mode=vb method=sk_ac_complete solver=filo2 stage=post_ls iter=22
+2026-01-19 20:08:45 | INFO     | Route #237: 302 243 266 16 || mode=vb method=sk_ac_complete solver=filo2 stage=post_ls iter=22
+2026-01-19 20:08:45 | INFO     | Route #238: 422 936 202 206 || mode=vb method=sk_ac_complete solver=filo2 stage=post_ls iter=22
+2026-01-19 20:08:45 | INFO     | Route #239: 29 674 534 437 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #240: 532 40 917 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #241: 177 340 568 745 401 857 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=24
+2026-01-19 20:08:45 | INFO     | Route #242: 98 253 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=24
+2026-01-19 20:08:45 | INFO     | 
+2026-01-19 20:08:45 | INFO     | [BEST SOLUTION ROUTE SUMMARY]
+2026-01-19 20:08:45 | INFO     | --------------------------------------------------------------------------------
+2026-01-19 20:08:45 | INFO     |   87 routes | VB    | sk_kmeans       | solver=filo2      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |   28 routes | SCP   | gurobi_mip      | solver=UNKNOWN    | stage=scp_post_ls
+2026-01-19 20:08:45 | INFO     |   22 routes | RB    | sk_ac_avg       | solver=filo1      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |   19 routes | RB    | sk_ac_min       | solver=filo2      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |   14 routes | VB    | sk_ac_min       | solver=filo2      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |   13 routes | VB    | sk_kmeans       | solver=filo1      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |   10 routes | VB    | sk_ac_complete  | solver=filo1      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    9 routes | RB    | sk_ac_avg       | solver=filo2      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    8 routes | RB    | sk_kmeans       | solver=filo2      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    8 routes | VB    | sk_ac_min       | solver=pyvrp      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    7 routes | RB    | sk_ac_avg       | solver=pyvrp      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    7 routes | RB    | sk_kmeans       | solver=filo1      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    4 routes | VB    | sk_ac_complete  | solver=filo2      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    3 routes | VB    | sk_ac_complete  | solver=pyvrp      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    2 routes | VB    | fcm             | solver=filo1      | stage=post_ls
+2026-01-19 20:08:45 | INFO     |    1 routes | VB    | fcm             | solver=filo2      | stage=post_ls
+2026-01-19 20:08:45 | INFO     | 
+2026-01-19 20:08:45 | INFO     | [ROUTE POOL SUMMARY]
+2026-01-19 20:08:45 | INFO     |   563 routes | ('VB', 'sk_kmeans', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   456 routes | ('RB', 'sk_ac_avg', 'filo1', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   245 routes | ('VB', 'sk_ac_min', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   188 routes | ('RB', 'sk_kmeans', 'filo1', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   177 routes | ('RB', 'sk_ac_avg', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   159 routes | ('VB', 'sk_ac_min', 'pyvrp', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   157 routes | ('RB', 'sk_ac_min', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   133 routes | ('VB', 'sk_kmeans', 'filo1', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   132 routes | ('SCP', 'gurobi_mip', 'UNKNOWN', 'scp_post_ls')
+2026-01-19 20:08:45 | INFO     |   127 routes | ('VB', 'sk_ac_complete', 'pyvrp', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   126 routes | ('VB', 'fcm', 'filo1', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   124 routes | ('VB', 'sk_ac_complete', 'filo1', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   121 routes | ('RB', 'sk_kmeans', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   116 routes | ('VB', 'fcm', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   109 routes | ('VB', 'sk_ac_complete', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   104 routes | ('RB', 'sk_ac_avg', 'pyvrp', 'post_ls')
+2026-01-19 20:08:45 | INFO     |   100 routes | ('VB', 'k_medoids_pyclustering', 'filo2', 'post_ls')
+2026-01-19 20:08:45 | INFO     |    96 routes | ('VB', 'sk_ac_min', 'filo1', 'post_ls')
+2026-01-19 20:08:45 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=382727 | Gap: 0.6758%
+2026-01-19 20:08:45 | INFO     | [XL-n1048-k237 ITERATION 28] mode=VB method=fcm k=6 solver=filo1
+2026-01-19 20:08:46 | INFO     | [XL-n1048-k237 CLUSTER] method=fcm k=6 | sizes=[143, 201, 158, 168, 177, 200] | min=143 max=201 avg=174.5
+2026-01-19 20:08:46 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:10:37 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382727 | streak=1 | Gap: 0.6758%
+2026-01-19 20:10:37 | INFO     | [XL-n1048-k237 ITERATION 29] mode=RB method=sk_kmeans k=5 solver=filo1
+2026-01-19 20:10:37 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=5 | sizes=[253, 169, 230, 204, 191] | min=169 max=253 avg=209.4
+2026-01-19 20:10:37 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:12:33 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382727 | streak=2 | Gap: 0.6758%
+2026-01-19 20:12:33 | INFO     | [XL-n1048-k237 ITERATION 30] mode=RB method=sk_ac_avg k=8 solver=filo2
+2026-01-19 20:12:33 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=8 | sizes=[164, 167, 140, 204, 159, 62, 96, 55] | min=55 max=204 avg=130.9
+2026-01-19 20:12:33 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 20:14:10 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=3473
+2026-01-19 20:14:32 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 20:14:36 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=382353 | Gap: 0.5774%
+2026-01-19 20:14:36 | INFO     | [XL-n1048-k237 ITERATION 31] mode=VB method=k_medoids_pyclustering k=4 solver=pyvrp
+2026-01-19 20:14:40 | INFO     | [XL-n1048-k237 CLUSTER] method=k_medoids_pyclustering k=4 | sizes=[294, 296, 228, 229] | min=228 max=296 avg=261.8
+2026-01-19 20:14:40 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with pyvrp
+2026-01-19 20:17:29 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382353 | streak=1 | Gap: 0.5774%
+2026-01-19 20:17:29 | INFO     | [XL-n1048-k237 ITERATION 32] mode=VB method=sk_ac_avg k=3 solver=pyvrp
+2026-01-19 20:17:32 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=3 | sizes=[382, 330, 335] | min=330 max=382 avg=349.0
+2026-01-19 20:17:32 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with pyvrp
+2026-01-19 20:20:18 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382353 | streak=2 | Gap: 0.5774%
+2026-01-19 20:20:18 | INFO     | [XL-n1048-k237 ITERATION 33] mode=RB method=sk_kmeans k=6 solver=filo2
+2026-01-19 20:20:18 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=6 | sizes=[187, 109, 127, 253, 195, 176] | min=109 max=253 avg=174.5
+2026-01-19 20:20:18 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 20:23:05 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=3814
+2026-01-19 20:25:14 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 20:25:25 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=382349 | Gap: 0.5763%
+2026-01-19 20:25:25 | INFO     | [XL-n1048-k237 ITERATION 34] mode=VB method=sk_ac_complete k=2 solver=filo2
+2026-01-19 20:25:29 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=2 | sizes=[555, 492] | min=492 max=555 avg=523.5
+2026-01-19 20:25:29 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 20:27:53 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382349 | streak=1 | Gap: 0.5763%
+2026-01-19 20:27:53 | INFO     | [XL-n1048-k237 ITERATION 35] mode=VB method=sk_kmeans k=9 solver=filo1
+2026-01-19 20:27:56 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=9 | sizes=[148, 62, 114, 107, 122, 100, 146, 143, 105] | min=62 max=148 avg=116.3
+2026-01-19 20:27:56 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:29:29 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382349 | streak=2 | Gap: 0.5763%
+2026-01-19 20:29:29 | INFO     | [XL-n1048-k237 ITERATION 36] mode=VB method=fcm k=8 solver=filo1
+2026-01-19 20:29:30 | INFO     | [XL-n1048-k237 CLUSTER] method=fcm k=8 | sizes=[123, 141, 126, 115, 160, 132, 100, 150] | min=100 max=160 avg=130.9
+2026-01-19 20:29:30 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:31:23 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=4096
+2026-01-19 20:32:56 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 20:32:58 | INFO     | [XL-n1048-k237 SCP-NO-IMPROVEMENT] cost=382352 (best=382349) | Gap: 0.5763%
+2026-01-19 20:32:58 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382349 | streak=3 | Gap: 0.5763%
+2026-01-19 20:32:58 | INFO     | [XL-n1048-k237 ITERATION 37] mode=VB method=sk_ac_min k=7 solver=filo2
+2026-01-19 20:32:59 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=7 | sizes=[1040, 2, 1, 1, 1, 1, 1] | min=1 max=1040 avg=149.6
+2026-01-19 20:32:59 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 20:35:07 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382349 | streak=4 | Gap: 0.5763%
+2026-01-19 20:35:07 | INFO     | [XL-n1048-k237 ITERATION 38] mode=VB method=k_medoids_pyclustering k=7 solver=filo2
+2026-01-19 20:35:11 | INFO     | [XL-n1048-k237 CLUSTER] method=k_medoids_pyclustering k=7 | sizes=[179, 170, 148, 169, 134, 107, 140] | min=107 max=179 avg=149.6
+2026-01-19 20:35:11 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 20:36:22 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382349 | streak=5 | Gap: 0.5763%
+2026-01-19 20:36:22 | INFO     | [XL-n1048-k237 ITERATION 39] mode=RB method=sk_kmeans k=6 solver=filo2
+2026-01-19 20:36:22 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=6 | sizes=[124, 233, 136, 192, 186, 176] | min=124 max=233 avg=174.5
+2026-01-19 20:36:22 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 20:38:11 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=4376
+2026-01-19 20:40:20 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 20:40:25 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=382202 | Gap: 0.5377%
+2026-01-19 20:40:25 | INFO     | [XL-n1048-k237 ITERATION 40] mode=RB method=sk_ac_min k=7 solver=filo1
+2026-01-19 20:40:25 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=7 | sizes=[952, 45, 12, 9, 14, 5, 10] | min=5 max=952 avg=149.6
+2026-01-19 20:40:25 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:44:32 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382202 | streak=1 | Gap: 0.5377%
+2026-01-19 20:44:32 | INFO     | [XL-n1048-k237 ITERATION 41] mode=VB method=sk_ac_complete k=2 solver=filo2
+2026-01-19 20:44:33 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=2 | sizes=[555, 492] | min=492 max=555 avg=523.5
+2026-01-19 20:44:33 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 20:47:12 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382202 | streak=2 | Gap: 0.5377%
+2026-01-19 20:47:12 | INFO     | [XL-n1048-k237 ITERATION 42] mode=VB method=sk_ac_avg k=6 solver=filo1
+2026-01-19 20:47:13 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=6 | sizes=[232, 268, 112, 266, 77, 92] | min=77 max=268 avg=174.5
+2026-01-19 20:47:13 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:50:07 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=4565
+2026-01-19 20:51:35 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 20:51:39 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=382129 | Gap: 0.5185%
+2026-01-19 20:51:39 | INFO     | [XL-n1048-k237 ITERATION 43] mode=VB method=fcm k=8 solver=filo1
+2026-01-19 20:51:41 | INFO     | [XL-n1048-k237 CLUSTER] method=fcm k=8 | sizes=[123, 160, 132, 115, 150, 100, 141, 126] | min=100 max=160 avg=130.9
+2026-01-19 20:51:41 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 20:53:55 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382129 | streak=1 | Gap: 0.5185%
+2026-01-19 20:53:55 | INFO     | [XL-n1048-k237 ITERATION 44] mode=VB method=sk_ac_complete k=6 solver=pyvrp
+2026-01-19 20:53:56 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=6 | sizes=[252, 228, 269, 124, 34, 140] | min=34 max=269 avg=174.5
+2026-01-19 20:53:56 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with pyvrp
+2026-01-19 20:56:42 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382129 | streak=2 | Gap: 0.5185%
+2026-01-19 20:56:42 | INFO     | [XL-n1048-k237 ITERATION 45] mode=VB method=k_medoids_pyclustering k=2 solver=pyvrp
+2026-01-19 20:56:45 | INFO     | [XL-n1048-k237 CLUSTER] method=k_medoids_pyclustering k=2 | sizes=[537, 510] | min=510 max=537 avg=523.5
+2026-01-19 20:56:45 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with pyvrp
+2026-01-19 20:59:14 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=4846
+2026-01-19 21:01:04 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 21:01:08 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=382017 | Gap: 0.4890%
+2026-01-19 21:01:08 | INFO     | [XL-n1048-k237 ITERATION 46] mode=RB method=sk_kmeans k=4 solver=filo1
+2026-01-19 21:01:08 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=4 | sizes=[307, 328, 172, 240] | min=172 max=328 avg=261.8
+2026-01-19 21:01:08 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 21:03:32 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382017 | streak=1 | Gap: 0.4890%
+2026-01-19 21:03:32 | INFO     | [XL-n1048-k237 ITERATION 47] mode=VB method=sk_ac_min k=4 solver=filo1
+2026-01-19 21:03:33 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_min k=4 | sizes=[1044, 1, 1, 1] | min=1 max=1044 avg=261.8
+2026-01-19 21:03:33 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 21:06:35 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=382017 | streak=2 | Gap: 0.4890%
+2026-01-19 21:06:35 | INFO     | [XL-n1048-k237 ITERATION 48] mode=VB method=sk_kmeans k=6 solver=filo2
+2026-01-19 21:06:37 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=6 | sizes=[144, 175, 210, 186, 113, 219] | min=113 max=219 avg=174.5
+2026-01-19 21:06:37 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 21:08:30 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=5000 (removed 104 / 5104)
+2026-01-19 21:11:48 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 21:11:53 | INFO     | 
+2026-01-19 21:11:53 | INFO     | ================================================================================
+2026-01-19 21:11:53 | INFO     | [XL-n1048-k237] PERIODIC SNAPSHOT SNAPSHOT_002
+2026-01-19 21:11:53 | INFO     | ================================================================================
+2026-01-19 21:11:53 | INFO     | Route #1: 928 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #2: 971 819 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #3: 968 240 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #4: 692 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #5: 429 724 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #6: 182 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #7: 94 725 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #8: 998 274 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #9: 573 864 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #10: 512 479 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #11: 798 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #12: 963 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #13: 1015 22 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #14: 993 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #15: 814 497 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #16: 712 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #17: 815 1027 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #18: 962 233 926 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #19: 671 546 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #20: 567 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #21: 599 580 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #22: 557 821 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #23: 955 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #24: 31 797 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #25: 343 43 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #26: 839 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #27: 879 788 501 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #28: 85 154 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #29: 779 729 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #30: 236 337 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #31: 50 752 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #32: 128 503 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #33: 101 583 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #34: 494 61 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #35: 551 407 938 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #36: 203 12 537 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #37: 630 664 391 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #38: 1004 304 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #39: 823 466 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #40: 149 604 245 919 934 361 374 676 931 212 999 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #41: 329 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #42: 943 398 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #43: 363 555 248 986 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #44: 685 168 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #45: 778 981 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #46: 5 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #47: 767 276 717 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #48: 711 771 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #49: 700 615 657 44 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #50: 319 673 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #51: 289 992 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #52: 136 890 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #53: 108 576 1030 408 294 309 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #54: 90 994 73 641 32 54 538 79 846 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #55: 291 250 490 627 350 117 898 526 288 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #56: 492 686 218 647 339 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #57: 438 808 527 702 138 978 410 219 950 720 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=1
+2026-01-19 21:11:53 | INFO     | Route #58: 440 528 86 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #59: 480 323 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #60: 730 290 482 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #61: 958 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #62: 530 257 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #63: 420 6 973 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #64: 334 114 27 181 24 585 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #65: 755 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #66: 382 893 787 772 708 242 863 449 946 796 633 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #67: 55 392 421 496 620 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #68: 378 130 349 137 975 570 637 345 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #69: 46 121 159 103 360 681 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #70: 381 1007 977 183 227 14 660 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #71: 786 1025 308 115 732 907 34 435 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #72: 672 8 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #73: 268 776 7 957 || mode=rb method=sk_ac_min solver=filo2 stage=post_ls iter=2
+2026-01-19 21:11:53 | INFO     | Route #74: 241 768 419 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #75: 175 851 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #76: 341 855 621 104 26 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #77: 246 944 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #78: 63 445 93 418 60 74 161 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #79: 598 674 534 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #80: 1044 66 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #81: 541 888 41 285 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #82: 180 974 || mode=rb method=sk_kmeans solver=filo2 stage=post_ls iter=3
+2026-01-19 21:11:53 | INFO     | Route #83: 867 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 21:11:53 | INFO     | Route #84: 448 704 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 21:11:53 | INFO     | Route #85: 597 489 281 990 216 833 733 591 1001 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=4
+2026-01-19 21:11:53 | INFO     | Route #86: 544 655 39 705 152 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #87: 822 710 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #88: 279 70 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #89: 535 226 709 812 386 208 1005 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #90: 706 215 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #91: 834 656 1038 397 1042 954 614 677 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #92: 829 713 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #93: 344 648 165 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #94: 209 332 1003 485 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #95: 186 221 65 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=5
+2026-01-19 21:11:53 | INFO     | Route #96: 99 331 96 207 417 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=6
+2026-01-19 21:11:53 | INFO     | Route #97: 507 744 1006 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=6
+2026-01-19 21:11:53 | INFO     | Route #98: 653 707 223 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #99: 162 636 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #100: 498 629 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #101: 474 222 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #102: 469 884 901 178 789 190 987 571 635 769 4 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #103: 316 188 649 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #104: 441 347 403 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #105: 307 354 126 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #106: 869 718 743 || mode=vb method=sk_kmeans solver=filo2 stage=post_ls iter=7
+2026-01-19 21:11:53 | INFO     | Route #107: 1011 1016 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #108: 488 979 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #109: 452 335 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #110: 650 758 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #111: 1022 609 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #112: 377 88 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #113: 19 373 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #114: 28 991 201 318 358 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #115: 781 896 1023 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=8
+2026-01-19 21:11:53 | INFO     | Route #116: 164 693 625 176 81 210 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 21:11:53 | INFO     | Route #117: 632 68 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 21:11:53 | INFO     | Route #118: 731 726 125 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 21:11:53 | INFO     | Route #119: 799 1041 830 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 21:11:53 | INFO     | Route #120: 314 866 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 21:11:53 | INFO     | Route #121: 623 193 590 843 || mode=vb method=sk_ac_min solver=pyvrp stage=post_ls iter=9
+2026-01-19 21:11:53 | INFO     | Route #122: 969 910 800 761 272 202 206 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=9
+2026-01-19 21:11:53 | INFO     | Route #123: 232 595 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #124: 415 765 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #125: 805 371 256 169 23 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #126: 587 275 97 1036 840 211 214 942 505 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #127: 456 909 782 299 2 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #128: 703 539 611 900 153 810 529 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #129: 150 267 634 198 806 548 1012 353 423 600 738 338 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #130: 793 997 562 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=11
+2026-01-19 21:11:53 | INFO     | Route #131: 940 678 640 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=12
+2026-01-19 21:11:53 | INFO     | Route #132: 217 543 282 89 330 459 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=13
+2026-01-19 21:11:53 | INFO     | Route #133: 836 189 83 317 446 1014 328 518 1009 515 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=13
+2026-01-19 21:11:53 | INFO     | Route #134: 1029 110 631 871 670 652 904 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 21:11:53 | INFO     | Route #135: 98 960 531 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 21:11:53 | INFO     | Route #136: 578 881 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 21:11:53 | INFO     | Route #137: 36 545 487 644 372 925 122 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 21:11:53 | INFO     | Route #138: 809 556 229 1002 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=14
+2026-01-19 21:11:53 | INFO     | Route #139: 355 475 422 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 21:11:53 | INFO     | Route #140: 645 455 561 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 21:11:53 | INFO     | Route #141: 519 714 824 204 11 927 572 1000 850 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 21:11:53 | INFO     | Route #142: 77 434 684 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 21:11:53 | INFO     | Route #143: 1019 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 21:11:53 | INFO     | Route #144: 542 280 143 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=15
+2026-01-19 21:11:53 | INFO     | Route #145: 876 296 92 || mode=vb method=fcm solver=filo1 stage=post_ls iter=16
+2026-01-19 21:11:53 | INFO     | Route #146: 134 254 547 286 502 739 || mode=vb method=fcm solver=filo1 stage=post_ls iter=16
+2026-01-19 21:11:53 | INFO     | Route #147: 313 612 120 185 565 872 517 616 || mode=vb method=fcm solver=filo1 stage=post_ls iter=16
+2026-01-19 21:11:53 | INFO     | Route #148: 293 918 947 513 || mode=vb method=fcm solver=filo1 stage=post_ls iter=16
+2026-01-19 21:11:53 | INFO     | Route #149: 333 1034 269 225 72 754 577 880 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 21:11:53 | INFO     | Route #150: 736 723 295 936 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #151: 348 64 437 135 956 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 21:11:53 | INFO     | Route #152: 62 859 1043 554 428 264 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #153: 141 95 80 71 || mode=vb method=sk_ac_min solver=filo1 stage=post_ls iter=27
+2026-01-19 21:11:53 | INFO     | Route #154: 35 886 680 948 173 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 21:11:53 | INFO     | Route #155: 586 18 271 783 470 701 665 651 351 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 21:11:53 | INFO     | Route #156: 596 564 369 506 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 21:11:53 | INFO     | Route #157: 37 425 865 || mode=vb method=sk_ac_complete solver=filo1 stage=post_ls iter=17
+2026-01-19 21:11:53 | INFO     | Route #158: 228 844 868 862 220 385 860 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #159: 224 747 56 1037 740 524 238 550 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 21:11:53 | INFO     | Route #160: 383 447 155 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=18
+2026-01-19 21:11:53 | INFO     | Route #161: 826 892 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #162: 582 380 669 613 838 454 982 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #163: 563 442 691 617 914 646 172 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 21:11:53 | INFO     | Route #164: 820 352 668 336 889 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #165: 277 666 197 478 13 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 21:11:53 | INFO     | Route #166: 849 827 303 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 21:11:53 | INFO     | Route #167: 51 588 1017 818 575 891 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=20
+2026-01-19 21:11:53 | INFO     | Route #168: 603 342 874 1040 694 1033 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 21:11:53 | INFO     | Route #169: 493 715 897 853 234 835 756 379 748 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 21:11:53 | INFO     | Route #170: 388 520 845 427 682 || mode=rb method=sk_ac_avg solver=pyvrp stage=post_ls iter=21
+2026-01-19 21:11:53 | INFO     | Route #171: 107 939 894 698 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=21
+2026-01-19 21:11:53 | INFO     | Route #172: 302 243 266 16 || mode=vb method=sk_ac_complete solver=filo2 stage=post_ls iter=22
+2026-01-19 21:11:53 | INFO     | Route #173: 658 471 78 || mode=vb method=sk_ac_complete solver=filo2 stage=post_ls iter=22
+2026-01-19 21:11:53 | INFO     | Route #174: 532 40 917 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=24
+2026-01-19 21:11:53 | INFO     | Route #175: 158 231 913 58 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #176: 177 340 568 745 401 857 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=24
+2026-01-19 21:11:53 | INFO     | Route #177: 464 424 457 679 980 602 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 21:11:53 | INFO     | Route #178: 75 326 357 861 33 878 735 552 320 1045 312 762 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 21:11:53 | INFO     | Route #179: 258 252 619 985 171 144 439 504 287 105 1024 912 763 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=24
+2026-01-19 21:11:53 | INFO     | Route #180: 443 500 147 933 959 1026 952 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=25
+2026-01-19 21:11:53 | INFO     | Route #181: 278 15 1013 1047 17 607 30 111 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=25
+2026-01-19 21:11:53 | INFO     | Route #182: 42 813 847 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=25
+2026-01-19 21:11:53 | INFO     | Route #183: 638 432 166 988 622 746 699 775 127 270 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=26
+2026-01-19 21:11:53 | INFO     | Route #184: 764 199 521 394 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=26
+2026-01-19 21:11:53 | INFO     | Route #185: 430 436 113 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=26
+2026-01-19 21:11:53 | INFO     | Route #186: 390 608 654 817 1018 298 370 930 759 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=33
+2026-01-19 21:11:53 | INFO     | Route #187: 953 283 854 || mode=rb method=sk_ac_avg solver=filo1 stage=post_ls iter=26
+2026-01-19 21:11:53 | INFO     | Route #188: 906 639 484 742 450 384 87 558 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #189: 667 263 689 540 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #190: 375 47 387 364 116 791 795 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #191: 522 249 875 949 444 661 || mode=vb method=sk_ac_min solver=filo1 stage=post_ls iter=27
+2026-01-19 21:11:53 | INFO     | Route #192: 967 184 929 574 || mode=vb method=sk_ac_min solver=filo1 stage=post_ls iter=27
+2026-01-19 21:11:53 | INFO     | Route #193: 151 465 414 109 131 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #194: 495 514 887 606 45 399 365 389 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=27
+2026-01-19 21:11:53 | INFO     | Route #195: 961 25 803 766 3 260 663 315 472 || mode=vb method=fcm solver=filo1 stage=post_ls iter=28
+2026-01-19 21:11:53 | INFO     | Route #196: 877 491 773 581 915 802 || mode=vb method=fcm solver=filo1 stage=post_ls iter=28
+2026-01-19 21:11:53 | INFO     | Route #197: 852 253 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=29
+2026-01-19 21:11:53 | INFO     | Route #198: 873 325 858 932 123 467 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=29
+2026-01-19 21:11:53 | INFO     | Route #199: 525 297 || mode=rb method=sk_kmeans solver=filo1 stage=post_ls iter=29
+2026-01-19 21:11:53 | INFO     | Route #200: 119 785 883 728 923 964 230 || mode=rb method=sk_ac_avg solver=filo2 stage=post_ls iter=30
+2026-01-19 21:11:53 | INFO     | Route #201: 790 327 376 356 1046 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=30
+2026-01-19 21:11:53 | INFO     | Route #202: 594 196 916 100 972 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=30
+2026-01-19 21:11:53 | INFO     | Route #203: 750 882 76 995 832 719 509 624 716 566 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #204: 102 366 935 300 895 200 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=30
+2026-01-19 21:11:53 | INFO     | Route #205: 794 139 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=30
+2026-01-19 21:11:53 | INFO     | Route #206: 976 559 179 346 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #207: 67 261 662 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #208: 170 811 396 921 920 610 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=35
+2026-01-19 21:11:53 | INFO     | Route #209: 194 393 966 239 84 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #210: 409 192 433 481 792 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #211: 251 965 780 468 984 628 511 760 989 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #212: 579 777 1010 160 413 807 476 324 416 255 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #213: 174 461 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #214: 1032 951 451 458 38 553 262 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #215: 146 483 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=31
+2026-01-19 21:11:53 | INFO     | Route #216: 589 696 618 157 1039 885 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #217: 29 20 801 721 945 118 922 || mode=vb method=sk_ac_complete solver=filo2 stage=post_ls iter=34
+2026-01-19 21:11:53 | INFO     | Route #218: 310 831 688 856 941 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #219: 592 463 82 292 549 983 213 412 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=35
+2026-01-19 21:11:53 | INFO     | Route #220: 91 321 411 273 757 1020 129 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #221: 924 784 || mode=vb method=sk_kmeans solver=filo1 stage=post_ls iter=35
+2026-01-19 21:11:53 | INFO     | Route #222: 908 727 53 322 || mode=vb method=fcm solver=filo1 stage=post_ls iter=36
+2026-01-19 21:11:53 | INFO     | Route #223: 106 306 816 142 774 523 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #224: 205 970 187 311 235 870 510 || mode=vb method=sk_ac_min solver=filo2 stage=post_ls iter=37
+2026-01-19 21:11:53 | INFO     | Route #225: 52 804 828 359 404 659 697 753 626 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #226: 265 690 903 || mode=vb method=k_medoids_pyclustering solver=filo2 stage=post_ls iter=38
+2026-01-19 21:11:53 | INFO     | Route #227: 167 842 486 899 367 124 1 642 284 || mode=vb method=k_medoids_pyclustering solver=filo2 stage=post_ls iter=38
+2026-01-19 21:11:53 | INFO     | Route #228: 741 516 10 || mode=vb method=k_medoids_pyclustering solver=filo2 stage=post_ls iter=38
+2026-01-19 21:11:53 | INFO     | Route #229: 163 1028 57 462 737 683 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #230: 49 156 362 402 247 1031 605 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #231: 1021 140 770 560 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #232: 584 499 368 132 237 400 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #233: 675 569 508 395 751 426 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #234: 937 848 112 460 601 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=39
+2026-01-19 21:11:53 | INFO     | Route #235: 133 1035 734 || mode=rb method=sk_ac_min solver=filo1 stage=post_ls iter=40
+2026-01-19 21:11:53 | INFO     | Route #236: 536 259 477 || mode=vb method=sk_ac_avg solver=filo1 stage=post_ls iter=42
+2026-01-19 21:11:53 | INFO     | Route #237: 593 996 305 21 453 406 244 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=42
+2026-01-19 21:11:53 | INFO     | Route #238: 841 825 722 191 145 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=42
+2026-01-19 21:11:53 | INFO     | Route #239: 148 643 48 687 195 837 301 431 || mode=scp method=gurobi_mip solver=None stage=scp_post_ls iter=45
+2026-01-19 21:11:53 | INFO     | Route #240: 695 9 905 902 69 1008 405 || mode=vb method=sk_ac_complete solver=pyvrp stage=post_ls iter=44
+2026-01-19 21:11:53 | INFO     | Route #241: 749 473 911 59 533 || mode=vb method=k_medoids_pyclustering solver=pyvrp stage=post_ls iter=45
+2026-01-19 21:11:53 | INFO     | 
+2026-01-19 21:11:53 | INFO     | [BEST SOLUTION ROUTE SUMMARY]
+2026-01-19 21:11:53 | INFO     | --------------------------------------------------------------------------------
+2026-01-19 21:11:53 | INFO     |   73 routes | VB    | sk_kmeans       | solver=filo2      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |   42 routes | SCP   | gurobi_mip      | solver=UNKNOWN    | stage=scp_post_ls
+2026-01-19 21:11:53 | INFO     |   17 routes | RB    | sk_ac_avg       | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |   15 routes | RB    | sk_ac_min       | solver=filo2      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |   12 routes | VB    | sk_ac_min       | solver=filo2      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |   11 routes | VB    | sk_kmeans       | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    9 routes | RB    | sk_kmeans       | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    9 routes | RB    | sk_kmeans       | solver=filo2      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    9 routes | VB    | k_medoids_pyclustering | solver=pyvrp      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    7 routes | VB    | fcm             | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    7 routes | VB    | sk_ac_complete  | solver=pyvrp      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    6 routes | VB    | sk_ac_complete  | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    6 routes | VB    | sk_ac_min       | solver=pyvrp      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    4 routes | RB    | sk_ac_avg       | solver=filo2      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    3 routes | RB    | sk_ac_avg       | solver=pyvrp      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    3 routes | VB    | k_medoids_pyclustering | solver=filo2      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    3 routes | VB    | sk_ac_complete  | solver=filo2      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    3 routes | VB    | sk_ac_min       | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    1 routes | RB    | sk_ac_min       | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     |    1 routes | VB    | sk_ac_avg       | solver=filo1      | stage=post_ls
+2026-01-19 21:11:53 | INFO     | 
+2026-01-19 21:11:53 | INFO     | [ROUTE POOL SUMMARY]
+2026-01-19 21:11:53 | INFO     |   653 routes | ('VB', 'sk_kmeans', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   456 routes | ('RB', 'sk_ac_avg', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   405 routes | ('VB', 'fcm', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   339 routes | ('RB', 'sk_kmeans', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   339 routes | ('VB', 'sk_ac_min', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   269 routes | ('RB', 'sk_kmeans', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   239 routes | ('RB', 'sk_ac_avg', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   231 routes | ('VB', 'sk_kmeans', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   224 routes | ('SCP', 'gurobi_mip', 'UNKNOWN', 'scp_post_ls')
+2026-01-19 21:11:53 | INFO     |   222 routes | ('VB', 'k_medoids_pyclustering', 'pyvrp', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   213 routes | ('VB', 'k_medoids_pyclustering', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   211 routes | ('VB', 'sk_ac_complete', 'pyvrp', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   189 routes | ('VB', 'sk_ac_complete', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   172 routes | ('VB', 'sk_ac_min', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   159 routes | ('VB', 'sk_ac_min', 'pyvrp', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   157 routes | ('RB', 'sk_ac_min', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   124 routes | ('VB', 'sk_ac_complete', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   124 routes | ('VB', 'sk_ac_avg', 'pyvrp', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   116 routes | ('VB', 'fcm', 'filo2', 'post_ls')
+2026-01-19 21:11:53 | INFO     |   104 routes | ('RB', 'sk_ac_avg', 'pyvrp', 'post_ls')
+2026-01-19 21:11:53 | INFO     |    94 routes | ('VB', 'sk_ac_avg', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     |    70 routes | ('RB', 'sk_ac_min', 'filo1', 'post_ls')
+2026-01-19 21:11:53 | INFO     | [XL-n1048-k237 IMPROVED-SCP] best_cost=381940 | Gap: 0.4688%
+2026-01-19 21:11:53 | INFO     | [XL-n1048-k237 ITERATION 49] mode=RB method=sk_ac_avg k=6 solver=filo2
+2026-01-19 21:11:53 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=6 | sizes=[409, 189, 180, 119, 62, 88] | min=62 max=409 avg=174.5
+2026-01-19 21:11:53 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 21:15:04 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=381940 | streak=1 | Gap: 0.4688%
+2026-01-19 21:15:04 | INFO     | [XL-n1048-k237 ITERATION 50] mode=VB method=sk_ac_complete k=3 solver=filo2
+2026-01-19 21:15:07 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=3 | sizes=[215, 542, 290] | min=215 max=542 avg=349.0
+2026-01-19 21:15:07 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 21:19:11 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=381940 | streak=2 | Gap: 0.4688%
+2026-01-19 21:19:11 | INFO     | [XL-n1048-k237 ITERATION 51] mode=VB method=sk_ac_avg k=6 solver=filo2
+2026-01-19 21:19:13 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_avg k=6 | sizes=[232, 268, 112, 266, 77, 92] | min=77 max=268 avg=174.5
+2026-01-19 21:19:13 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 21:21:43 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=5000 (removed 349 / 5349)
+2026-01-19 21:27:23 | INFO     | [XL-n1048-k237 SCP] optimal solution found
+2026-01-19 21:27:27 | INFO     | [XL-n1048-k237 SCP-NO-IMPROVEMENT] cost=382101 (best=381940) | Gap: 0.4688%
+2026-01-19 21:27:27 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=381940 | streak=3 | Gap: 0.4688%
+2026-01-19 21:27:27 | INFO     | [XL-n1048-k237 ITERATION 52] mode=VB method=sk_ac_complete k=4 solver=filo2
+2026-01-19 21:27:28 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=4 | sizes=[286, 368, 269, 124] | min=124 max=368 avg=261.8
+2026-01-19 21:27:28 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 21:29:51 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=381940 | streak=4 | Gap: 0.4688%
+2026-01-19 21:29:51 | INFO     | [XL-n1048-k237 ITERATION 53] mode=RB method=sk_ac_complete k=2 solver=filo1
+2026-01-19 21:29:51 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_ac_complete k=2 | sizes=[674, 373] | min=373 max=674 avg=523.5
+2026-01-19 21:29:51 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo1
+2026-01-19 21:35:20 | INFO     | [XL-n1048-k237 NO-IMPROVEMENT] best_cost=381940 | streak=5 | Gap: 0.4688%
+2026-01-19 21:35:20 | INFO     | [XL-n1048-k237 ITERATION 54] mode=RB method=sk_kmeans k=8 solver=filo2
+2026-01-19 21:35:20 | INFO     | [XL-n1048-k237 CLUSTER] method=sk_kmeans k=8 | sizes=[165, 109, 120, 159, 75, 82, 195, 142] | min=75 max=195 avg=130.9
+2026-01-19 21:35:20 | INFO     | [XL-n1048-k237 ROUTING] Solving clusters with filo2
+2026-01-19 21:36:45 | INFO     | [XL-n1048-k237 SCP] solver=gurobi_mip | route_pool=5000 (removed 578 / 5578)

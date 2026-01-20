@@ -1,0 +1,37 @@
+2026-01-19 19:07:23 | INFO     | Logger initialized
+2026-01-19 19:07:23 | INIT     | ================================================================================
+2026-01-19 19:07:23 | INIT     | [RUN CONFIGURATION] instance=XL-n9784-k2774.vrp run=0
+2026-01-19 19:07:23 | INIT     | seed = 1897678823
+2026-01-19 19:07:23 | INIT     | scp_solvers = ['gurobi_mip']
+2026-01-19 19:07:23 | INIT     | scp_switch_prob = 0.0
+2026-01-19 19:07:23 | INIT     | time_limit_scp = 900.0
+2026-01-19 19:07:23 | INIT     | scp_every = 3
+2026-01-19 19:07:23 | INIT     | time_limit_total = 35000.0
+2026-01-19 19:07:23 | INIT     | max_no_improvement_iters = 50
+2026-01-19 19:07:23 | INIT     | min_avg_cluster_size = 100
+2026-01-19 19:07:23 | INIT     | max_avg_cluster_size = 2500
+2026-01-19 19:07:23 | INIT     | routing_solvers = ['pyvrp', 'filo1', 'filo2']
+2026-01-19 19:07:23 | INIT     | routing_no_improvement = None
+2026-01-19 19:07:23 | INIT     | ls_neighbourhood = dri_spatial
+2026-01-19 19:07:23 | INIT     | ls_after_routing_max_neighbours = 300
+2026-01-19 19:07:23 | INIT     | ls_max_neighbours_restricted = 200
+2026-01-19 19:07:23 | INIT     | randomize_polar_angle = True
+2026-01-19 19:07:23 | INIT     | warm_start_solutions = None
+2026-01-19 19:07:23 | INIT     | log_mode = instance
+2026-01-19 19:07:23 | INIT     | log_to_console = False
+2026-01-19 19:07:23 | INIT     | periodic_sol_dump = True
+2026-01-19 19:07:23 | INIT     | sol_dump_interval = 3600.0
+2026-01-19 19:07:23 | INIT     | ================================================================================
+2026-01-19 19:07:28 | INFO     | [XL-n9784-k2774 ITERATION 1] mode=VB method=sk_kmeans k=1 solver=filo2
+2026-01-19 19:10:10 | INFO     | [XL-n9784-k2774 CLUSTER] method=sk_kmeans k=1 | sizes=[9783] | min=9783 max=9783 avg=9783.0
+2026-01-19 19:10:10 | INFO     | [XL-n9784-k2774 ROUTING] Solving clusters with filo2
+2026-01-19 19:20:58 | INFO     | [XL-n9784-k2774 IMPROVED-VB/RB] best_cost=4092263 | Gap: 0.3701%
+2026-01-19 19:20:58 | INFO     | [XL-n9784-k2774 ITERATION 2] mode=VB method=k_medoids_pyclustering k=6 solver=filo1
+2026-01-19 19:33:27 | INFO     | [XL-n9784-k2774 CLUSTER] method=k_medoids_pyclustering k=6 | sizes=[1280, 2663, 1233, 1387, 1951, 1269] | min=1233 max=2663 avg=1630.5
+2026-01-19 19:33:27 | INFO     | [XL-n9784-k2774 ROUTING] Solving clusters with filo1
+2026-01-19 20:06:28 | INFO     | [XL-n9784-k2774 IMPROVED-VB/RB] best_cost=4089001 | Gap: 0.2901%
+2026-01-19 20:06:28 | INFO     | [XL-n9784-k2774 ITERATION 3] mode=VB method=k_medoids_pyclustering k=4 solver=filo2
+2026-01-19 20:14:05 | INFO     | [XL-n9784-k2774 CLUSTER] method=k_medoids_pyclustering k=4 | sizes=[2503, 2676, 2120, 2484] | min=2120 max=2676 avg=2445.8
+2026-01-19 20:14:05 | INFO     | [XL-n9784-k2774 ROUTING] Solving clusters with filo2
+2026-01-19 20:46:53 | INFO     | [XL-n9784-k2774 IMPROVED-VB/RB] best_cost=4086175 | Gap: 0.2208%
+2026-01-19 20:46:54 | INFO     | [XL-n9784-k2774 SCP] solver=gurobi_mip | route_pool=5000 (removed 2138 / 7138)

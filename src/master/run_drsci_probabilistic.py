@@ -385,11 +385,11 @@ def run_drsci_probabilistic(
             gap_override = False
             if bks_cost is not None and best_cost != float("inf"):
                 gap_percent = ((best_cost - bks_cost) / bks_cost) * 100
-                if gap_percent < 0.01:
+                if gap_percent < 0.001:
                     gap_override = True
                     msg = (
                         f"[{instance_base} GAP-OVERRIDE] "
-                        f"gap={gap_percent:.4f}% < 0.01% - continuing despite termination criteria"
+                        f"gap={gap_percent:.4f}% < 0.001% - continuing despite termination criteria"
                     )
                     print(f"\033[92m{msg}\033[0m", flush=True)
                     _log(msg, level="info")
@@ -555,7 +555,7 @@ def run_drsci_probabilistic(
                     route_tags=route_tags,
                     inst=inst,
                     depot_id=1,
-                    max_routes=5000,
+                    max_routes=4000,
                     min_utilization=0.30,
                     scp_every=scp_every,
                     elite_after_scp_rounds=2,
@@ -704,7 +704,7 @@ def run_drsci_probabilistic(
             route_tags=route_tags,
             inst=inst,
             depot_id=1,
-            max_routes=5000,
+            max_routes=4000,
             min_utilization=0.30,
             scp_every=scp_every,
             elite_after_scp_rounds=2,
