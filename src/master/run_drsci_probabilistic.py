@@ -21,6 +21,7 @@ if str(SRC_ROOT) not in sys.path:
 from master.clustering.run_clustering import run_clustering
 from master.clustering.route_based import route_based_decomposition
 from master.routing.routing_controller import solve_clusters
+from master.routing.solver import solve as routing_solve
 from master.improve.ls_controller import improve_with_local_search
 from master.setcover.duplicate_removal import remove_duplicates
 from master.setcover.route_dominance_filter import filter_route_pool
@@ -381,7 +382,7 @@ def run_drsci_probabilistic(
     # ========================================================
     try:
         while True:
-            # Check gap at beginning of iteration - overrule termination if gap < 0.01%
+            # Check gap at beginning of iteration - overrule termination if gap < 0.001%
             gap_override = False
             if bks_cost is not None and best_cost != float("inf"):
                 gap_percent = ((best_cost - bks_cost) / bks_cost) * 100
@@ -435,9 +436,13 @@ def run_drsci_probabilistic(
                 routing_solver_key = "filo2"
                 k = 1
 
+            # Select improvement method (will be used after routing)
+            improvement_method = rng.choice(["ls", "filo1", "filo2"], p=[1/3, 1/3, 1/3])
+            
             msg = (
                 f"[{instance_base} ITERATION {iteration}] "
-                f"mode={mode.upper()} method={method} k={k} solver={routing_solver_key}"
+                f"mode={mode.upper()} method={method} k={k} solver={routing_solver_key} "
+                f"improvement=imp_{improvement_method.upper()}"
             )
             print(f"\033[94m{msg}\033[0m", flush=True)
             _log(msg)
@@ -499,15 +504,34 @@ def run_drsci_probabilistic(
                 no_improvement_iters += 1
                 continue
 
-            ls_res = improve_with_local_search(
-                instance_name=instance_name,
-                routes_vrplib=routes,
-                neighbourhood=ls_neighbourhood,
-                max_neighbours=ls_after_routing_max_neighbours,
-                seed=seed,
-            )
+            # Apply probabilistic improvement: 1/3 LS, 1/3 FILO1, 1/3 FILO2
+            if improvement_method == "ls":
+                ls_res = improve_with_local_search(
+                    instance_name=instance_name,
+                    routes_vrplib=routes,
+                    neighbourhood=ls_neighbourhood,
+                    max_neighbours=ls_after_routing_max_neighbours,
+                    seed=seed,
+                )
+                candidate_routes = ls_res["routes_improved"]
+                improvement_stage = "post_ls"
+            else:
+                # Use FILO1 or FILO2 to improve the full solution
+                # Use a reasonable no_improvement value for improvement phase
+                filo_no_improvement = max(10000, ls_after_routing_max_neighbours * 10)
+                
+                filo_result = routing_solve(
+                    instance=instance_name,
+                    solver=improvement_method,
+                    solver_options={
+                        "no_improvement": filo_no_improvement,
+                        "seed": seed,
+                    },
+                )
+                
+                candidate_routes = filo_result.metadata.get("routes_vrplib", routes)
+                improvement_stage = f"post_imp_{improvement_method}"
 
-            candidate_routes = ls_res["routes_improved"]
             candidate_cost = _compute_integer_cost(inst, candidate_routes)
 
             _tag_new_routes(
@@ -518,7 +542,7 @@ def run_drsci_probabilistic(
                     "method": method,
                     "solver": routing_solver_key,
                     "iteration": iteration,
-                    "stage": "post_ls",
+                    "stage": improvement_stage,
                 },
             )
 

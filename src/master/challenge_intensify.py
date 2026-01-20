@@ -405,7 +405,7 @@ def main():
         default=["gurobi_mip"],
     )
     parser.add_argument("--scp_switch_prob", type=float, default=0.0)
-    parser.add_argument("--time_limit_scp", type=float, default=600.0)
+    parser.add_argument("--time_limit_scp", type=float, default=10000.0)
     parser.add_argument("--scp_every", type=int, default=3)
     parser.add_argument("--time_limit_total", type=float, default=50000.0)
     parser.add_argument("--max_no_improvement_iters", type=int, default=75)
