@@ -1,0 +1,3385 @@
+{
+  "per_instance": {
+    "XL-n10001-k1570": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1593
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1506
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1492
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1405
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1356
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 2
+      }
+    ],
+    "XL-n1048-k237": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 653
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 456
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 405
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 339
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 339
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 269
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 239
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 231
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 224
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 222
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 213
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 211
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 189
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 172
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 159
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 157
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 124
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 124
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 116
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 104
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 94
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 70
+      }
+    ],
+    "XL-n1094-k157": [
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 313
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 289
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 284
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 246
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 198
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 196
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 180
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 177
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 164
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 152
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 151
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 141
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 134
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 126
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 116
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 112
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 112
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 110
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 108
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 104
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 100
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 99
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 98
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 72
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 68
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 45
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 33
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 13
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 9
+      }
+    ],
+    "XL-n1514-k106": [
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 441
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 418
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 407
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 395
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 382
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 353
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 351
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 322
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 289
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 268
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 251
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 240
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 205
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 194
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 172
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 170
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 164
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 161
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 158
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 151
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 126
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 112
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 105
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 104
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 99
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 85
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 83
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 83
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 79
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 39
+      }
+    ],
+    "XL-n1561-k75": [
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 272
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 265
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 222
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 207
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 201
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 197
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 190
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 187
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 184
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 160
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 141
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 138
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 138
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 130
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 126
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 116
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 115
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 112
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 81
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 75
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 74
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 73
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 73
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 71
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 65
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 61
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 56
+      }
+    ],
+    "XL-n1701-k562": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 683
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 490
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 383
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 368
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 338
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 326
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 276
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 255
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 238
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 236
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 217
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 216
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 177
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 177
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 134
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 125
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 99
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 57
+      }
+    ],
+    "XL-n1794-k163": [
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 360
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 349
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 318
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 315
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 305
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 286
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 276
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 270
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 260
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 216
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 191
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 159
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 154
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 149
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 149
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 149
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 147
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 139
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 119
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 106
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 97
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 84
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 67
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 60
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 41
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 37
+      }
+    ],
+    "XL-n1934-k46": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 273
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 271
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 189
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 180
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 177
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 156
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 141
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 135
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 127
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 126
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 99
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 95
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 94
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 92
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 89
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 89
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 88
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 81
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 75
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 75
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 48
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 47
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 46
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 46
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 45
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 39
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 32
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 32
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 27
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 3
+      }
+    ],
+    "XL-n2214-k131": [
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 395
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 387
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 310
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 259
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 258
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 256
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 245
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 219
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 218
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 213
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 199
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 192
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 173
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 143
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 129
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 129
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 128
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 126
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 120
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 117
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 110
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 106
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 101
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 94
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 85
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 57
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 18
+      }
+    ],
+    "XL-n2541-k121": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 334
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 334
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 329
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 324
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 324
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 318
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 240
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 227
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 212
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 211
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 203
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 175
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 173
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 152
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 143
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 121
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 121
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 119
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 115
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 115
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 112
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 107
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 93
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 44
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 37
+      }
+    ],
+    "XL-n2587-k66": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 261
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 260
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 253
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 194
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 192
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 175
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 160
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 157
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 133
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 131
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 127
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 110
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 110
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 104
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 104
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 66
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 66
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 66
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 66
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 66
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 63
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 62
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 59
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 56
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 23
+      }
+    ],
+    "XL-n2727-k546": [
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 751
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 628
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 561
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 383
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 325
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 303
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 280
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 266
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 257
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 205
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 184
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 142
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 113
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 68
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 34
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 28
+      }
+    ],
+    "XL-n3484-k436": [
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 561
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 436
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 417
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 417
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 415
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 401
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 392
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 391
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 351
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 329
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 303
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 287
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 280
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 264
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 258
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 251
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 238
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 228
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 227
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 184
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 141
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 122
+      }
+    ],
+    "XL-n3975-k687": [
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 1997
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1497
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 1227
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 995
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 836
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 688
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 642
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 625
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 586
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 526
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 487
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 440
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 415
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 414
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 412
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 406
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 391
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 390
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 353
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 334
+      }
+    ],
+    "XL-n4245-k203": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 751
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 386
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 359
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 326
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 281
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 276
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 268
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 250
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 203
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 203
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 203
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 200
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 198
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 194
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 192
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 177
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 176
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 150
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 126
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 32
+      }
+    ],
+    "XL-n4436-k48": [
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 194
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 146
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 144
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 133
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 114
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 50
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 49
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 49
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 49
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 48
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 48
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 48
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 48
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 48
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 48
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 43
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 42
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 2
+      }
+    ],
+    "XL-n4535-k1134": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1382
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 745
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 680
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 621
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 483
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 377
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 360
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 351
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 340
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 324
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 257
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 240
+      }
+    ],
+    "XL-n5406-k783": [
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 1515
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1282
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1281
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1145
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 783
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 766
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 761
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 739
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 730
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 707
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 624
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 600
+      }
+    ],
+    "XL-n5526-k553": [
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 1072
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 900
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 739
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 700
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 668
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 594
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 553
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 548
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 534
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 462
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 451
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 418
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 360
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 343
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 271
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 247
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 196
+      }
+    ],
+    "XL-n5902-k122": [
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 245
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 245
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 243
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 237
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 123
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 123
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 123
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 122
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 122
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 122
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 122
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 120
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 119
+      }
+    ],
+    "XL-n7353-k1471": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 2190
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1168
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 1143
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1040
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 682
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 621
+      }
+    ],
+    "XL-n8575-k1297": [
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1298
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 1263
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1207
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1179
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1109
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1079
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1055
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1037
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 738
+      }
+    ],
+    "XL-n8766-k1032": [
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1881
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1435
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1043
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 1033
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 1030
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 1015
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 995
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 987
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 877
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 848
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 846
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 844
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 822
+      }
+    ],
+    "XL-n8960-k634": [
+      {
+        "mode": "VB",
+        "method": "sk_ac_min",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 1261
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 1258
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 635
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_min",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 634
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 627
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 625
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 619
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 617
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 614
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 598
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 264
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 123
+      }
+    ],
+    "XL-n9160-k379": [
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 738
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 734
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "pyvrp",
+        "stage": "post_ls",
+        "count": 383
+      },
+      {
+        "mode": "VB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 380
+      },
+      {
+        "mode": "VB",
+        "method": "sk_ac_complete",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 380
+      },
+      {
+        "mode": "VB",
+        "method": "k_medoids_pyclustering",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 379
+      },
+      {
+        "mode": "VB",
+        "method": "fcm",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 379
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_complete",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 368
+      },
+      {
+        "mode": "RB",
+        "method": "sk_kmeans",
+        "solver": "filo2",
+        "stage": "post_ls",
+        "count": 368
+      },
+      {
+        "mode": "RB",
+        "method": "sk_ac_avg",
+        "solver": "filo1",
+        "stage": "post_ls",
+        "count": 367
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "final_scp_post_ls",
+        "count": 17
+      },
+      {
+        "mode": "SCP",
+        "method": "gurobi_mip",
+        "solver": "UNKNOWN",
+        "stage": "scp_post_ls",
+        "count": 10
+      }
+    ],
+    "XL-n9784-k2774": []
+  },
+  "aggregate": {
+    "by_mode": {
+      "VB": 89023,
+      "RB": 56778,
+      "SCP": 8293
+    },
+    "by_method": {
+      "sk_kmeans": 40844,
+      "sk_ac_min": 28630,
+      "sk_ac_complete": 28511,
+      "k_medoids_pyclustering": 10230,
+      "gurobi_mip": 8293,
+      "sk_ac_avg": 25359,
+      "fcm": 12227
+    },
+    "by_solver": {
+      "filo2": 62650,
+      "filo1": 51302,
+      "UNKNOWN": 8293,
+      "pyvrp": 31849
+    },
+    "by_stage": {
+      "post_ls": 145801,
+      "scp_post_ls": 7319,
+      "final_scp_post_ls": 974
+    },
+    "by_combination": {
+      "VB|sk_kmeans|filo2|post_ls": 16785,
+      "VB|sk_ac_min|filo2|post_ls": 6881,
+      "VB|sk_ac_min|filo1|post_ls": 6919,
+      "RB|sk_ac_complete|filo1|post_ls": 4877,
+      "VB|k_medoids_pyclustering|filo1|post_ls": 5372,
+      "SCP|gurobi_mip|UNKNOWN|scp_post_ls": 7319,
+      "RB|sk_ac_avg|filo1|post_ls": 6261,
+      "VB|fcm|filo1|post_ls": 4559,
+      "RB|sk_kmeans|filo1|post_ls": 5390,
+      "RB|sk_kmeans|filo2|post_ls": 7664,
+      "RB|sk_ac_avg|filo2|post_ls": 5133,
+      "VB|sk_kmeans|filo1|post_ls": 5572,
+      "VB|k_medoids_pyclustering|pyvrp|post_ls": 1545,
+      "VB|k_medoids_pyclustering|filo2|post_ls": 3313,
+      "VB|sk_ac_complete|pyvrp|post_ls": 2646,
+      "VB|sk_ac_complete|filo2|post_ls": 6026,
+      "VB|sk_ac_min|pyvrp|post_ls": 2451,
+      "RB|sk_ac_min|filo2|post_ls": 4430,
+      "VB|sk_ac_complete|filo1|post_ls": 5380,
+      "VB|sk_ac_avg|pyvrp|post_ls": 2735,
+      "VB|fcm|filo2|post_ls": 4209,
+      "RB|sk_ac_avg|pyvrp|post_ls": 2833,
+      "VB|sk_ac_avg|filo1|post_ls": 4218,
+      "RB|sk_ac_min|filo1|post_ls": 2754,
+      "RB|sk_ac_min|pyvrp|post_ls": 5195,
+      "VB|sk_kmeans|pyvrp|post_ls": 2774,
+      "VB|fcm|pyvrp|post_ls": 3459,
+      "RB|sk_ac_complete|pyvrp|post_ls": 5552,
+      "RB|sk_kmeans|pyvrp|post_ls": 2659,
+      "RB|sk_ac_complete|filo2|post_ls": 4030,
+      "VB|sk_ac_avg|filo2|post_ls": 4179,
+      "SCP|gurobi_mip|UNKNOWN|final_scp_post_ls": 974
+    }
+  }
+}
