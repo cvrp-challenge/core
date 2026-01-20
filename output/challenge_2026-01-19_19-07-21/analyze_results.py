@@ -96,6 +96,43 @@ def extract_route_pool_summary(log_file: Path) -> List[RoutePoolStats]:
     return stats
 
 
+def extract_best_solution_summary(log_file: Path) -> List[RoutePoolStats]:
+    """Extract best solution route summary from log file."""
+    stats = []
+    
+    with open(log_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    
+    # Find the last BEST SOLUTION ROUTE SUMMARY section
+    in_summary = False
+    summary_lines = []
+    
+    for i, line in enumerate(lines):
+        if '[BEST SOLUTION ROUTE SUMMARY]' in line:
+            in_summary = True
+            summary_lines = []
+        elif in_summary:
+            if line.strip() == '' or line.startswith('['):
+                # End of summary section
+                break
+            if '---' not in line:  # Skip separator line
+                summary_lines.append(line)
+    
+    # Parse summary lines
+    # Format: "   23 routes | RB    | sk_ac_min       | solver=filo2      | stage=post_ls"
+    for line in summary_lines:
+        match = re.search(r'(\d+)\s+routes\s*\|\s*(\w+)\s*\|\s*(\S+)\s*\|\s*solver=(\S+)\s*\|\s*stage=(\S+)', line)
+        if match:
+            count = int(match.group(1))
+            mode = match.group(2).upper()
+            method = match.group(3)
+            solver = match.group(4)
+            stage = match.group(5)
+            stats.append(RoutePoolStats(mode, method, solver, stage, count))
+    
+    return stats
+
+
 def extract_improvements(log_file: Path) -> List[Improvement]:
     """Extract improvement events from log file."""
     improvements = []
@@ -268,6 +305,9 @@ def analyze_instance(log_file: Path) -> Dict:
     # Extract route pool stats
     route_pool_stats = extract_route_pool_summary(log_file)
     
+    # Extract best solution stats
+    best_solution_stats = extract_best_solution_summary(log_file)
+    
     # Extract improvements
     improvements = extract_improvements(log_file)
     
@@ -277,6 +317,7 @@ def analyze_instance(log_file: Path) -> Dict:
     return {
         'instance': instance_name,
         'route_pool_stats': route_pool_stats,
+        'best_solution_stats': best_solution_stats,
         'improvements': improvements,
         'cost_timeline': cost_timeline
     }
@@ -359,10 +400,13 @@ def main():
     
     # Per-instance statistics
     per_instance_stats = {}
+    per_instance_best_stats = {}
     for result in all_results:
         instance = result['instance']
         stats = result['route_pool_stats']
+        best_stats = result['best_solution_stats']
         per_instance_stats[instance] = stats
+        per_instance_best_stats[instance] = best_stats
         
         print(f"\n{instance}:")
         print(f"  Total route pool entries: {len(stats)}")
@@ -455,6 +499,80 @@ def main():
     with open(stats_file, 'w') as f:
         json.dump(stats_output, f, indent=2)
     print(f"\nRoute pool statistics saved to: {stats_file}")
+    
+    # ========================================================================
+    # TASK 1b: Best Solution Route Statistics
+    # ========================================================================
+    print("\n" + "=" * 80)
+    print("TASK 1b: Best Solution Route Statistics")
+    print("=" * 80)
+    
+    # Aggregate statistics for best solution routes
+    aggregate_best_by_mode = Counter()
+    aggregate_best_by_method = Counter()
+    aggregate_best_by_solver = Counter()
+    aggregate_best_by_stage = Counter()
+    aggregate_best_by_combination = Counter()
+    
+    for stats in per_instance_best_stats.values():
+        for stat in stats:
+            aggregate_best_by_mode[stat.mode] += stat.count
+            aggregate_best_by_method[stat.method] += stat.count
+            aggregate_best_by_solver[stat.solver] += stat.count
+            aggregate_best_by_stage[stat.stage] += stat.count
+            key = (stat.mode, stat.method, stat.solver, stat.stage)
+            aggregate_best_by_combination[key] += stat.count
+    
+    print(f"\nBest Solution Routes - By Mode:")
+    for mode, count in aggregate_best_by_mode.most_common():
+        print(f"  {mode}: {count}")
+    
+    print(f"\nBest Solution Routes - By Method:")
+    for method, count in aggregate_best_by_method.most_common():
+        print(f"  {method}: {count}")
+    
+    print(f"\nBest Solution Routes - By Solver:")
+    for solver, count in aggregate_best_by_solver.most_common():
+        print(f"  {solver}: {count}")
+    
+    print(f"\nBest Solution Routes - By Stage:")
+    for stage, count in aggregate_best_by_stage.most_common():
+        print(f"  {stage}: {count}")
+    
+    print(f"\nBest Solution Routes - By Combination (mode, method, solver, stage):")
+    for (mode, method, solver, stage), count in aggregate_best_by_combination.most_common(20):
+        print(f"  ({mode}, {method}, {solver}, {stage}): {count}")
+    
+    # Update stats output
+    stats_output['best_solution'] = {
+        'per_instance': {
+            inst: [
+                {
+                    'mode': s.mode,
+                    'method': s.method,
+                    'solver': s.solver,
+                    'stage': s.stage,
+                    'count': s.count
+                }
+                for s in stats
+            ]
+            for inst, stats in per_instance_best_stats.items()
+        },
+        'aggregate': {
+            'by_mode': dict(aggregate_best_by_mode),
+            'by_method': dict(aggregate_best_by_method),
+            'by_solver': dict(aggregate_best_by_solver),
+            'by_stage': dict(aggregate_best_by_stage),
+            'by_combination': {
+                f"{mode}|{method}|{solver}|{stage}": count
+                for (mode, method, solver, stage), count in aggregate_best_by_combination.items()
+            }
+        }
+    }
+    
+    with open(stats_file, 'w') as f:
+        json.dump(stats_output, f, indent=2)
+    print(f"\nBest solution statistics added to: {stats_file}")
     
     # ========================================================================
     # TASK 2: Convergence Graphs
