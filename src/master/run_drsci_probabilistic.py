@@ -435,14 +435,10 @@ def run_drsci_probabilistic(
                 method = "sk_kmeans"
                 routing_solver_key = "filo2"
                 k = 1
-
-            # Select improvement method (will be used after routing)
-            improvement_method = rng.choice(["ls", "filo1", "filo2"], p=[1/3, 1/3, 1/3])
             
             msg = (
                 f"[{instance_base} ITERATION {iteration}] "
                 f"mode={mode.upper()} method={method} k={k} solver={routing_solver_key} "
-                f"improvement=imp_{improvement_method.upper()}"
             )
             print(f"\033[94m{msg}\033[0m", flush=True)
             _log(msg)
@@ -504,33 +500,14 @@ def run_drsci_probabilistic(
                 no_improvement_iters += 1
                 continue
 
-            # Apply probabilistic improvement: 1/3 LS, 1/3 FILO1, 1/3 FILO2
-            if improvement_method == "ls":
-                ls_res = improve_with_local_search(
-                    instance_name=instance_name,
-                    routes_vrplib=routes,
-                    neighbourhood=ls_neighbourhood,
-                    max_neighbours=ls_after_routing_max_neighbours,
-                    seed=seed,
-                )
-                candidate_routes = ls_res["routes_improved"]
-                improvement_stage = "post_ls"
-            else:
-                # Use FILO1 or FILO2 to improve the full solution
-                # Use a reasonable no_improvement value for improvement phase
-                filo_no_improvement = max(10000, ls_after_routing_max_neighbours * 10)
-                
-                filo_result = routing_solve(
-                    instance=instance_name,
-                    solver=improvement_method,
-                    solver_options={
-                        "no_improvement": filo_no_improvement,
-                        "seed": seed,
-                    },
-                )
-                
-                candidate_routes = filo_result.metadata.get("routes_vrplib", routes)
-                improvement_stage = f"post_imp_{improvement_method}"
+            ls_res = improve_with_local_search(
+                instance_name=instance_name,
+                routes_vrplib=routes,
+                neighbourhood=ls_neighbourhood,                    max_neighbours=ls_after_routing_max_neighbours,
+                seed=seed
+            )
+            candidate_routes = ls_res["routes_improved"]
+            improvement_stage = "post_ls"
 
             candidate_cost = _compute_integer_cost(inst, candidate_routes)
 

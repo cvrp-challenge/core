@@ -419,8 +419,8 @@ def main():
     )
     parser.add_argument("--routing_no_improvement", type=int, default=None)
     parser.add_argument("--ls_neighbourhood", type=str, default="dri_spatial")
-    parser.add_argument("--ls_after_routing_max_neighbours", type=int, default=250)
-    parser.add_argument("--ls_max_neighbours_restricted", type=int, default=100)
+    parser.add_argument("--ls_after_routing_max_neighbours", type=int, default=350)
+    parser.add_argument("--ls_max_neighbours_restricted", type=int, default=250)
     parser.add_argument("--randomize_polar_angle", action="store_true", default=True)
     parser.add_argument("--no_randomize_polar_angle", dest="randomize_polar_angle", action="store_false")
     # ---------------- Logging options ----------------

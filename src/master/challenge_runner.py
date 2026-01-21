@@ -37,13 +37,13 @@ INSTANCES = [
     # "XL-n1234-k55.vrp", ###
     # "XL-n1281-k29.vrp", ### bad
     # "XL-n1328-k19.vrp", ###
-    # "XL-n1374-k278.vrp", ###
+    "XL-n1374-k278.vrp", ###
     # "XL-n1421-k232.vrp", ### bad
     # "XL-n1468-k151.vrp", ###
     "XL-n1514-k106.vrp", ### good
     "XL-n1561-k75.vrp", ### good
     # "XL-n1608-k39.vrp", ###
-    # "XL-n1654-k11.vrp", ###
+    "XL-n1654-k11.vrp", ###
     "XL-n1701-k562.vrp", ###
     # "XL-n1748-k271.vrp", ### bad
     "XL-n1794-k163.vrp", ### good -- 0.051%
@@ -54,9 +54,9 @@ INSTANCES = [
     # "XL-n2028-k617.vrp", ### bad
     # "XL-n2074-k264.vrp", ### bad
     # "XL-n2121-k186.vrp", ###
-    # "XL-n2168-k138.vrp", ###
+    "XL-n2168-k138.vrp", ###
     "XL-n2214-k131.vrp", ### good -- 0.054%
-    # "XL-n2261-k54.vrp", ###
+    "XL-n2261-k54.vrp", ###
     # "XL-n2307-k34.vrp", ###
     # "XL-n2354-k631.vrp", ### bad
     # "XL-n2401-k408.vrp", ### bad
@@ -68,18 +68,18 @@ INSTANCES = [
     # "XL-n2681-k540.vrp", ### bad
     "XL-n2727-k546.vrp", ### good -- 0.02%
     # "XL-n2774-k286.vrp", ### bad
-    # "XL-n2821-k208.vrp", ###
+    "XL-n2821-k208.vrp", ###
     # "XL-n2867-k120.vrp", ###
     # "XL-n2914-k95.vrp", ### bad
     # "XL-n2961-k55.vrp", ### bad
-    # "XL-n3007-k658.vrp", ###
+    "XL-n3007-k658.vrp", ###
     # "XL-n3054-k461.vrp", ### bad
-    # "XL-n3101-k311.vrp", ###
-    # "XL-n3147-k232.vrp", ###
+    "XL-n3101-k311.vrp", ###
+    "XL-n3147-k232.vrp", ###
     # "XL-n3194-k161.vrp", ### bad
     # "XL-n3241-k115.vrp", ###
     # "XL-n3287-k30.vrp", ###
-    # "XL-n3334-k934.vrp", ###
+    "XL-n3334-k934.vrp", ###
     # "XL-n3408-k524.vrp", ### bad
     "XL-n3484-k436.vrp", ### good -- 0.01%
     # "XL-n3561-k229.vrp", ###
@@ -88,12 +88,12 @@ INSTANCES = [
     # "XL-n3804-k29.vrp", ###
     # "XL-n3888-k1010.vrp" ### bad
     "XL-n3975-k687.vrp", ###
-    # "XL-n4063-k347.vrp", ###
-    # "XL-n4153-k291.vrp", ###
+    "XL-n4063-k347.vrp", ###
+    "XL-n4153-k291.vrp", ###
     "XL-n4245-k203.vrp", ### good
     # "XL-n4340-k148.vrp", ###
     "XL-n4436-k48.vrp", ###
-    "XL-n4535-k1134.vrp", ### good -- 0.0029%
+    # "XL-n4535-k1134.vrp", ### good -- 0.0029%
     # "XL-n4635-k790.vrp", ###
     # "XL-n4738-k487.vrp", ###
     # "XL-n4844-k321.vrp", ###
@@ -109,7 +109,7 @@ INSTANCES = [
     # "XL-n6034-k61.vrp", ### bad
     # "XL-n6168-k1922.vrp", ### bad
     # "XL-n6305-k1042.vrp", ### bad
-    # "XL-n6445-k628.vrp", ###
+    "XL-n6445-k628.vrp", ###
     # "XL-n6588-k473.vrp", ### bad
     # "XL-n6734-k330.vrp", ###
     # "XL-n6884-k148.vrp", ### bad
@@ -123,13 +123,13 @@ INSTANCES = [
     # "XL-n8207-k108.vrp", ### bad
     # "XL-n8389-k2028.vrp", ### bad
     "XL-n8575-k1297.vrp", ###
-    "XL-n8766-k1032.vrp", ### bad
+    # "XL-n8766-k1032.vrp", ### bad
     "XL-n8960-k634.vrp", ###
-    "XL-n9160-k379.vrp", ### bad
+    # "XL-n9160-k379.vrp", ### bad
     # "XL-n9363-k209.vrp", ###
     # "XL-n9571-k55.vrp", ### bad
-    "XL-n9784-k2774.vrp", ### bad (exclude)
-    "XL-n10001-k1570.vrp" ### bad (exclude)
+    # "XL-n9784-k2774.vrp", ### bad (exclude)
+    # "XL-n10001-k1570.vrp" ### bad (exclude)
 ]
 
 def _log_run_configuration(logger, *, instance_name, run_id, seed, **params):
