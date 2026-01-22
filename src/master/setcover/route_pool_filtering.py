@@ -69,6 +69,63 @@ def _ensure_coverage(
 
     return repaired
 
+def _rank_by_quality(
+    *,
+    candidate_routes: List[Tuple[int, Route]],
+    route_customers: Dict[int, List[int]],
+    route_tags: Dict[RouteKey, Tag],
+    inst: dict,
+    depot_id: int,
+) -> List[Tuple[int, Route, float]]:
+    ranked = []
+    capacity = inst["capacity"]
+    demand = inst["demand"]
+
+    for idx, r in candidate_routes:
+        customers = route_customers[idx]
+        load = sum(demand[c - 1] for c in customers)
+        utilization = load / capacity
+        length = len(customers)
+
+        tag = route_tags.get(tuple(customers), {})
+        badness = _route_badness(
+            utilization=utilization,
+            length=length,
+            from_scp=tag.get("stage") in {"scp_post_ls", "final_scp_post_ls"},
+            in_best=tag.get("in_best", False),
+            age=tag.get("iteration", 0),
+        )
+        ranked.append((idx, r, badness))
+
+    return sorted(ranked, key=lambda x: x[2], reverse=True)
+
+def _rank_by_diversity(
+    *,
+    candidate_routes: List[Tuple[int, Route]],
+    route_customers: Dict[int, List[int]],
+    best_routes: List[Route],
+    depot_id: int,
+) -> List[Tuple[int, Route, float]]:
+    def edges(route):
+        return {
+            (route[i], route[i + 1])
+            for i in range(len(route) - 1)
+        }
+
+    best_edges = set()
+    for r in best_routes:
+        best_edges |= edges(r)
+
+    ranked = []
+    for idx, r in candidate_routes:
+        r_edges = edges(r)
+        overlap = (
+            len(r_edges & best_edges) / max(len(r_edges), 1)
+        )
+        ranked.append((idx, r, overlap))
+
+    # LOWER overlap = better → remove worst first
+    return sorted(ranked, key=lambda x: x[2], reverse=True)
 
 def filter_route_pool_for_scp(
     *,
@@ -84,11 +141,18 @@ def filter_route_pool_for_scp(
     elite_after_scp_rounds: int = 2,
     min_pool_size_for_elite: int = 1500,
 
-    # ---- ranking-based pruning ----
-    enable_step_b: bool = False,
+    # ---- pruning strategy ----
+    pruning_mode: str = "quality",  # "none" | "quality" | "diversity"
 ) -> List[Route]:
     """
     SCP route pool filtering with strict feasibility guarantees.
+
+    POLICY:
+    - If len(routes) <= max_routes: return routes unchanged
+    - Otherwise:
+        Step A: safety, elites, utilization
+        Step B: rank removable routes according to pruning_mode
+        Coverage-safe truncation
     """
 
     pool_size = len(routes)
@@ -106,20 +170,21 @@ def filter_route_pool_for_scp(
     # --------------------------------------------------
     # Precompute customers per route
     # --------------------------------------------------
-    route_customers: Dict[int, List[int]] = {}
-    for idx, r in enumerate(routes):
-        route_customers[idx] = [c for c in r if c != depot_id]
+    route_customers: Dict[int, List[int]] = {
+        idx: [c for c in r if c != depot_id]
+        for idx, r in enumerate(routes)
+    }
 
     # --------------------------------------------------
-    # Elite threshold
+    # Elite maturity threshold
     # --------------------------------------------------
     elite_iteration_threshold = elite_after_scp_rounds * scp_every
 
     elite_routes: List[Route] = []
-    candidate_routes: List[Tuple[int, Route, float]] = []
+    candidates: List[Tuple[int, Route]] = []
 
     # --------------------------------------------------
-    # First pass: classify routes (NO coverage logic yet)
+    # Step A: classify routes (NO ranking yet)
     # --------------------------------------------------
     for idx, r in enumerate(routes):
         customers = route_customers[idx]
@@ -152,21 +217,10 @@ def filter_route_pool_for_scp(
         if length < 2:
             continue
 
-        if enable_step_b:
-            badness = _route_badness(
-                utilization=utilization,
-                length=length,
-                from_scp=stage in {"scp_post_ls", "final_scp_post_ls"},
-                in_best=tag.get("in_best", False),
-                age=max(0, iteration),
-            )
-        else:
-            badness = 0.0
-
-        candidate_routes.append((idx, r, badness))
+        candidates.append((idx, r))
 
     # --------------------------------------------------
-    # If elites alone exceed cap
+    # Elites alone exceed cap
     # --------------------------------------------------
     if len(elite_routes) >= max_routes:
         return elite_routes[:max_routes]
@@ -174,32 +228,73 @@ def filter_route_pool_for_scp(
     remaining_slots = max_routes - len(elite_routes)
 
     # --------------------------------------------------
-    # Recompute coverage over ELIGIBLE routes
+    # Coverage over eligible routes
     # --------------------------------------------------
-    eligible = elite_routes + [r for _, r, _ in candidate_routes]
-
-    coverage = Counter()
-    for r in eligible:
-        for c in r:
-            if c != depot_id:
-                coverage[c] += 1
+    eligible = elite_routes + [r for _, r in candidates]
+    coverage = Counter(c for r in eligible for c in r if c != depot_id)
 
     # --------------------------------------------------
-    # Rank removable routes (worst first)
+    # Step B: ranking strategy
     # --------------------------------------------------
-    if enable_step_b:
-        candidate_routes.sort(key=lambda x: x[2], reverse=True)
+    ranked: List[Tuple[int, Route, float]] = []
 
-    kept: List[Route] = []
-    local_coverage = coverage.copy()
+    if pruning_mode == "none":
+        ranked = [(idx, r, 0.0) for idx, r in candidates]
+
+    elif pruning_mode == "quality":
+        for idx, r in candidates:
+            customers = route_customers[idx]
+            load = sum(demand[c - 1] for c in customers)
+            utilization = load / capacity
+            length = len(customers)
+
+            tag = route_tags.get(tuple(customers), {})
+            badness = _route_badness(
+                utilization=utilization,
+                length=length,
+                from_scp=tag.get("stage") in {"scp_post_ls", "final_scp_post_ls"},
+                in_best=tag.get("in_best", False),
+                age=max(0, tag.get("iteration", 0)),
+            )
+            ranked.append((idx, r, badness))
+
+        # worst first
+        ranked.sort(key=lambda x: x[2], reverse=True)
+
+    elif pruning_mode == "diversity":
+        # Build edge set of current incumbent
+        best_edges = set()
+        for key, tag in route_tags.items():
+            if tag.get("in_best", False):
+                route = [depot_id, *key, depot_id]
+                best_edges |= {
+                    (route[i], route[i + 1]) for i in range(len(route) - 1)
+                }
+
+        for idx, r in candidates:
+            edges = {(r[i], r[i + 1]) for i in range(len(r) - 1)}
+            overlap = (
+                len(edges & best_edges) / max(len(edges), 1)
+                if best_edges else 0.0
+            )
+            ranked.append((idx, r, overlap))
+
+        # highest overlap = worst
+        ranked.sort(key=lambda x: x[2], reverse=True)
+
+    else:
+        raise ValueError(f"Unknown pruning_mode: {pruning_mode}")
 
     # --------------------------------------------------
     # Coverage-safe truncation
     # --------------------------------------------------
-    for idx, r, _ in candidate_routes:
-        customers = route_customers[idx]
+    kept: List[Route] = []
+    local_coverage = coverage.copy()
 
+    for idx, r, _ in ranked:
+        customers = route_customers[idx]
         can_remove = all(local_coverage[c] > 1 for c in customers)
+
         if can_remove:
             for c in customers:
                 local_coverage[c] -= 1
@@ -210,20 +305,19 @@ def filter_route_pool_for_scp(
             break
 
     # --------------------------------------------------
-    # Fill deterministically if needed
+    # Deterministic fill if needed
     # --------------------------------------------------
     if len(kept) < remaining_slots:
-        for _, r, _ in candidate_routes:
-            if r in kept:
-                continue
-            kept.append(r)
+        for _, r, _ in ranked:
+            if r not in kept:
+                kept.append(r)
             if len(kept) >= remaining_slots:
                 break
 
     final_pool = elite_routes + kept
 
     # --------------------------------------------------
-    # HARD SAFETY: ensure full customer coverage
+    # HARD SAFETY: enforce full coverage
     # --------------------------------------------------
     final_pool = _ensure_coverage(
         kept_routes=final_pool,

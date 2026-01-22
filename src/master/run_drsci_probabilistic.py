@@ -134,6 +134,7 @@ def run_drsci_probabilistic(
     log_to_console: bool = True,
     run_log_name: Optional[str] = None,
     warm_start_solutions: Optional[List[Path]] = None,
+    scp_pruning_mode: str = "diversity",
 ) -> Dict[str, Any]:
 
     if scp_every <= 0:
@@ -551,6 +552,10 @@ def run_drsci_probabilistic(
                 )
                 solve_scp = lazy_import_scp(scp_solver_name)
 
+                _log(
+                    f"[{instance_base} SCP] pruning_mode={scp_pruning_mode}"
+                )
+
                 scp_route_pool = filter_route_pool_for_scp(
                     routes=global_route_pool,
                     route_tags=route_tags,
@@ -561,7 +566,7 @@ def run_drsci_probabilistic(
                     scp_every=scp_every,
                     elite_after_scp_rounds=2,
                     min_pool_size_for_elite=1500,
-                    enable_step_b=True,
+                    pruning_mode=scp_pruning_mode,
                 )
 
                 before = len(global_route_pool)
@@ -710,7 +715,7 @@ def run_drsci_probabilistic(
             scp_every=scp_every,
             elite_after_scp_rounds=2,
             min_pool_size_for_elite=1500,
-            enable_step_b=True,
+            pruning_mode=scp_pruning_mode,
         )
 
         after = len(scp_route_pool)

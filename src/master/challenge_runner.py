@@ -212,6 +212,7 @@ def solve_instance_probabilistic(
     periodic_sol_dump: bool,
     sol_dump_interval: float,
     warm_start_solutions: Optional[list[str]],
+    scp_pruning_mode: str,
 ) -> dict:
     try:
         from master.run_drsci_probabilistic import run_drsci_probabilistic
@@ -295,6 +296,7 @@ def solve_instance_probabilistic(
             periodic_sol_dump=periodic_sol_dump,
             sol_dump_interval=sol_dump_interval,
             warm_start_solutions=warm_start_solutions,
+            scp_pruning_mode=scp_pruning_mode,
         )
 
         best_cost = result["best_cost"]
@@ -374,6 +376,7 @@ def run_benchmark(
     periodic_sol_dump: bool,
     sol_dump_interval: float,
     warm_start_solutions: Optional[list[str]],
+    scp_pruning_mode: str,
 ):
     experiment_ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -427,6 +430,7 @@ def run_benchmark(
                 periodic_sol_dump,
                 sol_dump_interval,
                 warm_start_solutions,
+                scp_pruning_mode,
             ): inst
             for inst in instances_to_run
         }
@@ -527,6 +531,13 @@ def main():
         default=None,
         help="Paths to .sol files whose routes are injected into the initial route pool",
     )
+    parser.add_argument(
+        "--scp_pruning_mode",
+        choices=["none", "quality", "diversity"],
+        default="diversity",
+        help="Route pool pruning strategy for SCP",
+    )
+
 
 
     args = parser.parse_args()
@@ -560,6 +571,7 @@ def main():
         periodic_sol_dump=args.periodic_sol_dump,
         sol_dump_interval=args.sol_dump_interval,
         warm_start_solutions=args.warm_start_solutions,
+        scp_pruning_mode=args.scp_pruning_mode,
     )
 
 
