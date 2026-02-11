@@ -97,7 +97,7 @@ RB_METHODS = [
     "sk_kmeans",
 ]
 
-SOLVERS = ["pyvrp", "filo1", "filo2"]
+SOLVERS = ["pyvrp", "filo1", "filo2", "ails2"]
 
 Route = List[int]
 Routes = List[Route]
@@ -283,7 +283,7 @@ def run_drsci_probabilistic(
             key = _route_key(r, depot_id=1)
             tag = route_tags.get(key)
             if tag is None:
-                tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"))
+                tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "N/A"))
             else:
                 tags.append(
                     (
@@ -291,17 +291,18 @@ def run_drsci_probabilistic(
                         str(tag.get("method")),
                         str(tag.get("solver", "UNKNOWN")),
                         str(tag.get("stage")),
+                        str(tag.get("ls", "N/A")),
                     )
                 )
 
         counter = Counter(tags)
 
-        for (mode, method, solver, stage), count in sorted(
+        for (mode, method, solver, stage, ls), count in sorted(
             counter.items(), key=lambda x: (-x[1], x[0])
         ):
             logger.info(
                 f"{count:4d} routes | {mode:<5} | {method:<15} | "
-                f"solver={solver:<10} | stage={stage}"
+                f"solver={solver:<10} | stage={stage} | ls={ls}"
             )
 
 
@@ -346,7 +347,7 @@ def run_drsci_probabilistic(
                     f"Route #{i}: {' '.join(map(str, body))} || "
                     f"mode={tag.get('mode')} method={tag.get('method')} "
                     f"solver={tag.get('solver')} stage={tag.get('stage')} "
-                    f"iter={tag.get('iteration')}"
+                    f"ls={tag.get('ls', 'N/A')} iter={tag.get('iteration')}"
                 )
 
             log_best_route_summary()
@@ -358,6 +359,7 @@ def run_drsci_probabilistic(
                     str(t.get("method")),
                     str(t.get("solver", "UNKNOWN")),
                     str(t.get("stage")),
+                    str(t.get("ls", "N/A")),
                 )
                 for t in (
                     route_tags.get(_route_key(r, depot_id=1), {})
@@ -367,8 +369,8 @@ def run_drsci_probabilistic(
 
             logger.info("")
             logger.info("[ROUTE POOL SUMMARY]")
-            for k, v in sorted(counter.items(), key=lambda x: -x[1]):
-                logger.info(f"{v:5d} routes | {k}")
+            for (mode, method, solver, stage, ls), v in sorted(counter.items(), key=lambda x: -x[1]):
+                logger.info(f"{v:5d} routes | {mode} | {method} | solver={solver} | stage={stage} | ls={ls}")
 
 
     available_solvers = routing_solvers or SOLVERS
@@ -420,7 +422,10 @@ def run_drsci_probabilistic(
             mode = "vb" if rng.random() < 0.5 else "rb"
             k = rng.choices(values, weights=k_weights, k=1)[0]
 
-            solver_weights = {"pyvrp": 0.2, "filo1": 0.4, "filo2": 0.4}
+            use_ails2_ls = rng.random() < 0.5
+            ls_method = "ails2" if use_ails2_ls else "pyvrp"
+
+            solver_weights = {"pyvrp": 0.2, "filo1": 0.2, "filo2": 0.2, "ails2": 0.4}
             weights = [
                 solver_weights.get(s.lower(), 1.0 / len(available_solvers))
                 for s in available_solvers
@@ -435,11 +440,13 @@ def run_drsci_probabilistic(
                 mode = "vb"
                 method = "sk_kmeans"
                 routing_solver_key = "filo2"
+                use_ails2_ls = False
+                ls_method = "pyvrp"
                 k = 1
             
             msg = (
                 f"[{instance_base} ITERATION {iteration}] "
-                f"mode={mode.upper()} method={method} k={k} solver={routing_solver_key} "
+                f"mode={mode.upper()} method={method} k={k} solver={routing_solver_key} ls={ls_method}"
             )
             print(f"\033[94m{msg}\033[0m", flush=True)
             _log(msg)
@@ -501,14 +508,27 @@ def run_drsci_probabilistic(
                 no_improvement_iters += 1
                 continue
 
-            ls_res = improve_with_local_search(
-                instance_name=instance_name,
-                routes_vrplib=routes,
-                neighbourhood=ls_neighbourhood,                    max_neighbours=ls_after_routing_max_neighbours,
-                seed=seed
-            )
+            if use_ails2_ls:
+                ls_res = improve_with_local_search(
+                    instance_name=instance_name,
+                    routes_vrplib=routes,
+                    ls_solver="ails2",
+                    ails2_time_limit=10.0,  # 10 seconds for AILS2 improvement
+                    seed=seed
+                )
+                improvement_stage = "post_ails2_ls"
+            else:
+                ls_res = improve_with_local_search(
+                    instance_name=instance_name,
+                    routes_vrplib=routes,
+                    ls_solver="pyvrp",
+                    neighbourhood=ls_neighbourhood,                    
+                    max_neighbours=ls_after_routing_max_neighbours,
+                    seed=seed
+                )
+                improvement_stage = "post_ls"
+            
             candidate_routes = ls_res["routes_improved"]
-            improvement_stage = "post_ls"
 
             candidate_cost = _compute_integer_cost(inst, candidate_routes)
 
@@ -521,6 +541,7 @@ def run_drsci_probabilistic(
                     "solver": routing_solver_key,
                     "iteration": iteration,
                     "stage": improvement_stage,
+                    "ls": ls_method,
                 },
             )
 
@@ -836,14 +857,15 @@ def run_drsci_probabilistic(
                 tag = route_tags.get(_route_key(r, depot_id=1))
 
                 if tag is None:
-                    tag_str = "mode=UNKNOWN method=UNKNOWN solver=UNKNOWN stage=UNKNOWN"
+                    tag_str = "mode=UNKNOWN method=UNKNOWN solver=UNKNOWN stage=UNKNOWN ls=N/A"
                 else:
                     tag_str = (
                         f"mode={str(tag.get('mode')).upper()} "
                         f"method={tag.get('method')} "
                         f"solver={tag.get('solver', 'UNKNOWN')} "
-                        f"iter={tag.get('iteration')} "
-                        f"stage={tag.get('stage')}"
+                        f"stage={tag.get('stage')} "
+                        f"ls={tag.get('ls', 'N/A')} "
+                        f"iter={tag.get('iteration')}"
                     )
 
                 logger.info(f"Route #{i}: {' '.join(map(str, body))} || {tag_str}")
@@ -859,7 +881,7 @@ def run_drsci_probabilistic(
                 key = _route_key(r, depot_id=1)
                 tag = route_tags.get(key)
                 if tag is None:
-                    final_tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"))
+                    final_tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "N/A"))
                 else:
                     final_tags.append(
                         (
@@ -867,15 +889,16 @@ def run_drsci_probabilistic(
                             str(tag.get("method")),
                             str(tag.get("solver", "UNKNOWN")),
                             str(tag.get("stage")),
+                            str(tag.get("ls", "N/A")),
                         )
                     )
 
             counter = Counter(final_tags)
-            for (mode, method, solver, stage), count in sorted(
+            for (mode, method, solver, stage, ls), count in sorted(
                 counter.items(), key=lambda x: (-x[1], x[0])
             ):
                 logger.info(
-                    f"{count:4d} routes | {mode} | {method} | solver={solver} | stage={stage}"
+                    f"{count:4d} routes | {mode} | {method} | solver={solver} | stage={stage} | ls={ls}"
                 )
 
         # ----------------------------------------------------
@@ -889,7 +912,7 @@ def run_drsci_probabilistic(
         for k in pool_keys:
             t = route_tags.get(k)
             if t is None:
-                pool_tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN"))
+                pool_tags.append(("UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN", "N/A"))
             else:
                 pool_tags.append(
                     (
@@ -897,15 +920,16 @@ def run_drsci_probabilistic(
                         str(t.get("method")),
                         str(t.get("solver", "UNKNOWN")),
                         str(t.get("stage")),
+                        str(t.get("ls", "N/A")),
                     )
                 )
 
         pool_counter = Counter(pool_tags)
-        for (mode, method, solver, stage), count in sorted(
+        for (mode, method, solver, stage, ls), count in sorted(
             pool_counter.items(), key=lambda x: (-x[1], x[0])
         ):
             logger.info(
-                f"{count:4d} routes | {mode} | {method} | solver={solver} | stage={stage}"
+                f"{count:4d} routes | {mode} | {method} | solver={solver} | stage={stage} | ls={ls}"
             )
 
         # ----------------------------------------------------
@@ -919,14 +943,15 @@ def run_drsci_probabilistic(
             tag = route_tags.get(_route_key(r, depot_id=1))
 
             if tag is None:
-                tag_str = "mode=UNKNOWN method=UNKNOWN solver=UNKNOWN stage=UNKNOWN"
+                tag_str = "mode=UNKNOWN method=UNKNOWN solver=UNKNOWN stage=UNKNOWN ls=N/A"
             else:
                 tag_str = (
                     f"mode={str(tag.get('mode')).upper()} "
                     f"method={tag.get('method')} "
                     f"solver={tag.get('solver', 'UNKNOWN')} "
-                    f"iter={tag.get('iteration')} "
-                    f"stage={tag.get('stage')}"
+                    f"stage={tag.get('stage')} "
+                    f"ls={tag.get('ls', 'N/A')} "
+                    f"iter={tag.get('iteration')}"
                 )
 
             logger.info(f"[POOL #{i:05d}] {' '.join(map(str, body))} || {tag_str}")

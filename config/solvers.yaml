@@ -48,4 +48,19 @@ solvers:
     default_args: {}
     supported_formats: [".vrp"]
     notes: "Original FILO implementation using COBRA library. Built and ready to use."
+    
+  ails2:
+    name: "AILS2"
+    description: "AILS-II - Adaptive Iterated Local Search Heuristic for Large-scale CVRP"
+    type: "java"
+    executable: "java -jar solver/ails2/AILSII.jar"
+    enabled: true
+    command_template: "java -jar {executable} -file {instance} -rounded true -best 0 -limit {limit} -stoppingCriterion {criterion}"
+    default_args:
+      rounded: true
+      best: 0
+      limit: 300
+      stoppingCriterion: "Time"
+    supported_formats: [".vrp"]
+    notes: "Java-based adaptive iterated local search. Requires Java and AILSII.jar to be built."
 

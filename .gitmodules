@@ -13,3 +13,6 @@
 [submodule "solver/cobra"]
 	path = solver/cobra
 	url = https://github.com/acco93/cobra.git
+[submodule "solver/ails2"]
+	path = solver/ails2
+	url = git@github.com:vinymax10/AILS-CVRP.git

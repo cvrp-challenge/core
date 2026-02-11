@@ -8,6 +8,7 @@ Supported backends:
     - pyvrp   (built-in)
     - hexaly  (via solver_hexaly.py)
     - filo1 / filo2 (via solver_filo.py)
+    - ails2   (via solver_ails2.py)
 """
 
 from __future__ import annotations
@@ -98,6 +99,9 @@ def _lazy_import_backend(solver_key: str) -> None:
 
     elif solver_key in {"filo1", "filo2"}:
         importlib.import_module("master.routing.solver_filo")
+
+    elif solver_key == "ails2":
+        importlib.import_module("master.routing.solver_ails2")
 
     elif solver_key == "pyvrp":
         # PyVRP backend is defined below in this file

@@ -69,19 +69,37 @@ Routes = List[Route]
 
 def _resolve_instance_path(instance_name: str) -> str:
     """
-    Resolves the path to a challenge instance file.
-    Searches in: core/instances/challenge-instances/
+    Resolves the path to an instance file.
+    Searches in:
+        core/instances/test-instances/x
+        core/instances/test-instances/xl
+        core/instances/challenge-instances
+    
+    Args:
+        instance_name: Either a full path to the instance file, or just the filename.
+                      If a full path is provided, only the basename will be used for searching.
     """
     base_dir = os.path.dirname(__file__)  # .../core/src/master/improve
     core_root = os.path.abspath(os.path.join(base_dir, "../../../"))
-    instances_root = os.path.join(core_root, "instances", "challenge-instances")
+    
+    # Extract just the filename from instance_name (in case a full path is provided)
+    instance_filename = os.path.basename(instance_name)
+    
+    # Define all search locations (order matters!)
+    search_paths = [
+        os.path.join(core_root, "instances", "test-instances", "x"),
+        os.path.join(core_root, "instances", "test-instances", "xl"),
+        os.path.join(core_root, "instances", "challenge-instances"),
+    ]
 
-    p = os.path.join(instances_root, instance_name)
-    if os.path.exists(p):
-        return p
+    for path in search_paths:
+        p = os.path.join(path, instance_filename)
+        if os.path.exists(p):
+            return p
 
     raise FileNotFoundError(
-        f"Instance '{instance_name}' not found in: {instances_root}"
+        f"Instance '{instance_filename}' not found in any of:\n  "
+        + "\n  ".join(search_paths)
     )
 
 
@@ -446,6 +464,82 @@ def _improve_with_hexaly_local_search(
 
 
 # ======================================================================
+# AILS2 backend
+# ======================================================================
+
+def _improve_with_ails2_local_search(
+    instance_name: str,
+    routes_vrplib: Routes,
+    *,
+    time_limit: float = 10.0,
+    seed: int = 0,
+) -> Dict[str, object]:
+    """
+    Improve routes using AILS2 re-optimisation.
+    
+    Note: AILS2 doesn't support warm-start solutions, so it will start from scratch
+    and search for improvements. The input routes are used to compute initial cost
+    for comparison.
+    """
+    from master.routing.solver import solve as routing_solve
+    
+    inst = load_instance(instance_name)
+    routes_vrplib = _normalise_routes(routes_vrplib)
+    _check_capacity_feasibility(inst, routes_vrplib, label="input routes to LS (ails2)")
+    
+    initial_cost_int = _integer_rounded_cost(inst, routes_vrplib)
+    
+    # Calculate adaptive time limit based on instance size
+    # Use adaptive cluster time formula based on number of customers
+    num_customers = len(inst.get("demand", [])) - 1  # Exclude depot
+    if num_customers > 0:
+        # Same formula as routing_controller._adaptive_cluster_time
+        base = 1.0
+        alpha = 0.25
+        exponent = 0.9
+        min_time = 2.0
+        max_time = 180.0
+        adaptive_time = base + alpha * (num_customers ** exponent)
+        adaptive_time_limit = max(min_time, min(max_time, adaptive_time))
+    else:
+        adaptive_time_limit = time_limit  # Fallback to provided time_limit
+    
+    # Always use adaptive time limit (ignore input time_limit parameter)
+    # This ensures AILS2 uses adaptive time based on instance size
+    
+    # Run AILS2 on the full instance with adaptive time limit
+    result = routing_solve(
+        instance=instance_name,
+        solver="ails2",
+        solver_options={
+            "max_runtime": adaptive_time_limit,  # Use adaptive time based on instance size
+            "rounded": True,
+            "best": 0.0,  # We don't know the optimal, use 0
+        },
+    )
+    
+    improved = result.metadata.get("routes_vrplib", [])
+    improved = _normalise_routes(improved)
+    
+    # Check feasibility
+    if improved:
+        _check_capacity_feasibility(inst, improved, label="routes after LS (ails2)")
+    
+    improved_cost_int = _integer_rounded_cost(inst, improved) if improved else float("inf")
+    
+    return {
+        "initial_cost": float(initial_cost_int),
+        "improved_cost": float(improved_cost_int),
+        "routes_initial": routes_vrplib,
+        "routes_improved": improved if improved else routes_vrplib,  # Fallback to original if no solution
+        "ls_moves": 0,
+        "ls_improving_moves": 0,
+        "ls_updates": 0,
+        "backend": "ails2",
+    }
+
+
+# ======================================================================
 # Public API: improve with LocalSearch (dispatcher)
 # ======================================================================
 
@@ -458,10 +552,12 @@ def improve_with_local_search(
     seed: int = 0,
     load_penalty: int = 1_000_000,
     dist_penalty: int = 1,
-    ls_solver: Literal["pyvrp", "hexaly", "none"] = "pyvrp",
-    # Hexaly-specific knobs (ignored by pyvrp/none)
+    ls_solver: Literal["pyvrp", "hexaly", "ails2", "none"] = "pyvrp",
+    # Hexaly-specific knobs (ignored by pyvrp/ails2/none)
     hexaly_time_limit: float = 2.0,
     hexaly_verbose: bool = False,
+    # AILS2-specific knobs (ignored by pyvrp/hexaly/none)
+    ails2_time_limit: float = 10.0,
 ) -> Dict[str, object]:
     """
     Pluggable LS entry point.
@@ -469,6 +565,7 @@ def improve_with_local_search(
     ls_solver:
       - "pyvrp": existing PyVRP LocalSearch (uses neighbourhood/max_neighbours)
       - "hexaly": short Hexaly re-optimisation (uses hexaly_time_limit)
+      - "ails2": AILS2 re-optimisation (uses ails2_time_limit)
       - "none": no-op
     """
     solver = ls_solver.lower().strip()
@@ -506,4 +603,12 @@ def improve_with_local_search(
             verbose=hexaly_verbose,
         )
 
-    raise ValueError(f"[LS] Unknown ls_solver='{ls_solver}'. Use one of: pyvrp, hexaly, none.")
+    if solver == "ails2":
+        return _improve_with_ails2_local_search(
+            instance_name,
+            routes_vrplib,
+            time_limit=ails2_time_limit,
+            seed=seed,
+        )
+
+    raise ValueError(f"[LS] Unknown ls_solver='{ls_solver}'. Use one of: pyvrp, hexaly, ails2, none.")

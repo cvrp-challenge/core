@@ -3,12 +3,13 @@
 Routing controller: glue between clustering and a routing backend.
 
 Behaviour:
-    - Adaptive cluster runtime based on cluster size (for PyVRP time limit)
+    - Adaptive cluster runtime based on cluster size (for PyVRP and AILS2 time limit)
     - Adaptive no-improvement iterations based on cluster size:
-      * n <= 100: 10000 iterations
-      * n >= 1000: 100000 iterations
+      * n <= 100: 500 iterations
+      * n >= 1500: 20000 iterations
       * Linear scaling in between
     - PyVRP: MultipleCriteria stopping (time limit AND no-improvement, stop when either met)
+    - AILS2: Adaptive time limit (prioritized) and no-improvement iterations (fallback)
     - FILO1/FILO2: Only no-improvement criterion (no time limit)
     - Non-PyVRP solvers (e.g. Hexaly): receive stall_time if enabled
 """
@@ -300,9 +301,17 @@ def solve_clusters(
                 **solver_options,
                 "cluster_nodes": customers,
                 "seed": seed + cid,
-                # FILO: Only use no_improvement, no time limit
-                "no_improvement": effective_no_improvement,
             }
+            
+            # AILS2: Use adaptive time limit (prioritized) and no-improvement (fallback)
+            # AILS2 supports either Time OR Iteration stopping criterion, not both.
+            # We provide both, but AILS2 will use max_runtime (adaptive time limit) when provided.
+            if solver_key == "ails2":
+                opts["max_runtime"] = cluster_time  # Adaptive time limit based on cluster size
+                opts["no_improvement"] = effective_no_improvement  # Fallback if max_runtime not used
+            else:
+                # FILO: Only use no_improvement, no time limit
+                opts["no_improvement"] = effective_no_improvement
 
             # Only add stall_time if explicitly enabled (for Hexaly)
             if solver_options.get("use_stall", False):
