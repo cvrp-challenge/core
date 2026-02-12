@@ -513,7 +513,7 @@ def run_drsci_probabilistic(
                     instance_name=instance_name,
                     routes_vrplib=routes,
                     ls_solver="ails2",
-                    ails2_time_limit=10.0,  # 10 seconds for AILS2 improvement
+                    ails2_time_limit=100.0,  # 10 seconds for AILS2 improvement
                     seed=seed
                 )
                 improvement_stage = "post_ails2_ls"

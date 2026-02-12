@@ -76,6 +76,10 @@ solver/pyvrp/install/
 !solver/filo2/
 !solver/filo2/**
 
+# Keep ails2 (JAR + data, used by solver_ails2)
+!solver/ails2/
+!solver/ails2/**
+
 # Ignore build/install artefacts (will be built fresh in Docker)
 solver/cobra/build/
 solver/cobra/install/

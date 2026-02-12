@@ -366,6 +366,13 @@ def _run_ails2_executable(
     cmd.extend([str(a) for a in extra_args])
 
     t0 = time.time()
+    # Calculate timeout with buffer: use 30% extra or minimum 30 seconds, whichever is larger
+    # AILS2 often runs past its -limit (cleanup, current iteration); avoid subprocess timeout
+    timeout_value = None
+    if max_runtime is not None:
+        timeout_buffer = max(30.0, max_runtime * 1)  # At least 30s or 30% of runtime
+        timeout_value = max_runtime + timeout_buffer
+    
     proc = subprocess.run(
         cmd,
         cwd=str(work_dir),
@@ -373,7 +380,7 @@ def _run_ails2_executable(
         stderr=subprocess.STDOUT,
         text=True,
         check=False,
-        timeout=max_runtime + 5 if max_runtime else None,  # Add small buffer for cleanup
+        timeout=timeout_value,
     )
     t1 = time.time()
 

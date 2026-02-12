@@ -2,7 +2,8 @@
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install system dependencies needed for building Python packages
+# Install system dependencies (Python build + Java for AILS2)
+# Uses Docker BuildKit cache mounts so apt packages are reused across builds
 RUN --mount=type=cache,target=/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt \
     apt-get update && apt-get install -y --no-install-recommends \
@@ -13,6 +14,7 @@ RUN --mount=type=cache,target=/var/cache/apt \
     libblas-dev \
     liblapack-dev \
     gfortran \
+    openjdk-21-jre-headless \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better Docker layer caching
