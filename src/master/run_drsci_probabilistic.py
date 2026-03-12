@@ -236,7 +236,7 @@ def run_drsci_probabilistic(
     # --------------------------------------------------------
     num_customers = len(inst["demand"]) - 1
     k_min_auto = max(2, math.ceil(num_customers / max_avg_cluster_size))
-    k_max_auto = max(k_min_auto, 11)
+    k_max_auto = max(k_min_auto, 10)
     k_peak = 10
 
     values = list(range(k_min_auto, k_max_auto + 1))
@@ -389,7 +389,7 @@ def run_drsci_probabilistic(
             gap_override = False
             if bks_cost is not None and best_cost != float("inf"):
                 gap_percent = ((best_cost - bks_cost) / bks_cost) * 100
-                if gap_percent < 0.001:
+                if gap_percent < 0.01:
                     gap_override = True
                     msg = (
                         f"[{instance_base} GAP-OVERRIDE] "
@@ -422,10 +422,12 @@ def run_drsci_probabilistic(
             mode = "vb" if rng.random() < 0.5 else "rb"
             k = rng.choices(values, weights=k_weights, k=1)[0]
 
-            use_ails2_ls = rng.random() < 0.5
+            # deactivate ails2 for ls for now
+            use_ails2_ls = rng.random() < 0.0
             ls_method = "ails2" if use_ails2_ls else "pyvrp"
 
-            solver_weights = {"pyvrp": 0.2, "filo1": 0.2, "filo2": 0.2, "ails2": 0.4}
+            # deactivate ails2 for routing for now -- and normalize all other weights
+            solver_weights = {"pyvrp": 0.33, "filo1": 0.33, "filo2": 0.33, "ails2": 0.0}
             weights = [
                 solver_weights.get(s.lower(), 1.0 / len(available_solvers))
                 for s in available_solvers
