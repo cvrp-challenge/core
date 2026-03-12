@@ -177,6 +177,14 @@ def run_drsci_probabilistic(
             raise ValueError(f"Unknown log_mode: {log_mode}")
 
     # ----------------------------------------------------
+    # Timing accumulators
+    # ----------------------------------------------------
+    # Per-iteration timing dicts (for potential post-hoc analysis)
+    iteration_timings: list[dict[str, float]] = []
+    # Cumulative timings per stage across the whole run
+    cumulative_timings: dict[str, float] = {}
+
+    # ----------------------------------------------------
     # Unified logging helper (print + optional logger)
     # ----------------------------------------------------
     def _log(msg: str, level: str = "info") -> None:
@@ -385,6 +393,8 @@ def run_drsci_probabilistic(
     # ========================================================
     try:
         while True:
+            iter_start_time = time.time()
+            step_times: dict[str, float] = {}
             # Check gap at beginning of iteration - overrule termination if gap < 0.001%
             gap_override = False
             if bks_cost is not None and best_cost != float("inf"):
@@ -457,6 +467,7 @@ def run_drsci_probabilistic(
 
             # ---------------- DECOMPOSITION ----------------
             if mode == "vb":
+                t0 = time.time()
                 clusters, _ = run_clustering(
                     method=method,
                     instance_name=instance_name,
@@ -464,14 +475,22 @@ def run_drsci_probabilistic(
                     use_combined=False,
                     angle_offset=angle_offset,
                 )
+                step_times["cluster"] = time.time() - t0
             else:
                 if best_routes is None:
                     msg = f"[{instance_base} RB-SKIP] no incumbent solution yet"
                     print(msg, flush=True)
                     _log(msg)
                     no_improvement_iters += 1
+                    # Record iteration timing even for skipped RB iterations
+                    iter_total = time.time() - iter_start_time
+                    step_times["total_iter"] = iter_total
+                    for k, v in step_times.items():
+                        cumulative_timings[k] = cumulative_timings.get(k, 0.0) + v
+                    iteration_timings.append(step_times)
                     continue
 
+                t0 = time.time()
                 clusters = route_based_decomposition(
                     instance_name=instance_name,
                     global_routes=best_routes,
@@ -480,6 +499,7 @@ def run_drsci_probabilistic(
                     use_angle=False,
                     use_load=False,
                 )
+                step_times["cluster"] = time.time() - t0
 
             msg = (
                 f"[{instance_base} CLUSTER] method={method} k={k} | "
@@ -496,6 +516,7 @@ def run_drsci_probabilistic(
                 solver_opts.get("no_improvement", routing_no_improvement)
             )
 
+            t0 = time.time()
             routing = solve_clusters(
                 instance_name=instance_name,
                 clusters=clusters,
@@ -504,13 +525,20 @@ def run_drsci_probabilistic(
                 seed=seed,
                 no_improvement=override_no_improvement,
             )
+            step_times["routing"] = time.time() - t0
 
             routes = _result_to_vrplib_routes(routing)
             if not routes:
                 no_improvement_iters += 1
+                iter_total = time.time() - iter_start_time
+                step_times["total_iter"] = iter_total
+                for k, v in step_times.items():
+                    cumulative_timings[k] = cumulative_timings.get(k, 0.0) + v
+                iteration_timings.append(step_times)
                 continue
 
             if use_ails2_ls:
+                t0 = time.time()
                 ls_res = improve_with_local_search(
                     instance_name=instance_name,
                     routes_vrplib=routes,
@@ -518,8 +546,10 @@ def run_drsci_probabilistic(
                     ails2_time_limit=100.0,  # 10 seconds for AILS2 improvement
                     seed=seed
                 )
+                step_times["ls"] = time.time() - t0
                 improvement_stage = "post_ails2_ls"
             else:
+                t0 = time.time()
                 ls_res = improve_with_local_search(
                     instance_name=instance_name,
                     routes_vrplib=routes,
@@ -528,6 +558,7 @@ def run_drsci_probabilistic(
                     max_neighbours=ls_after_routing_max_neighbours,
                     seed=seed
                 )
+                step_times["ls"] = time.time() - t0
                 improvement_stage = "post_ls"
             
             candidate_routes = ls_res["routes_improved"]
@@ -570,6 +601,7 @@ def run_drsci_probabilistic(
 
             # ---------------- SCP ----------------
             if run_scp_now:
+                t_scp_start = time.time()
                 scp_solver_name = _select_scp_solver_name(
                     rng, scp_solvers, scp_switch_prob
                 )
@@ -690,6 +722,8 @@ def run_drsci_probabilistic(
                     print(msg, flush=True)
                     _log(msg)
 
+                step_times["scp"] = time.time() - t_scp_start
+
 
             maybe_periodic_snapshot()
             if improved_this_iter:
@@ -704,6 +738,26 @@ def run_drsci_probabilistic(
                 print(msg, flush=True)
                 _log(msg)
 
+            # ---------------- ITERATION TIMING SUMMARY ----------------
+            iter_total = time.time() - iter_start_time
+            step_times["total_iter"] = iter_total
+            for k, v in step_times.items():
+                cumulative_timings[k] = cumulative_timings.get(k, 0.0) + v
+            iteration_timings.append(step_times)
+
+            timing_msg_parts = [
+                f"{stage}={dur:.3f}s"
+                for stage, dur in step_times.items()
+                if stage != "total_iter"
+            ]
+            timing_msg = (
+                f"[{instance_base} ITERATION-TIMES {iteration}] "
+                + " ".join(timing_msg_parts)
+                + f" total={iter_total:.3f}s"
+            )
+            print(timing_msg, flush=True)
+            _log(timing_msg)
+
 
     except KeyboardInterrupt:
         msg = f"[{instance_base} INTERRUPT] Keyboard interrupt received"
@@ -715,6 +769,7 @@ def run_drsci_probabilistic(
     # FINAL SCP (always run once before returning)
     # ========================================================
     if global_route_pool:
+        t_final_scp_start = time.time()
         print(
             f"[{instance_base} FINAL SCP] running final consolidation",
             flush=True,
@@ -834,6 +889,10 @@ def run_drsci_probabilistic(
                 f"cost={final_cost} (best={best_cost}){gap_str}",
                 flush=True,
             )
+
+        # Record final SCP timing as part of total SCP time
+        final_scp_duration = time.time() - t_final_scp_start
+        cumulative_timings["scp"] = cumulative_timings.get("scp", 0.0) + final_scp_duration
 
 
     # ========================================================
@@ -957,6 +1016,25 @@ def run_drsci_probabilistic(
                 )
 
             logger.info(f"[POOL #{i:05d}] {' '.join(map(str, body))} || {tag_str}")
+
+        # ----------------------------------------------------
+        # 5) RUNTIME SUMMARY BY STAGE
+        # ----------------------------------------------------
+        total_runtime = time.time() - start_time
+        logger.info("")
+        logger.info("=" * 80)
+        logger.info(f"[{instance_base}] RUNTIME SUMMARY BY STAGE")
+        logger.info("=" * 80)
+
+        if cumulative_timings:
+            for stage, total in sorted(cumulative_timings.items()):
+                pct = (total / total_runtime * 100.0) if total_runtime > 0 else 0.0
+                logger.info(
+                    f"{stage:>15}: {total:8.3f}s ({pct:5.1f}% of total runtime)"
+                )
+        else:
+            logger.info("No per-stage timing data collected.")
+
     # ----------------------------------------------------
     # CONSOLE SUMMARY — FINAL ROUTE ORIGINS
     # ----------------------------------------------------
@@ -968,11 +1046,12 @@ def run_drsci_probabilistic(
         )
 
     maybe_periodic_snapshot(force=True)
+    total_runtime = time.time() - start_time
     return {
         "instance": instance_name,
         "best_cost": best_cost,
         "routes": best_routes or [],
         "iterations": iteration,
-        "runtime": time.time() - start_time,
+        "runtime": total_runtime,
         "route_pool_size": len(global_route_pool),
     }
