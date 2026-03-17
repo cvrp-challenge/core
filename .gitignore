@@ -74,10 +74,7 @@ Makefile
 build/
 compile_commands.json
 
-# Results and logs
-# .log
-*.csv
-results/
+
 
 # Temporary files
 *.tmp
