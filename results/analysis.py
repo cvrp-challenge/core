@@ -4,6 +4,8 @@ import csv
 import json
 import re
 import statistics
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -18,6 +20,22 @@ SUMMARY_CSV = ROOT / "results" / "summary.csv"
 OVERVIEW_MD = ROOT / "results" / "OVERVIEW.md"
 CHALLENGE_BKS_PATH = INSTANCES_DIR / "challenge-bks.json"
 INITIAL_BKS_PATH = INSTANCES_DIR / "initial-bks.json"
+
+# Optional columns in summary.csv (gaps vs. paper Table 2 best costs per instance).
+PAPER_GAP_COLS = (
+    "gap_to_paper_filo_best_percent",
+    "gap_to_paper_filo2_best_percent",
+    "gap_to_paper_hgs_cvrp_best_percent",
+)
+
+# Gaps vs. paper Table 2 *mean* cost (60-run average) for FILO / FILO2 / HGS-CVRP.
+PAPER_MEAN_GAP_COLS = (
+    "gap_to_paper_filo_mean_percent",
+    "gap_to_paper_filo2_mean_percent",
+    "gap_to_paper_hgs_cvrp_mean_percent",
+)
+
+ARXIV_HTML_TABLE2_URL = "https://arxiv.org/html/2601.11467v1"
 
 
 @dataclass
@@ -136,6 +154,174 @@ def load_bks_tables() -> Tuple[Dict[str, float], Dict[str, float]]:
     with INITIAL_BKS_PATH.open("r", encoding="utf-8") as f:
         initial_bks = json.load(f)
     return challenge_bks, initial_bks
+
+
+def _parse_paper_cost_cell(raw: str) -> Optional[float]:
+    s = raw.strip()
+    if s in ("–", "-", "—", "", "N/A", "n/a"):
+        return None
+    return float(s.replace(",", ""))
+
+
+_INSTANCE_CELL_RE = re.compile(r"^XL-n\d+-k\d+$")
+
+
+def _row_to_paper_means(cells: List[str]) -> Optional[Tuple[str, Tuple[float, float, float]]]:
+    """If cells are a Table 2 data row, return (instance, (filo_mean, filo2_mean, hgs_mean))."""
+    if not cells:
+        return None
+    idx = 0
+    if cells[0].isdigit():
+        idx = 1
+    if idx >= len(cells):
+        return None
+    inst = cells[idx]
+    if not _INSTANCE_CELL_RE.match(inst):
+        return None
+    vals = cells[idx + 1 :]
+    if len(vals) < 16:
+        return None
+    filo_m = _parse_paper_cost_cell(vals[3])
+    filo2_m = _parse_paper_cost_cell(vals[5])
+    hgs_m = _parse_paper_cost_cell(vals[9])
+    if filo_m is None or filo2_m is None or hgs_m is None:
+        return None
+    return inst, (filo_m, filo2_m, hgs_m)
+
+
+def _parse_paper_table2_xl_pipe_markdown(text: str) -> Dict[str, Tuple[float, float, float]]:
+    """Parse pipe-style table rows (arXiv HTML experiment page as markdown, or saved .md)."""
+
+    out: Dict[str, Tuple[float, float, float]] = {}
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line.startswith("| XL-n"):
+            continue
+        if "Avg. gap" in line:
+            break
+        parts = line.split("|")
+        if len(parts) < 3:
+            continue
+        cells = [p.strip() for p in parts[1:-1]]
+        parsed = _row_to_paper_means(cells)
+        if parsed is not None:
+            inst, triple = parsed
+            out[inst] = triple
+    return out
+
+
+def _parse_paper_table2_xl_arxiv_raw_html(html: str) -> Dict[str, Tuple[float, float, float]]:
+    """
+    Parse Table 2 from raw arXiv HTML (what urllib returns for /html/... URLs).
+
+    Rows are HTML <tr> with <td> cells, not markdown pipes.
+    """
+
+    out: Dict[str, Tuple[float, float, float]] = {}
+    for m in re.finditer(r"<tr\b[^>]*>(.*?)</tr>", html, flags=re.DOTALL | re.I):
+        tr = m.group(1)
+        raw_cells = re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", tr, flags=re.DOTALL | re.I)
+        cells: List[str] = []
+        for raw in raw_cells:
+            text = re.sub(r"<[^>]+>", "", raw)
+            text = re.sub(r"\s+", " ", text).strip()
+            cells.append(text)
+        parsed = _row_to_paper_means(cells)
+        if parsed is not None:
+            inst, triple = parsed
+            out[inst] = triple
+    return out
+
+
+def parse_paper_table2_xl_method_means(content: str) -> Dict[str, Tuple[float, float, float]]:
+    """
+    Parse arXiv Table 2 (XL instances) from either:
+    - raw HTML from https://arxiv.org/html/2601.11467v1 (urllib), or
+    - pipe-markdown table lines (saved page / copy-paste from browser “view source” tools
+      that emit markdown).
+    """
+
+    pipe = _parse_paper_table2_xl_pipe_markdown(content)
+    if len(pipe) >= 90:
+        return pipe
+    tagged = _parse_paper_table2_xl_arxiv_raw_html(content)
+    return tagged if len(tagged) > len(pipe) else pipe
+
+
+BUNDLED_PAPER_TABLE2_MD = Path(__file__).resolve().parent / "data" / "paper_table2_xl.md"
+
+
+def _fetch_arxiv_html(url: str = ARXIV_HTML_TABLE2_URL, timeout: int = 60) -> str:
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0 (compatible; core-results-analysis/1.0)"},
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read().decode("utf-8", errors="replace")
+
+
+def cmd_paper_mean_gaps(args: argparse.Namespace) -> None:
+    """Append / refresh mean-baseline gap columns on `summary.csv`."""
+
+    if args.html:
+        html = Path(args.html).read_text(encoding="utf-8", errors="replace")
+    else:
+        try:
+            html = _fetch_arxiv_html()
+        except (urllib.error.URLError, OSError) as exc:
+            raise SystemExit(
+                f"Could not fetch {ARXIV_HTML_TABLE2_URL} ({exc}). "
+                "Save the arXiv HTML page and pass --html PATH."
+            ) from exc
+
+    paper = parse_paper_table2_xl_method_means(html)
+    if len(paper) < 90 and BUNDLED_PAPER_TABLE2_MD.is_file():
+        paper = parse_paper_table2_xl_method_means(
+            BUNDLED_PAPER_TABLE2_MD.read_text(encoding="utf-8", errors="replace")
+        )
+    if len(paper) < 90:
+        raise SystemExit(
+            f"Parsed only {len(paper)} Table 2 XL rows (need ~100). "
+            "urllib returns raw HTML (not markdown pipes). If this persists, save "
+            f"`{ARXIV_HTML_TABLE2_URL}` in a browser and pass `--html PATH`, or add "
+            f"pipe-style table rows to `{BUNDLED_PAPER_TABLE2_MD}`."
+        )
+
+    rows: List[Dict[str, str]] = []
+    with SUMMARY_CSV.open("r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        base_fields = list(reader.fieldnames or [])
+        for r in reader:
+            rows.append(dict(r))
+
+    new_fields = list(base_fields)
+    for col in PAPER_MEAN_GAP_COLS:
+        if col not in new_fields:
+            new_fields.append(col)
+
+    missing = 0
+    for r in rows:
+        inst = r["instance"]
+        if inst not in paper:
+            missing += 1
+            for col in PAPER_MEAN_GAP_COLS:
+                r[col] = ""
+            continue
+        best = float(r["best_cost"])
+        fm, f2m, hm = paper[inst]
+        r[PAPER_MEAN_GAP_COLS[0]] = str(100.0 * (best - fm) / fm)
+        r[PAPER_MEAN_GAP_COLS[1]] = str(100.0 * (best - f2m) / f2m)
+        r[PAPER_MEAN_GAP_COLS[2]] = str(100.0 * (best - hm) / hm)
+
+    if missing:
+        print(f"warning: no Table 2 mean row for {missing} instance(s)")
+
+    with SUMMARY_CSV.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=new_fields, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"Updated {SUMMARY_CSV} with mean-baseline gap columns ({len(rows)} rows)")
 
 
 @dataclass(frozen=True)
@@ -401,6 +587,42 @@ def cmd_overview_solutions(_: argparse.Namespace) -> None:
         f"- **Average gap to initial BKS**: {avg_init:.4f}% (mean over all 100 instances, using costs from solution files vs. `initial-bks.json`)."
     )
     lines.append(f"- **Median gap to initial BKS**: {med_init:.4f}%.")
+    if rows and all(c in rows[0] for c in PAPER_GAP_COLS):
+        lines.append("")
+        lines.append(
+            "### Gaps vs. paper Table 2 baselines (best FILO / FILO2 / HGS-CVRP per instance, 100 instances)"
+        )
+        lines.append("")
+        labels = {
+            "gap_to_paper_filo_best_percent": "FILO (paper best)",
+            "gap_to_paper_filo2_best_percent": "FILO2 (paper best)",
+            "gap_to_paper_hgs_cvrp_best_percent": "HGS-CVRP (paper best)",
+        }
+        for col in PAPER_GAP_COLS:
+            xs = [float(r[col]) for r in rows]
+            lines.append(
+                f"- **Average gap vs. {labels[col]}**: {statistics.mean(xs):.4f}%."
+            )
+            lines.append(f"- **Median gap vs. {labels[col]}**: {statistics.median(xs):.4f}%.")
+    if rows and all(c in rows[0] for c in PAPER_MEAN_GAP_COLS):
+        lines.append("")
+        lines.append(
+            "### Gaps vs. paper Table 2 baselines (mean FILO / FILO2 / HGS-CVRP per instance, 100 instances)"
+        )
+        lines.append("")
+        mean_labels = {
+            "gap_to_paper_filo_mean_percent": "FILO (paper mean)",
+            "gap_to_paper_filo2_mean_percent": "FILO2 (paper mean)",
+            "gap_to_paper_hgs_cvrp_mean_percent": "HGS-CVRP (paper mean)",
+        }
+        for col in PAPER_MEAN_GAP_COLS:
+            xs = [float(r[col]) for r in rows if (r.get(col) or "").strip() != ""]
+            if not xs:
+                continue
+            lines.append(
+                f"- **Average gap vs. {mean_labels[col]}**: {statistics.mean(xs):.4f}%."
+            )
+            lines.append(f"- **Median gap vs. {mean_labels[col]}**: {statistics.median(xs):.4f}%.")
     lines.append("")
     lines.append("### Gap distribution (vs. BKS, 100 instances)")
     lines.append("")
@@ -607,6 +829,26 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Rebuild summary.csv and OVERVIEW.md from final solution files and BKS tables.",
     )
     p_sol.set_defaults(func=lambda args: (cmd_summary_solutions(args), cmd_overview_solutions(args)))
+
+    p_over = sub.add_parser(
+        "overview",
+        help="Rebuild OVERVIEW.md from summary.csv and logs (does not rewrite summary.csv).",
+    )
+    p_over.set_defaults(func=cmd_overview_solutions)
+
+    p_pmean = sub.add_parser(
+        "paper_mean_gaps",
+        help=(
+            "Add gap columns vs. paper Table 2 FILO/FILO2/HGS-CVRP *mean* costs to summary.csv "
+            "(fetches arXiv HTML unless --html)."
+        ),
+    )
+    p_pmean.add_argument(
+        "--html",
+        metavar="PATH",
+        help="Saved arXiv HTML for 2601.11467v1 if network fetch fails or you work offline.",
+    )
+    p_pmean.set_defaults(func=cmd_paper_mean_gaps)
 
     return parser
 

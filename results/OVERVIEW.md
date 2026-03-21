@@ -6,6 +6,24 @@
 - **Average gap to initial BKS**: 0.5339% (mean over all 100 instances, using costs from solution files vs. `initial-bks.json`).
 - **Median gap to initial BKS**: 0.4837%.
 
+### Gaps vs. paper Table 2 baselines (best FILO / FILO2 / HGS-CVRP per instance, 100 instances)
+
+- **Average gap vs. FILO (paper best)**: 0.3820%.
+- **Median gap vs. FILO (paper best)**: 0.3391%.
+- **Average gap vs. FILO2 (paper best)**: 0.4157%.
+- **Median gap vs. FILO2 (paper best)**: 0.3759%.
+- **Average gap vs. HGS-CVRP (paper best)**: -0.5667%.
+- **Median gap vs. HGS-CVRP (paper best)**: -0.3840%.
+
+### Gaps vs. paper Table 2 baselines (mean FILO / FILO2 / HGS-CVRP per instance, 100 instances)
+
+- **Average gap vs. FILO (paper mean)**: 0.2850%.
+- **Median gap vs. FILO (paper mean)**: 0.2496%.
+- **Average gap vs. FILO2 (paper mean)**: 0.3248%.
+- **Median gap vs. FILO2 (paper mean)**: 0.2741%.
+- **Average gap vs. HGS-CVRP (paper mean)**: -0.8066%.
+- **Median gap vs. HGS-CVRP (paper mean)**: -0.6533%.
+
 ### Gap distribution (vs. BKS, 100 instances)
 
 - **gap ≤ 0.10%**:         9

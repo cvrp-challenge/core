@@ -1,0 +1,902 @@
+{
+  "XL-n10001-k1570.vrp": {
+    "size": 10001,
+    "min_routes": 1570,
+    "avg_route_length": 6.4,
+    "capacity": 479,
+    "customer_distribution": "RC (2)",
+    "depot_position": "E",
+    "demand_distribution": "50-100"
+  },
+  "XL-n1048-k237.vrp": {
+    "size": 1048,
+    "min_routes": 237,
+    "avg_route_length": 4.7,
+    "capacity": 128,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "SL"
+  },
+  "XL-n1094-k157.vrp": {
+    "size": 1094,
+    "min_routes": 157,
+    "avg_route_length": 7.8,
+    "capacity": 7,
+    "customer_distribution": "C (6)",
+    "depot_position": "C",
+    "demand_distribution": "U"
+  },
+  "XL-n1141-k112.vrp": {
+    "size": 1141,
+    "min_routes": 112,
+    "avg_route_length": 10.2,
+    "capacity": 761,
+    "customer_distribution": "RC (3)",
+    "depot_position": "R",
+    "demand_distribution": "50-100"
+  },
+  "XL-n1188-k96.vrp": {
+    "size": 1188,
+    "min_routes": 96,
+    "avg_route_length": 12.4,
+    "capacity": 782,
+    "customer_distribution": "RC (3)",
+    "depot_position": "R",
+    "demand_distribution": "Q"
+  },
+  "XL-n1234-k55.vrp": {
+    "size": 1234,
+    "min_routes": 55,
+    "avg_route_length": 22.7,
+    "capacity": 126,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "1-10"
+  },
+  "XL-n1281-k29.vrp": {
+    "size": 1281,
+    "min_routes": 29,
+    "avg_route_length": 45.5,
+    "capacity": 2267,
+    "customer_distribution": "C (5)",
+    "depot_position": "C",
+    "demand_distribution": "1-100"
+  },
+  "XL-n1328-k19.vrp": {
+    "size": 1328,
+    "min_routes": 19,
+    "avg_route_length": 72.6,
+    "capacity": 542,
+    "customer_distribution": "RC (3)",
+    "depot_position": "R",
+    "demand_distribution": "5-10"
+  },
+  "XL-n1374-k278.vrp": {
+    "size": 1374,
+    "min_routes": 278,
+    "avg_route_length": 4.9,
+    "capacity": 248,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "Q"
+  },
+  "XL-n1421-k232.vrp": {
+    "size": 1421,
+    "min_routes": 232,
+    "avg_route_length": 6.1,
+    "capacity": 309,
+    "customer_distribution": "C (4)",
+    "depot_position": "E",
+    "demand_distribution": "1-100"
+  },
+  "XL-n1468-k151.vrp": {
+    "size": 1468,
+    "min_routes": 151,
+    "avg_route_length": 9.7,
+    "capacity": 726,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "50-100"
+  },
+  "XL-n1514-k106.vrp": {
+    "size": 1514,
+    "min_routes": 106,
+    "avg_route_length": 14.2,
+    "capacity": 107,
+    "customer_distribution": "RC (4)",
+    "depot_position": "C",
+    "demand_distribution": "5-10"
+  },
+  "XL-n1561-k75.vrp": {
+    "size": 1561,
+    "min_routes": 75,
+    "avg_route_length": 21.9,
+    "capacity": 21,
+    "customer_distribution": "C (4)",
+    "depot_position": "R",
+    "demand_distribution": "U"
+  },
+  "XL-n1608-k39.vrp": {
+    "size": 1608,
+    "min_routes": 39,
+    "avg_route_length": 42.1,
+    "capacity": 337,
+    "customer_distribution": "RC (3)",
+    "depot_position": "C",
+    "demand_distribution": "SL"
+  },
+  "XL-n1654-k11.vrp": {
+    "size": 1654,
+    "min_routes": 11,
+    "avg_route_length": 155.4,
+    "capacity": 845,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "1-10"
+  },
+  "XL-n1701-k562.vrp": {
+    "size": 1701,
+    "min_routes": 562,
+    "avg_route_length": 3.0,
+    "capacity": 227,
+    "customer_distribution": "C (6)",
+    "depot_position": "R",
+    "demand_distribution": "50-100"
+  },
+  "XL-n1748-k271.vrp": {
+    "size": 1748,
+    "min_routes": 271,
+    "avg_route_length": 6.4,
+    "capacity": 270,
+    "customer_distribution": "C (3)",
+    "depot_position": "R",
+    "demand_distribution": "Q"
+  },
+  "XL-n1794-k163.vrp": {
+    "size": 1794,
+    "min_routes": 163,
+    "avg_route_length": 11.2,
+    "capacity": 11,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "U"
+  },
+  "XL-n1841-k126.vrp": {
+    "size": 1841,
+    "min_routes": 126,
+    "avg_route_length": 14.6,
+    "capacity": 186,
+    "customer_distribution": "RC (2)",
+    "depot_position": "E",
+    "demand_distribution": "SL"
+  },
+  "XL-n1888-k82.vrp": {
+    "size": 1888,
+    "min_routes": 82,
+    "avg_route_length": 23.1,
+    "capacity": 173,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "5-10"
+  },
+  "XL-n1934-k46.vrp": {
+    "size": 1934,
+    "min_routes": 46,
+    "avg_route_length": 42.2,
+    "capacity": 2166,
+    "customer_distribution": "C (6)",
+    "depot_position": "C",
+    "demand_distribution": "1-100"
+  },
+  "XL-n1981-k13.vrp": {
+    "size": 1981,
+    "min_routes": 13,
+    "avg_route_length": 153.5,
+    "capacity": 832,
+    "customer_distribution": "RC (2)",
+    "depot_position": "R",
+    "demand_distribution": "1-10"
+  },
+  "XL-n2028-k617.vrp": {
+    "size": 2028,
+    "min_routes": 617,
+    "avg_route_length": 3.3,
+    "capacity": 247,
+    "customer_distribution": "C (6)",
+    "depot_position": "C",
+    "demand_distribution": "50-100"
+  },
+  "XL-n2074-k264.vrp": {
+    "size": 2074,
+    "min_routes": 264,
+    "avg_route_length": 7.8,
+    "capacity": 401,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "1-100"
+  },
+  "XL-n2121-k186.vrp": {
+    "size": 2121,
+    "min_routes": 186,
+    "avg_route_length": 11.4,
+    "capacity": 62,
+    "customer_distribution": "RC (5)",
+    "depot_position": "R",
+    "demand_distribution": "1-10"
+  },
+  "XL-n2168-k138.vrp": {
+    "size": 2168,
+    "min_routes": 138,
+    "avg_route_length": 15.7,
+    "capacity": 800,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "Q"
+  },
+  "XL-n2214-k131.vrp": {
+    "size": 2214,
+    "min_routes": 131,
+    "avg_route_length": 17.8,
+    "capacity": 17,
+    "customer_distribution": "C (5)",
+    "depot_position": "R",
+    "demand_distribution": "U"
+  },
+  "XL-n2261-k54.vrp": {
+    "size": 2261,
+    "min_routes": 54,
+    "avg_route_length": 42.5,
+    "capacity": 319,
+    "customer_distribution": "RC (5)",
+    "depot_position": "E",
+    "demand_distribution": "5-10"
+  },
+  "XL-n2307-k34.vrp": {
+    "size": 2307,
+    "min_routes": 34,
+    "avg_route_length": 69.6,
+    "capacity": 479,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "SL"
+  },
+  "XL-n2354-k631.vrp": {
+    "size": 2354,
+    "min_routes": 631,
+    "avg_route_length": 3.7,
+    "capacity": 28,
+    "customer_distribution": "C (4)",
+    "depot_position": "E",
+    "demand_distribution": "5-10"
+  },
+  "XL-n2401-k408.vrp": {
+    "size": 2401,
+    "min_routes": 408,
+    "avg_route_length": 5.9,
+    "capacity": 303,
+    "customer_distribution": "RC (4)",
+    "depot_position": "R",
+    "demand_distribution": "Q"
+  },
+  "XL-n2447-k290.vrp": {
+    "size": 2447,
+    "min_routes": 290,
+    "avg_route_length": 8.4,
+    "capacity": 150,
+    "customer_distribution": "RC (2)",
+    "depot_position": "C",
+    "demand_distribution": "SL"
+  },
+  "XL-n2494-k194.vrp": {
+    "size": 2494,
+    "min_routes": 194,
+    "avg_route_length": 12.9,
+    "capacity": 661,
+    "customer_distribution": "C (2)",
+    "depot_position": "E",
+    "demand_distribution": "1-100"
+  },
+  "XL-n2541-k121.vrp": {
+    "size": 2541,
+    "min_routes": 121,
+    "avg_route_length": 21.7,
+    "capacity": 21,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "U"
+  },
+  "XL-n2587-k66.vrp": {
+    "size": 2587,
+    "min_routes": 66,
+    "avg_route_length": 39.6,
+    "capacity": 2986,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "50-100"
+  },
+  "XL-n2634-k17.vrp": {
+    "size": 2634,
+    "min_routes": 17,
+    "avg_route_length": 162.6,
+    "capacity": 898,
+    "customer_distribution": "C (4)",
+    "depot_position": "R",
+    "demand_distribution": "1-10"
+  },
+  "XL-n2681-k540.vrp": {
+    "size": 2681,
+    "min_routes": 540,
+    "avg_route_length": 5.0,
+    "capacity": 251,
+    "customer_distribution": "RC (3)",
+    "depot_position": "E",
+    "demand_distribution": "1-100"
+  },
+  "XL-n2727-k546.vrp": {
+    "size": 2727,
+    "min_routes": 546,
+    "avg_route_length": 5.3,
+    "capacity": 5,
+    "customer_distribution": "RC (5)",
+    "depot_position": "C",
+    "demand_distribution": "U"
+  },
+  "XL-n2774-k286.vrp": {
+    "size": 2774,
+    "min_routes": 286,
+    "avg_route_length": 9.7,
+    "capacity": 731,
+    "customer_distribution": "C (5)",
+    "depot_position": "E",
+    "demand_distribution": "50-100"
+  },
+  "XL-n2821-k208.vrp": {
+    "size": 2821,
+    "min_routes": 208,
+    "avg_route_length": 13.5,
+    "capacity": 179,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "SL"
+  },
+  "XL-n2867-k120.vrp": {
+    "size": 2867,
+    "min_routes": 120,
+    "avg_route_length": 23.9,
+    "capacity": 180,
+    "customer_distribution": "C (4)",
+    "depot_position": "R",
+    "demand_distribution": "5-10"
+  },
+  "XL-n2914-k95.vrp": {
+    "size": 2914,
+    "min_routes": 95,
+    "avg_route_length": 30.8,
+    "capacity": 1663,
+    "customer_distribution": "RC (3)",
+    "depot_position": "C",
+    "demand_distribution": "Q"
+  },
+  "XL-n2961-k55.vrp": {
+    "size": 2961,
+    "min_routes": 55,
+    "avg_route_length": 53.8,
+    "capacity": 297,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "1-10"
+  },
+  "XL-n3007-k658.vrp": {
+    "size": 3007,
+    "min_routes": 658,
+    "avg_route_length": 4.4,
+    "capacity": 25,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "1-10"
+  },
+  "XL-n3054-k461.vrp": {
+    "size": 3054,
+    "min_routes": 461,
+    "avg_route_length": 6.6,
+    "capacity": 497,
+    "customer_distribution": "RC (4)",
+    "depot_position": "E",
+    "demand_distribution": "50-100"
+  },
+  "XL-n3101-k311.vrp": {
+    "size": 3101,
+    "min_routes": 311,
+    "avg_route_length": 10.0,
+    "capacity": 159,
+    "customer_distribution": "C (3)",
+    "depot_position": "R",
+    "demand_distribution": "SL"
+  },
+  "XL-n3147-k232.vrp": {
+    "size": 3147,
+    "min_routes": 232,
+    "avg_route_length": 13.6,
+    "capacity": 102,
+    "customer_distribution": "RC (6)",
+    "depot_position": "R",
+    "demand_distribution": "5-10"
+  },
+  "XL-n3194-k161.vrp": {
+    "size": 3194,
+    "min_routes": 161,
+    "avg_route_length": 19.9,
+    "capacity": 1012,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "Q"
+  },
+  "XL-n3241-k115.vrp": {
+    "size": 3241,
+    "min_routes": 115,
+    "avg_route_length": 28.3,
+    "capacity": 1404,
+    "customer_distribution": "C (4)",
+    "depot_position": "E",
+    "demand_distribution": "1-100"
+  },
+  "XL-n3287-k30.vrp": {
+    "size": 3287,
+    "min_routes": 30,
+    "avg_route_length": 112.0,
+    "capacity": 111,
+    "customer_distribution": "C (2)",
+    "depot_position": "C",
+    "demand_distribution": "U"
+  },
+  "XL-n3334-k934.vrp": {
+    "size": 3334,
+    "min_routes": 934,
+    "avg_route_length": 3.5,
+    "capacity": 20,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "1-10"
+  },
+  "XL-n3408-k524.vrp": {
+    "size": 3408,
+    "min_routes": 524,
+    "avg_route_length": 6.5,
+    "capacity": 353,
+    "customer_distribution": "RC (3)",
+    "depot_position": "R",
+    "demand_distribution": "Q"
+  },
+  "XL-n3484-k436.vrp": {
+    "size": 3484,
+    "min_routes": 436,
+    "avg_route_length": 8.2,
+    "capacity": 8,
+    "customer_distribution": "C (6)",
+    "depot_position": "E",
+    "demand_distribution": "U"
+  },
+  "XL-n3561-k229.vrp": {
+    "size": 3561,
+    "min_routes": 229,
+    "avg_route_length": 15.6,
+    "capacity": 779,
+    "customer_distribution": "RC (5)",
+    "depot_position": "C",
+    "demand_distribution": "1-100"
+  },
+  "XL-n3640-k211.vrp": {
+    "size": 3640,
+    "min_routes": 211,
+    "avg_route_length": 17.2,
+    "capacity": 130,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "5-10"
+  },
+  "XL-n3721-k77.vrp": {
+    "size": 3721,
+    "min_routes": 77,
+    "avg_route_length": 48.8,
+    "capacity": 371,
+    "customer_distribution": "RC (2)",
+    "depot_position": "E",
+    "demand_distribution": "SL"
+  },
+  "XL-n3804-k29.vrp": {
+    "size": 3804,
+    "min_routes": 29,
+    "avg_route_length": 134.0,
+    "capacity": 10064,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "50-100"
+  },
+  "XL-n3888-k1010.vrp": {
+    "size": 3888,
+    "min_routes": 1010,
+    "avg_route_length": 4.2,
+    "capacity": 128,
+    "customer_distribution": "C (2)",
+    "depot_position": "R",
+    "demand_distribution": "SL"
+  },
+  "XL-n3975-k687.vrp": {
+    "size": 3975,
+    "min_routes": 687,
+    "avg_route_length": 5.6,
+    "capacity": 32,
+    "customer_distribution": "RC (4)",
+    "depot_position": "C",
+    "demand_distribution": "1-10"
+  },
+  "XL-n4063-k347.vrp": {
+    "size": 4063,
+    "min_routes": 347,
+    "avg_route_length": 11.7,
+    "capacity": 598,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "Q"
+  },
+  "XL-n4153-k291.vrp": {
+    "size": 4153,
+    "min_routes": 291,
+    "avg_route_length": 14.3,
+    "capacity": 726,
+    "customer_distribution": "C (3)",
+    "depot_position": "R",
+    "demand_distribution": "1-100"
+  },
+  "XL-n4245-k203.vrp": {
+    "size": 4245,
+    "min_routes": 203,
+    "avg_route_length": 21.0,
+    "capacity": 21,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "U"
+  },
+  "XL-n4340-k148.vrp": {
+    "size": 4340,
+    "min_routes": 148,
+    "avg_route_length": 29.3,
+    "capacity": 2204,
+    "customer_distribution": "RC (6)",
+    "depot_position": "E",
+    "demand_distribution": "50-100"
+  },
+  "XL-n4436-k48.vrp": {
+    "size": 4436,
+    "min_routes": 48,
+    "avg_route_length": 94.1,
+    "capacity": 706,
+    "customer_distribution": "C (4)",
+    "depot_position": "C",
+    "demand_distribution": "5-10"
+  },
+  "XL-n4535-k1134.vrp": {
+    "size": 4535,
+    "min_routes": 1134,
+    "avg_route_length": 4.3,
+    "capacity": 4,
+    "customer_distribution": "C (4)",
+    "depot_position": "R",
+    "demand_distribution": "U"
+  },
+  "XL-n4635-k790.vrp": {
+    "size": 4635,
+    "min_routes": 790,
+    "avg_route_length": 5.9,
+    "capacity": 294,
+    "customer_distribution": "RC (4)",
+    "depot_position": "C",
+    "demand_distribution": "1-100"
+  },
+  "XL-n4738-k487.vrp": {
+    "size": 4738,
+    "min_routes": 487,
+    "avg_route_length": 9.7,
+    "capacity": 499,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "Q"
+  },
+  "XL-n4844-k321.vrp": {
+    "size": 4844,
+    "min_routes": 321,
+    "avg_route_length": 15.1,
+    "capacity": 188,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "SL"
+  },
+  "XL-n4951-k203.vrp": {
+    "size": 4951,
+    "min_routes": 203,
+    "avg_route_length": 24.5,
+    "capacity": 1848,
+    "customer_distribution": "RC (5)",
+    "depot_position": "E",
+    "demand_distribution": "50-100"
+  },
+  "XL-n5061-k184.vrp": {
+    "size": 5061,
+    "min_routes": 184,
+    "avg_route_length": 27.4,
+    "capacity": 206,
+    "customer_distribution": "C (5)",
+    "depot_position": "C",
+    "demand_distribution": "5-10"
+  },
+  "XL-n5174-k55.vrp": {
+    "size": 5174,
+    "min_routes": 55,
+    "avg_route_length": 94.1,
+    "capacity": 520,
+    "customer_distribution": "C (6)",
+    "depot_position": "C",
+    "demand_distribution": "1-10"
+  },
+  "XL-n5288-k1246.vrp": {
+    "size": 5288,
+    "min_routes": 1246,
+    "avg_route_length": 4.2,
+    "capacity": 318,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "50-100"
+  },
+  "XL-n5406-k783.vrp": {
+    "size": 5406,
+    "min_routes": 783,
+    "avg_route_length": 6.8,
+    "capacity": 38,
+    "customer_distribution": "RC (2)",
+    "depot_position": "R",
+    "demand_distribution": "1-10"
+  },
+  "XL-n5526-k553.vrp": {
+    "size": 5526,
+    "min_routes": 553,
+    "avg_route_length": 10.0,
+    "capacity": 10,
+    "customer_distribution": "C (3)",
+    "depot_position": "R",
+    "demand_distribution": "U"
+  },
+  "XL-n5649-k401.vrp": {
+    "size": 5649,
+    "min_routes": 401,
+    "avg_route_length": 14.1,
+    "capacity": 181,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "SL"
+  },
+  "XL-n5774-k290.vrp": {
+    "size": 5774,
+    "min_routes": 290,
+    "avg_route_length": 19.9,
+    "capacity": 1012,
+    "customer_distribution": "RC (4)",
+    "depot_position": "C",
+    "demand_distribution": "1-100"
+  },
+  "XL-n5902-k122.vrp": {
+    "size": 5902,
+    "min_routes": 122,
+    "avg_route_length": 48.8,
+    "capacity": 2663,
+    "customer_distribution": "RC (3)",
+    "depot_position": "E",
+    "demand_distribution": "Q"
+  },
+  "XL-n6034-k61.vrp": {
+    "size": 6034,
+    "min_routes": 61,
+    "avg_route_length": 98.9,
+    "capacity": 744,
+    "customer_distribution": "C (5)",
+    "depot_position": "R",
+    "demand_distribution": "5-10"
+  },
+  "XL-n6168-k1922.vrp": {
+    "size": 6168,
+    "min_routes": 1922,
+    "avg_route_length": 3.2,
+    "capacity": 162,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "1-100"
+  },
+  "XL-n6305-k1042.vrp": {
+    "size": 6305,
+    "min_routes": 1042,
+    "avg_route_length": 6.0,
+    "capacity": 268,
+    "customer_distribution": "RC (2)",
+    "depot_position": "R",
+    "demand_distribution": "Q"
+  },
+  "XL-n6445-k628.vrp": {
+    "size": 6445,
+    "min_routes": 628,
+    "avg_route_length": 10.2,
+    "capacity": 77,
+    "customer_distribution": "R",
+    "depot_position": "E",
+    "demand_distribution": "5-10"
+  },
+  "XL-n6588-k473.vrp": {
+    "size": 6588,
+    "min_routes": 473,
+    "avg_route_length": 13.8,
+    "capacity": 76,
+    "customer_distribution": "C (4)",
+    "depot_position": "C",
+    "demand_distribution": "1-10"
+  },
+  "XL-n6734-k330.vrp": {
+    "size": 6734,
+    "min_routes": 330,
+    "avg_route_length": 20.4,
+    "capacity": 1534,
+    "customer_distribution": "RC (2)",
+    "depot_position": "R",
+    "demand_distribution": "50-100"
+  },
+  "XL-n6884-k148.vrp": {
+    "size": 6884,
+    "min_routes": 148,
+    "avg_route_length": 46.4,
+    "capacity": 357,
+    "customer_distribution": "C (4)",
+    "depot_position": "E",
+    "demand_distribution": "SL"
+  },
+  "XL-n7037-k38.vrp": {
+    "size": 7037,
+    "min_routes": 38,
+    "avg_route_length": 187.1,
+    "capacity": 187,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "U"
+  },
+  "XL-n7193-k1683.vrp": {
+    "size": 7193,
+    "min_routes": 1683,
+    "avg_route_length": 4.2,
+    "capacity": 32,
+    "customer_distribution": "RC (2)",
+    "depot_position": "E",
+    "demand_distribution": "5-10"
+  },
+  "XL-n7353-k1471.vrp": {
+    "size": 7353,
+    "min_routes": 1471,
+    "avg_route_length": 5.1,
+    "capacity": 5,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "U"
+  },
+  "XL-n7516-k859.vrp": {
+    "size": 7516,
+    "min_routes": 859,
+    "avg_route_length": 8.8,
+    "capacity": 439,
+    "customer_distribution": "C (2)",
+    "depot_position": "C",
+    "demand_distribution": "1-100"
+  },
+  "XL-n7683-k602.vrp": {
+    "size": 7683,
+    "min_routes": 602,
+    "avg_route_length": 12.8,
+    "capacity": 957,
+    "customer_distribution": "RC (3)",
+    "depot_position": "R",
+    "demand_distribution": "50-100"
+  },
+  "XL-n7854-k365.vrp": {
+    "size": 7854,
+    "min_routes": 365,
+    "avg_route_length": 21.5,
+    "capacity": 223,
+    "customer_distribution": "C (2)",
+    "depot_position": "E",
+    "demand_distribution": "SL"
+  },
+  "XL-n8028-k294.vrp": {
+    "size": 8028,
+    "min_routes": 294,
+    "avg_route_length": 27.3,
+    "capacity": 1386,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "Q"
+  },
+  "XL-n8207-k108.vrp": {
+    "size": 8207,
+    "min_routes": 108,
+    "avg_route_length": 75.9,
+    "capacity": 415,
+    "customer_distribution": "C (2)",
+    "depot_position": "C",
+    "demand_distribution": "1-10"
+  },
+  "XL-n8389-k2028.vrp": {
+    "size": 8389,
+    "min_routes": 2028,
+    "avg_route_length": 4.1,
+    "capacity": 208,
+    "customer_distribution": "RC (4)",
+    "depot_position": "E",
+    "demand_distribution": "1-100"
+  },
+  "XL-n8575-k1297.vrp": {
+    "size": 8575,
+    "min_routes": 1297,
+    "avg_route_length": 6.5,
+    "capacity": 36,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "1-10"
+  },
+  "XL-n8766-k1032.vrp": {
+    "size": 8766,
+    "min_routes": 1032,
+    "avg_route_length": 8.5,
+    "capacity": 637,
+    "customer_distribution": "RC (4)",
+    "depot_position": "R",
+    "demand_distribution": "50-100"
+  },
+  "XL-n8960-k634.vrp": {
+    "size": 8960,
+    "min_routes": 634,
+    "avg_route_length": 14.1,
+    "capacity": 106,
+    "customer_distribution": "C (5)",
+    "depot_position": "E",
+    "demand_distribution": "5-10"
+  },
+  "XL-n9160-k379.vrp": {
+    "size": 9160,
+    "min_routes": 379,
+    "avg_route_length": 24.2,
+    "capacity": 237,
+    "customer_distribution": "R",
+    "depot_position": "C",
+    "demand_distribution": "SL"
+  },
+  "XL-n9363-k209.vrp": {
+    "size": 9363,
+    "min_routes": 209,
+    "avg_route_length": 45.2,
+    "capacity": 45,
+    "customer_distribution": "RC (2)",
+    "depot_position": "C",
+    "demand_distribution": "U"
+  },
+  "XL-n9571-k55.vrp": {
+    "size": 9571,
+    "min_routes": 55,
+    "avg_route_length": 174.7,
+    "capacity": 8773,
+    "customer_distribution": "R",
+    "depot_position": "R",
+    "demand_distribution": "Q"
+  },
+  "XL-n9784-k2774.vrp": {
+    "size": 9784,
+    "min_routes": 2774,
+    "avg_route_length": 3.4,
+    "capacity": 19,
+    "customer_distribution": "C (4)",
+    "depot_position": "E",
+    "demand_distribution": "1-10"
+  }
+}

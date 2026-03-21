@@ -1,0 +1,2 @@
+# For extract_table1_benchmark_pdf.py
+pdfplumber>=0.11.0
