@@ -1,0 +1,4 @@
+iteration,best_cost,gap_percent,source
+1,424465.000000,0.763205,routing
+3,424122.000000,0.681780,routing
+9,424098.000000,0.676083,scp

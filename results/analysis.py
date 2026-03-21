@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 INSTANCES_DIR = ROOT / "instances" / "challenge-instances"
 LOGS_DIR = ROOT / "results" / "out" / "logs"
 SOLUTIONS_DIR = ROOT / "results" / "out" / "solutions"
+TRAJECTORIES_DIR = ROOT / "results" / "out" / "trajectories"
 SUMMARY_CSV = ROOT / "results" / "summary.csv"
 OVERVIEW_MD = ROOT / "results" / "OVERVIEW.md"
 CHALLENGE_BKS_PATH = INSTANCES_DIR / "challenge-bks.json"
@@ -135,6 +136,83 @@ def load_bks_tables() -> Tuple[Dict[str, float], Dict[str, float]]:
     with INITIAL_BKS_PATH.open("r", encoding="utf-8") as f:
         initial_bks = json.load(f)
     return challenge_bks, initial_bks
+
+
+@dataclass(frozen=True)
+class TrajectoryStats:
+    instance: str
+    improvements_total: int
+    improvements_routing: int
+    improvements_scp: int
+    max_iteration_with_improvement: int
+    avg_iteration_routing: Optional[float]
+    avg_iteration_scp: Optional[float]
+
+
+def _trajectory_points_csv_path(instance: str) -> Optional[Path]:
+    """
+    Prefer the newer output naming:
+      results/out/trajectories/<instance>_trajectory_points.csv
+    Fall back to legacy:
+      results/out/trajectories/<instance>/trajectory_points.csv
+    """
+    p_new = TRAJECTORIES_DIR / f"{instance}_trajectory_points.csv"
+    if p_new.is_file():
+        return p_new
+
+    p_legacy = TRAJECTORIES_DIR / instance / "trajectory_points.csv"
+    if p_legacy.is_file():
+        return p_legacy
+
+    return None
+
+
+def _load_trajectory_stats(instance: str, path: Path) -> TrajectoryStats:
+    improvements_total = 0
+    improvements_routing = 0
+    improvements_scp = 0
+
+    max_iteration_with_improvement = 0
+    routing_iters: List[int] = []
+    scp_iters: List[int] = []
+
+    with path.open("r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if not row:
+                continue
+            try:
+                iteration = int(float(row["iteration"]))
+            except (KeyError, ValueError, TypeError):
+                continue
+
+            source = (row.get("source") or "").strip().lower()
+
+            improvements_total += 1
+            max_iteration_with_improvement = max(max_iteration_with_improvement, iteration)
+
+            if source == "routing":
+                improvements_routing += 1
+                routing_iters.append(iteration)
+            elif source == "scp":
+                improvements_scp += 1
+                scp_iters.append(iteration)
+            else:
+                # Ignore unknown sources (shouldn't happen).
+                continue
+
+    avg_iteration_routing = statistics.mean(routing_iters) if routing_iters else None
+    avg_iteration_scp = statistics.mean(scp_iters) if scp_iters else None
+
+    return TrajectoryStats(
+        instance=instance,
+        improvements_total=improvements_total,
+        improvements_routing=improvements_routing,
+        improvements_scp=improvements_scp,
+        max_iteration_with_improvement=max_iteration_with_improvement,
+        avg_iteration_routing=avg_iteration_routing,
+        avg_iteration_scp=avg_iteration_scp,
+    )
 
 
 def cmd_summary_solutions(_: argparse.Namespace) -> None:
@@ -378,6 +456,78 @@ def cmd_overview_solutions(_: argparse.Namespace) -> None:
             f"| {stage} | {secs:.3f} | {share:.2f} | {avg_pct:.2f} |"
         )
     lines.append("")
+
+    # Trajectory-based improvements (new-best events).
+    challenge_bks, _ = load_bks_tables()
+    instance_names = sorted(challenge_bks.keys())
+
+    traj_missing: List[str] = []
+    traj_stats: List[TrajectoryStats] = []
+    for inst in instance_names:
+        path = _trajectory_points_csv_path(inst)
+        if path is None:
+            traj_missing.append(inst)
+            continue
+        traj_stats.append(_load_trajectory_stats(inst, path))
+
+    total_improvements = sum(ts.improvements_total for ts in traj_stats)
+    total_routing = sum(ts.improvements_routing for ts in traj_stats)
+    total_scp = sum(ts.improvements_scp for ts in traj_stats)
+
+    avg_iterations_with_improvement = (
+        statistics.mean([ts.max_iteration_with_improvement for ts in traj_stats]) if traj_stats else 0.0
+    )
+    avg_improvements = statistics.mean([ts.improvements_total for ts in traj_stats]) if traj_stats else 0.0
+    avg_improvements_routing = (
+        statistics.mean([ts.improvements_routing for ts in traj_stats]) if traj_stats else 0.0
+    )
+    avg_improvements_scp = statistics.mean([ts.improvements_scp for ts in traj_stats]) if traj_stats else 0.0
+
+    share_routing = (100.0 * total_routing / total_improvements) if total_improvements > 0 else 0.0
+    share_scp = (100.0 * total_scp / total_improvements) if total_improvements > 0 else 0.0
+
+    avg_iter_routing_weighted = (
+        sum(
+            ts.avg_iteration_routing * ts.improvements_routing
+            for ts in traj_stats
+            if ts.avg_iteration_routing is not None
+        )
+        / total_routing
+        if total_routing > 0
+        else None
+    )
+    avg_iter_scp_weighted = (
+        sum(
+            ts.avg_iteration_scp * ts.improvements_scp
+            for ts in traj_stats
+            if ts.avg_iteration_scp is not None
+        )
+        / total_scp
+        if total_scp > 0
+        else None
+    )
+
+    lines.append("### Trajectory improvements (new best events)")
+    lines.append("")
+    lines.append(
+        f"- **Average iterations (max iter with a new best)**: {avg_iterations_with_improvement:.2f}"
+    )
+    lines.append(f"- **Average #improvements**: {avg_improvements:.2f}")
+    lines.append(f"- **Average #improvements via routing**: {avg_improvements_routing:.2f}")
+    lines.append(f"- **Average #improvements via scp**: {avg_improvements_scp:.2f}")
+    lines.append("")
+    lines.append(
+        f"- **Share of all improvements from routing/scp**: {share_routing:.2f}% routing, {share_scp:.2f}% scp"
+    )
+    if avg_iter_routing_weighted is not None and avg_iter_scp_weighted is not None:
+        lines.append(
+            f"- **Average iteration index of improvements**: routing {avg_iter_routing_weighted:.2f}, scp {avg_iter_scp_weighted:.2f}"
+        )
+    if traj_missing:
+        lines.append("")
+        lines.append(
+            f"- **Warning**: missing trajectory CSVs for {len(traj_missing)} instance(s); averages computed over {len(traj_stats)} instance(s)."
+        )
 
     OVERVIEW_MD.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"Wrote overview to {OVERVIEW_MD}")

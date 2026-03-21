@@ -53,3 +53,12 @@
 | routing | 2726751.388 | 74.94 | 73.43 |
 | scp | 670664.472 | 18.43 | 15.43 |
 
+### Trajectory improvements (new best events)
+
+- **Average iterations (max iter with a new best)**: 18.57
+- **Average #improvements**: 5.46
+- **Average #improvements via routing**: 2.71
+- **Average #improvements via scp**: 2.75
+
+- **Share of all improvements from routing/scp**: 49.63% routing, 50.37% scp
+- **Average iteration index of improvements**: routing 6.75, scp 14.45
