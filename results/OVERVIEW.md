@@ -43,6 +43,40 @@
 - **2.00% < gap ≤ 2.25%**: 0
 - **gap > 2.25%**:         1
 
+### Extremes by gap to BKS (`gap_to_bks_percent`, 100 instances)
+
+Sorted from `results/summary.csv` (same definition as the gap bullets above: solution cost vs. `challenge-bks.json`). **Bottom** = smallest gap (closest to BKS); **top** = largest gap (farthest from BKS).
+
+**Bottom 10 (lowest gap)**
+
+| Rank | Instance | gap_to_bks_percent |
+|-----:|----------|-------------------:|
+| 1 | XL-n4535-k1134 | 0.0197% |
+| 2 | XL-n2727-k546 | 0.0262% |
+| 3 | XL-n7353-k1471 | 0.0319% |
+| 4 | XL-n3484-k436 | 0.0502% |
+| 5 | XL-n1094-k157 | 0.0605% |
+| 6 | XL-n1794-k163 | 0.0670% |
+| 7 | XL-n1561-k75 | 0.0798% |
+| 8 | XL-n5526-k553 | 0.0852% |
+| 9 | XL-n2214-k131 | 0.0912% |
+| 10 | XL-n2541-k121 | 0.1490% |
+
+**Top 10 (highest gap)**
+
+| Rank | Instance | gap_to_bks_percent |
+|-----:|----------|-------------------:|
+| 1 | XL-n9571-k55 | 2.3593% |
+| 2 | XL-n5174-k55 | 1.4807% |
+| 3 | XL-n2634-k17 | 1.4548% |
+| 4 | XL-n3888-k1010 | 1.4356% |
+| 5 | XL-n8207-k108 | 1.3469% |
+| 6 | XL-n5288-k1246 | 1.2962% |
+| 7 | XL-n6034-k61 | 1.2934% |
+| 8 | XL-n6884-k148 | 1.2418% |
+| 9 | XL-n2028-k617 | 1.2136% |
+| 10 | XL-n9160-k379 | 1.1147% |
+
 ### Gap distribution (vs. initial BKS, 100 instances)
 
 - **gap ≤ 0.10%**:         9
