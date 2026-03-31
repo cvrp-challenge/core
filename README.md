@@ -1,107 +1,107 @@
-# Umbrella Repository for the CVRP Challenge
+# CVRP XL Challenge Workspace
 
-This repository is the brain of the 2026 CVRPLIB Best Known Solution Challenge --- a 30-day competition aimed at finding extremely high-quality vehicle routing solutions for a new XL benchmark set, 100 challenging CVRP instances ranging from 1,000 to 10,000 customers.
+This repository contains the code, instances, solver integrations, and result artifacts used for large-scale CVRP experimentation on the 2026 XL challenge set (100 instances, 1,000-10,000 customers).
 
-More info: https://vrp.atd-lab.inf.puc-rio.br/index.php/en/bks-challenge
+Challenge page: https://vrp.atd-lab.inf.puc-rio.br/index.php/en/bks-challenge
 
+## What is in this repo
 
-## Contents
+- `src/master`: DRSCI-style solving pipeline, orchestration, benchmarking, and utilities.
+- `instances`: challenge/test instances, metadata, and helper scripts.
+- `solver`: integrated third-party and in-house solvers (`filo1`, `filo2`, `hgs`, `pyvrp`, `ails2`, `cobra`).
+- `config/solvers.yaml`: solver registry and execution metadata.
+- `results`: generated summaries, plots, and analysis scripts.
+- `docs`: setup, command reference, runner/solver documentation.
 
-Main logic, runners, instances, wrappers, logging, links to solvers as submodules.
+## Prerequisites
 
-## Requirements
-
-- Python 3.11+ with pip
-- CMake and C++ compiler (for C++ solvers)
-- Git (for submodules)
-
-See `requirements.txt` for Python dependencies.
-
+- Python 3.11+
+- `pip`
+- C++ toolchain + CMake (for compiled solvers)
+- Java (for AILS2)
+- Git (submodules)
+- Gurobi license (if using `gurobi_mip` / `gurobi_lp` SCP solvers)
 
 ## Setup
 
-### Quick Setup
-
-Use the automated setup script:
-
 ```bash
-./setup.sh
-```
-
-Or manually:
-
-```bash
-# Create and activate virtual environment
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
+source .venv/bin/activate    # Windows PowerShell: .venv\Scripts\Activate.ps1
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-For detailed setup instructions, see [SETUP.md](SETUP.md).
+Detailed setup guide: `docs/SETUP.md`.
 
-### Building Solvers
-
-Build the C++ solvers (WSL/Linux):
+## Build integrated C++ solvers
 
 ```bash
-# Build COBRA library (required for FILO1)
-cd solver/cobra && mkdir -p build && cd build
+# COBRA (required by FILO1)
+cd solver/cobra
+mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/dev/core/solver/cobra/install
 make -j4 && make install
 cd ../../..
 
-# Build FILO1
-cd solver/filo1 && mkdir -p build && cd build
+# FILO1
+cd solver/filo1
+mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_VERBOSE=ON -DCMAKE_PREFIX_PATH=~/dev/core/solver/cobra/install
 make -j4
 cd ../../..
 
-# Build FILO2
-cd solver/filo2 && mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release && make -j4
+# FILO2
+cd solver/filo2
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j4
 cd ../../..
 
-# Build HGS
-cd solver/hgs && mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release && make -j4
+# HGS
+cd solver/hgs
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make -j4
 cd ../../..
 ```
 
-See [COMMANDS.md](COMMANDS.md) for more build options.
+More build/use commands: `docs/COMMANDS.md`.
 
-## Usage
+## Run the challenge pipeline
 
-### Unified Solver Runner
-
-Run any solver on any instance with a single command:
+The current benchmark entrypoint is `src/master/challenge_runner.py`.
 
 ```bash
-# List available solvers
-./run.sh --list
+# Run full probabilistic DRSCI challenge run
+python src/master/challenge_runner.py output
 
-# Run any solver on an instance
-./run.sh hgs instances/test-instances/x/X-n101-k25.vrp
-./run.sh filo1 instances/test-instances/x/X-n101-k25.vrp
-./run.sh filo2 instances/test-instances/x/X-n101-k25.vrp
-./run.sh pyvrp instances/test-instances/x/X-n101-k25.vrp
+# Limit worker processes
+python src/master/challenge_runner.py output --max_workers 4
 
-# Run on XL instances
-./run.sh hgs instances/test-instances/xl/XLTEST-n2541-k62.vrp
+# Switch SCP solver(s)
+python src/master/challenge_runner.py output --scp_solvers gurobi_mip gurobi_lp
 ```
 
-The runner automatically:
-- Validates solver availability
-- Checks instance files
-- Activates virtual environment
-- Provides unified interface for all solvers
+Outputs are written under `output/challenge_<timestamp>/` and include solution files, logs, and per-instance traces.
 
-See [COMMANDS.md](COMMANDS.md) for more usage examples.
+## Results and analysis
 
+- Consolidated metrics: `results/summary.csv`
+- Current high-level summary: `results/OVERVIEW.md`
+- Plotting/analysis scripts: `results/*.py`
 
-## To Do
+## Configuration
 
-    - add forks for remaining relevant solvers (SISR, KGLS-XXL, AILS-II, potentially to some decomposition approaches)
-    - server setup
-    - create test instances
+- Edit solver metadata and executable paths in `config/solvers.yaml`.
+- Instance BKS references are in:
+  - `instances/challenge-instances/challenge-bks.json`
+  - `instances/challenge-instances/initial-bks.json`
+
+## Documentation index
+
+- Setup: `docs/SETUP.md`
+- Command reference: `docs/COMMANDS.md`
+- Runner guide: `docs/SOLVER_RUNNER_GUIDE.md`
+- Add a new solver: `docs/ADDING_NEW_SOLVER.md`
+- Docker notes: `docs/DOCKER.md`
+- AILS2 setup: `docs/AILS2_SETUP.md`

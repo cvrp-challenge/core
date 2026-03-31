@@ -191,54 +191,29 @@ git submodule update --init --recursive
 git pull --recurse-submodules
 ```
 
-## Unified Solver Runner
+## Challenge runner
 
-The repository includes a unified runner that makes it easy to run any configured solver.
-
-### List Available Solvers
-```bash
-# Using Python directly
-python3 run_solver.py --list
-
-# Using the shell wrapper
-./run.sh --list
-```
-
-### Run a Solver
+The current benchmark entrypoint is `src/master/challenge_runner.py`.
 
 ```bash
-# Run HGS on an instance
-python3 run_solver.py hgs instances/test-instances/x/X-n101-k25.vrp
+# Run the full challenge pipeline
+python src/master/challenge_runner.py output
 
-# Run FILO2 on an instance
-python3 run_solver.py filo2 instances/test-instances/x/X-n101-k25.vrp
+# Limit parallel workers
+python src/master/challenge_runner.py output --max_workers 4
 
-# Using the shell wrapper (shorter)
-./run.sh hgs instances/test-instances/x/X-n101-k25.vrp
-./run.sh filo2 instances/test-instances/x/X-n101-k25.vrp
-
-# Run PyVRP with custom parameters
-./run.sh pyvrp instances/test-instances/x/X-n101-k25.vrp --seed 42 --max_runtime 60
-
-# Run on XL instances
-./run.sh hgs instances/test-instances/xl/XLTEST-n2541-k62.vrp
+# Choose one or more SCP solvers
+python src/master/challenge_runner.py output --scp_solvers gurobi_mip gurobi_lp
 ```
 
-### Runner Features
-- Automatic path resolution (works from any directory)
-- Validation of solver availability and instance files
-- Unified interface for all solvers
-- Configuration-based (see `config/solvers.yaml`)
-- Virtual environment auto-activation (if exists)
-
-### Adding New Solvers
-Edit `config/solvers.yaml` to add new solver configurations.
+### Configure solvers
+Edit `config/solvers.yaml` to adjust solver metadata and executable paths.
 
 ## Benchmarking
 
 ```bash
-# Run benchmark configuration
-# (Add your benchmark runner commands here)
+# Example benchmark invocation
+python src/master/challenge_runner.py output --max_workers 4
 ```
 
 ## Jupyter Notebooks
